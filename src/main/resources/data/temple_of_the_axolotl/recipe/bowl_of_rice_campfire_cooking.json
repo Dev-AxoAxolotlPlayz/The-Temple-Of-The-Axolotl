@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:campfire_cooking",
+  "category": "food",
+  "ingredient": {
+    "item": "temple_of_the_axolotl:uncooked_rice_bowl"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:bowl_of_rice"
+  },
+  "experience": 0,
+  "cookingtime": 80
+}

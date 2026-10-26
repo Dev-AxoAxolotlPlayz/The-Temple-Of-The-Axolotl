@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "temple_of_the_axolotl:golden_tropical_fish_sushi"
+    },
+    {
+      "item": "minecraft:open_eyeblossom"
+    },
+    {
+      "item": "minecraft:closed_eyeblossom"
+    },
+    {
+      "item": "minecraft:glow_ink_sac"
+    },
+    {
+      "item": "minecraft:dried_kelp"
+    }
+  ],
+  "result": {
+    "id": "temple_of_the_axolotl:axolotls_dream_sushi",
+    "count": 1
+  }
+}

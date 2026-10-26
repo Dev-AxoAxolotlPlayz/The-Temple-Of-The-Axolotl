@@ -1,0 +1,8 @@
+{
+  "sound_event": "temple_of_the_axolotl:disc_out_of_reach",
+  "description": {
+    "translate": "item.temple_of_the_axolotl.disc_out_of_reach"
+  },
+  "length_in_seconds": 205,
+  "comparator_output": 12
+}

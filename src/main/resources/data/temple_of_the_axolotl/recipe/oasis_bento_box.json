@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": {
+      "item": "temple_of_the_axolotl:axolotls_oasis_sushi"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:oasis_bento_box",
+    "count": 1
+  }
+}

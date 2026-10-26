@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BBB",
+    "BBB",
+    "BBB"
+  ],
+  "key": {
+    "B": {
+      "item": "temple_of_the_axolotl:oasis_bento_box"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:black_axolotl_trophy",
+    "count": 1
+  }
+}

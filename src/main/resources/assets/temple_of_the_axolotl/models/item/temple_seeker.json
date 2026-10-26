@@ -1,0 +1,200 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minecraft:item/compass_00"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "minecraft:angle": 0.0
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_00"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.03125
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_01"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.0625
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_02"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.09375
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_03"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.125
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_04"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.15625
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_05"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.1875
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_06"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.21875
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_07"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.25
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_08"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.28125
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_09"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.3125
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_10"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.34375
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_11"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.375
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_12"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.40625
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_13"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.4375
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_14"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.46875
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_15"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.5
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_16"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.53125
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_17"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.5625
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_18"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.59375
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_19"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.625
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_20"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.65625
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_21"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.6875
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_22"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.71875
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_23"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.75
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_24"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.78125
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_25"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.8125
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_26"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.84375
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_27"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.875
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_28"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.90625
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_29"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.9375
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_30"
+    },
+    {
+      "predicate": {
+        "minecraft:angle": 0.96875
+      },
+      "model": "temple_of_the_axolotl:item/temple_seeker_31"
+    }
+  ]
+}

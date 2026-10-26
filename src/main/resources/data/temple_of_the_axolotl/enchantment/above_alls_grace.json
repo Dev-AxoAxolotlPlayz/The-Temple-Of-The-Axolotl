@@ -1,0 +1,32 @@
+
+{
+  "description": {
+    "translate": "enchantment.temple_of_the_axolotl.above_alls_grace"
+  },
+  "supported_items": "#temple_of_the_axolotl:celestialitems/celestial_boots",
+  "primary_items": "#temple_of_the_axolotl:celestialitems/celestial_boots",
+  "weight": 3,
+  "max_level": 1,
+  "min_cost": {
+    "base": 25,
+    "per_level_above_first": 0
+  },
+  "max_cost": {
+    "base": 50,
+    "per_level_above_first": 0
+  },
+  "anvil_cost": 6,
+  "slots": [
+    "feet"
+  ],
+  "effects": {
+    "minecraft:attributes": [
+      {
+        "id": "temple_of_the_axolotl:above_alls_grace_water",
+        "attribute": "minecraft:generic.water_movement_efficiency",
+        "amount": 1.0,
+        "operation": "add_value"
+      }
+    ]
+  }
+}

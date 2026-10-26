@@ -1,0 +1,22 @@
+
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:gold_ingot"
+    },
+    {
+      "item": "minecraft:gold_ingot"
+    },
+    {
+      "item": "minecraft:gold_ingot"
+    },
+    {
+      "item": "temple_of_the_axolotl:handheld_hydraulic_press"
+    }
+  ],
+  "result": {
+    "id": "temple_of_the_axolotl:gold_paper",
+    "count": 4
+  }
+}

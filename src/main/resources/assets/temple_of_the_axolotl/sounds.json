@@ -1,0 +1,38 @@
+{
+  "celestial_menu": {
+    "sounds": [
+      {
+        "name": "temple_of_the_axolotl:celestial_menu",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.temple_of_the_axolotl.celestial_menu"
+  },
+  "disc_cosmic_seas": {
+    "sounds": [
+      {
+        "name": "temple_of_the_axolotl:disc_cosmic_seas",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.temple_of_the_axolotl.disc_cosmic_seas"
+  },
+  "disc_beneath_surface": {
+    "sounds": [
+      {
+        "name": "temple_of_the_axolotl:disc_beneath_surface",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.temple_of_the_axolotl.disc_beneath_surface"
+  },
+  "disc_out_of_reach": {
+    "sounds": [
+      {
+        "name": "temple_of_the_axolotl:disc_out_of_reach",
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.temple_of_the_axolotl.disc_out_of_reach"
+  }
+}

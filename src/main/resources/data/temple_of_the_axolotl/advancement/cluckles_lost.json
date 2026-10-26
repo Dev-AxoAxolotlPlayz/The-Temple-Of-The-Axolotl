@@ -1,0 +1,10 @@
+{
+  "parent": "temple_of_the_axolotl:gainfully_employed",
+  "display": {
+    "icon": {"id": "minecraft:feather"},
+    "title": "I BAWKIN DID SO MUCH. HOW COULD YOU",
+    "description": "Lose Cluckles.",
+    "frame": "challenge", "hidden": true, "show_toast": true, "announce_to_chat": true
+  },
+  "criteria": {"completed": {"trigger": "minecraft:impossible"}}
+}

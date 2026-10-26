@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "temple_of_the_axolotl:block/celestial_anvil_64"
+  }
+}

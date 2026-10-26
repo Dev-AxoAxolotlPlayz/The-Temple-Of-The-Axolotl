@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AAA",
+    "A A",
+    "AAA"
+  ],
+  "key": {
+    "A": {
+      "item": "temple_of_the_axolotl:tier_1_ominous_trap_stone"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:tier_2_ominous_trap_stone",
+    "count": 1
+  }
+}

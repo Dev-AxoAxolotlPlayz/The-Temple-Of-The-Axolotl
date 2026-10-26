@@ -1,0 +1,8 @@
+{
+  "sound_event": "temple_of_the_axolotl:disc_beneath_surface",
+  "description": {
+    "translate": "item.temple_of_the_axolotl.disc_beneath_surface"
+  },
+  "length_in_seconds": 232,
+  "comparator_output": 12
+}

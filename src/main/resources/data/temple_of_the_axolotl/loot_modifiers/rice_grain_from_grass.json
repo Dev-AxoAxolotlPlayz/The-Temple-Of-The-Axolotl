@@ -1,0 +1,8 @@
+{
+  "type": "temple_of_the_axolotl:bonus_cuisine_drop",
+  "conditions": [],
+  "target_block": "minecraft:short_grass",
+  "bonus_item": "temple_of_the_axolotl:grain",
+  "chance": 0.1,
+  "mature_only": false
+}

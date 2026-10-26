@@ -1,0 +1,62 @@
+
+{
+  "description": {
+    "translate": "enchantment.temple_of_the_axolotl.supernova"
+  },
+  "supported_items": "temple_of_the_axolotl:ring_of_the_one",
+  "weight": 1,
+  "max_level": 1,
+  "min_cost": {
+    "base": 30,
+    "per_level_above_first": 0
+  },
+  "max_cost": {
+    "base": 60,
+    "per_level_above_first": 0
+  },
+  "anvil_cost": 8,
+  "slots": [
+    "mainhand"
+  ],
+  "effects": {
+    "minecraft:attributes": [
+      {
+        "id": "temple_of_the_axolotl:supernova_attack_speed",
+        "attribute": "minecraft:generic.attack_speed",
+        "amount": 0.6,
+        "operation": "add_value"
+      },
+      {
+        "id": "temple_of_the_axolotl:supernova_sweeping",
+        "attribute": "minecraft:player.sweeping_damage_ratio",
+        "amount": 0.75,
+        "operation": "add_value"
+      }
+    ],
+    "minecraft:damage": [
+      {
+        "effect": {
+          "type": "minecraft:add",
+          "value": 15.0
+        },
+        "requirements": {
+          "condition": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "type": "#minecraft:sensitive_to_impaling"
+          }
+        }
+      }
+    ],
+    "minecraft:post_attack": [
+      {
+        "enchanted": "attacker",
+        "affected": "victim",
+        "effect": {
+          "type": "minecraft:ignite",
+          "duration": 12
+        }
+      }
+    ]
+  }
+}

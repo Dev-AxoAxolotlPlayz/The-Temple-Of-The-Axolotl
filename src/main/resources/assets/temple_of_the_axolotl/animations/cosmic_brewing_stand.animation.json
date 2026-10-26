@@ -1,0 +1,128 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.cosmic_brewing_stand.tesseract": {
+			"loop": true,
+			"animation_length": 4,
+			"bones": {
+				"Tesseract": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [0, -360, 0]
+						},
+						"4.0": {
+							"vector": [0, -720, 0]
+						}
+					}
+				},
+				"Central Cube": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [360, -360, 180]
+						},
+						"4.0": {
+							"vector": [720, -720, 360]
+						}
+					}
+				},
+				"Central Gemstone": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [-180, 180, 180]
+						},
+						"4.0": {
+							"vector": [-360, 360, 360]
+						}
+					}
+				},
+				"Central_Cube2": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [360, -180, -360]
+						},
+						"4.0": {
+							"vector": [720, -360, -720]
+						}
+					}
+				},
+				"Central_Cube3": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [-360, 0, -360]
+						},
+						"4.0": {
+							"vector": [-720, 0, -720]
+						}
+					}
+				},
+				"Central_Gemstone2": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [-180, 180, 180]
+						},
+						"4.0": {
+							"vector": [-360, 360, 360]
+						}
+					}
+				},
+				"Central_Cube4": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [360, -360, 180]
+						},
+						"4.0": {
+							"vector": [720, -720, 360]
+						}
+					}
+				},
+				"Central_Cube5": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [360, -180, -360]
+						},
+						"4.0": {
+							"vector": [720, -360, -720]
+						}
+					}
+				},
+				"Central_Cube6": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [-360, 0, -360]
+						},
+						"4.0": {
+							"vector": [-720, 0, -720]
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BBB",
+    "BBB",
+    "BBB"
+  ],
+  "key": {
+    "B": {
+      "item": "temple_of_the_axolotl:dream_bento_box"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:white_axolotl_trophy",
+    "count": 1
+  }
+}

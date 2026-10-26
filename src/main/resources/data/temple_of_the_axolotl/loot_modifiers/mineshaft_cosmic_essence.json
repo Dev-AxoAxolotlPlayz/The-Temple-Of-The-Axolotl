@@ -1,0 +1,9 @@
+{
+  "type": "temple_of_the_axolotl:mineshaft_cosmic_essence",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/abandoned_mineshaft"
+    }
+  ]
+}

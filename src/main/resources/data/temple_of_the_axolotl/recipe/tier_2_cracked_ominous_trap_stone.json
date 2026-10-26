@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "temple_of_the_axolotl:tier_2_ominous_trap_stone"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:tier_2_cracked_ominous_trap_stone",
+    "count": 1
+  }
+}

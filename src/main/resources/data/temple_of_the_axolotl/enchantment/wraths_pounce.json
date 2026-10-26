@@ -1,0 +1,23 @@
+
+{
+  "description": {
+    "translate": "enchantment.temple_of_the_axolotl.wraths_pounce"
+  },
+  "supported_items": "#temple_of_the_axolotl:celestialitems/celestial_boots",
+  "primary_items": "#temple_of_the_axolotl:celestialitems/celestial_boots",
+  "weight": 2,
+  "max_level": 6,
+  "min_cost": {
+    "base": 10,
+    "per_level_above_first": 8
+  },
+  "max_cost": {
+    "base": 30,
+    "per_level_above_first": 12
+  },
+  "anvil_cost": 6,
+  "slots": [
+    "feet"
+  ],
+  "effects": {}
+}

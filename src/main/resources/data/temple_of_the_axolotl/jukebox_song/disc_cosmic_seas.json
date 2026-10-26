@@ -1,0 +1,8 @@
+{
+  "sound_event": "temple_of_the_axolotl:disc_cosmic_seas",
+  "description": {
+    "translate": "item.temple_of_the_axolotl.disc_cosmic_seas"
+  },
+  "length_in_seconds": 270,
+  "comparator_output": 12
+}

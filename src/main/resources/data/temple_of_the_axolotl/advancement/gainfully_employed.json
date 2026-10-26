@@ -1,0 +1,9 @@
+{
+  "display": {
+    "icon": {"id": "minecraft:feather"},
+    "title": "Gainfully Employed",
+    "description": "Recruit Cluckles with an uncooked grain of rice.",
+    "frame": "challenge", "hidden": true, "show_toast": true, "announce_to_chat": true
+  },
+  "criteria": {"completed": {"trigger": "minecraft:impossible"}}
+}

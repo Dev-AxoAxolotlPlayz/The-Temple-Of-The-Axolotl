@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "temple_of_the_axolotl:sushi_rice"
+    },
+    {
+      "item": "temple_of_the_axolotl:tropical_fish_fillet"
+    }
+  ],
+  "result": {
+    "id": "temple_of_the_axolotl:tropical_fish_sushi",
+    "count": 1
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "temple_of_the_axolotl:temple/start",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "temple_of_the_axolotl:tota_thetemple",
+        "processors": "minecraft:empty",
+        "projection": "rigid"
+      }
+    }
+  ]
+}

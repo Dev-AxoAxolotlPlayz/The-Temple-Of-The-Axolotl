@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "NYN",
+    "N N",
+    "NXN"
+  ],
+  "key": {
+    "N": {
+      "item": "minecraft:netherite_block"
+    },
+    "Y": {
+      "item": "temple_of_the_axolotl:yang_singularity"
+    },
+    "X": {
+      "item": "temple_of_the_axolotl:yin_singularity"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:ring_of_the_one",
+    "count": 1
+  }
+}

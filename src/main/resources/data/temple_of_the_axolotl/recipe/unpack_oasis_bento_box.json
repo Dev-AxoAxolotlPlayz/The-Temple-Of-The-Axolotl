@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "food",
+  "ingredients": [
+    {
+      "item": "temple_of_the_axolotl:oasis_bento_box"
+    }
+  ],
+  "result": {
+    "id": "temple_of_the_axolotl:axolotls_oasis_sushi",
+    "count": 9
+  }
+}

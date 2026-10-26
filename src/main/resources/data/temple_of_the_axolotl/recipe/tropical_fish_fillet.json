@@ -1,0 +1,13 @@
+
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "minecraft:tropical_fish" },
+    { "item": "temple_of_the_axolotl:meat_tenderizer" },
+    { "item": "temple_of_the_axolotl:fillet_knife" }
+  ],
+  "result": {
+    "id": "temple_of_the_axolotl:tropical_fish_fillet",
+    "count": 1
+  }
+}

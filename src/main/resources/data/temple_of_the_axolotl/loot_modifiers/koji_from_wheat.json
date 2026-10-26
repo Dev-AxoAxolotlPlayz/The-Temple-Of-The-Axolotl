@@ -1,0 +1,8 @@
+{
+  "type": "temple_of_the_axolotl:bonus_cuisine_drop",
+  "conditions": [],
+  "target_block": "minecraft:wheat",
+  "bonus_item": "temple_of_the_axolotl:koji",
+  "chance": 0.05,
+  "mature_only": true
+}

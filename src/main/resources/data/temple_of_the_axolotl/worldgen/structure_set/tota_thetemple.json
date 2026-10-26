@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "temple_of_the_axolotl:tota_thetemple",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "temple_of_the_axolotl:spawn_excluded",
+    "salt": 184376921,
+    "spacing": 66,
+    "separation": 52,
+    "spread_type": "linear"
+  }
+}

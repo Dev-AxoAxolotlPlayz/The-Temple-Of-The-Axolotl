@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "temple_of_the_axolotl:uncooked_rice"
+    },
+    {
+      "item": "temple_of_the_axolotl:koji"
+    },
+    {
+      "item": "minecraft:sugar"
+    },
+    {
+      "item": "temple_of_the_axolotl:salt"
+    }
+  ],
+  "result": {
+    "id": "temple_of_the_axolotl:sushi_rice",
+    "count": 1
+  }
+}

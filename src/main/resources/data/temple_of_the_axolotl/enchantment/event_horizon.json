@@ -1,0 +1,22 @@
+
+{
+  "description": {
+    "translate": "enchantment.temple_of_the_axolotl.event_horizon"
+  },
+  "supported_items": "temple_of_the_axolotl:ring_of_the_one",
+  "weight": 1,
+  "max_level": 1,
+  "min_cost": {
+    "base": 30,
+    "per_level_above_first": 0
+  },
+  "max_cost": {
+    "base": 60,
+    "per_level_above_first": 0
+  },
+  "anvil_cost": 8,
+  "slots": [
+    "mainhand"
+  ],
+  "effects": {}
+}

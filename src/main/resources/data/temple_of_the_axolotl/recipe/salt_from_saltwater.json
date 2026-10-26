@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "ingredient": {
+    "item": "temple_of_the_axolotl:saltwater_bucket"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:salt",
+    "count": 6
+  },
+  "experience": 0.0,
+  "cookingtime": 100
+}

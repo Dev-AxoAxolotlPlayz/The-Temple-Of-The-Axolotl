@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "temple_of_the_axolotl:grain"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:uncooked_rice",
+    "count": 3
+  }
+}

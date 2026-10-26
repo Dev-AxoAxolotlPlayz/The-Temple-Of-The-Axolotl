@@ -1,0 +1,30 @@
+
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "WRB",
+    "CCC"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gold_block"
+    },
+    "W": {
+      "item": "temple_of_the_axolotl:white_axolotl_trophy"
+    },
+    "R": {
+      "item": "temple_of_the_axolotl:ring_of_the_one"
+    },
+    "B": {
+      "item": "temple_of_the_axolotl:black_axolotl_trophy"
+    },
+    "C": {
+      "item": "minecraft:beacon"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:axolotl_absolute",
+    "count": 1
+  }
+}

@@ -32,6 +32,11 @@ public final class CelestialJumpNetworking {
                     WrathWarningPayload::handle
             );
             event.registrar("1").playToServer(
+                    RingAttackInputPayload.TYPE,
+                    RingAttackInputPayload.STREAM_CODEC,
+                    RingAttackInputPayload::handle
+            );
+            event.registrar("1").playToServer(
                     CelestialDoubleJumpPayload.TYPE,
                     CelestialDoubleJumpPayload.STREAM_CODEC,
                     CelestialDoubleJumpPayload::handle

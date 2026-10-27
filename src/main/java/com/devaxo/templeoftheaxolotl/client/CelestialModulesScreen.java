@@ -29,6 +29,7 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
         addIcon("S", 11, 158, 25, "Shuffle on / off");
         addIcon("R", 12, 178, 25, "Repeat: off / all / one");
         addIcon("M", 14, 210, 25, "Magnet on / off");
+        addIcon("⛏", 16, 210, 48, "Mining mode: on / off");
     }
     protected void addIcon(String glyph, int id, int x, int y, String tooltip) {
         addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.literal(glyph), b -> clickControl(id))
@@ -75,6 +76,8 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
         } else {
             g.drawString(font, "CELESTIAL MODULES", leftPos + 90, topPos + 8, 0xFFB6F6FF, false);
         }
+        RingAttackInput.setMiningMode(menu.miningMode());
+        if (menu.miningMode()) g.renderOutline(leftPos + 209, topPos + 47, 20, 20, 0xFF68F4CA);
         if (menu.magnetMode() != 2) g.renderOutline(leftPos + 209, topPos + 24, 20, 20, 0xFF68F4CA);
         for (int i = 0; i < 36; i++) {
             int x = leftPos + 82 + (i % 9) * 18;

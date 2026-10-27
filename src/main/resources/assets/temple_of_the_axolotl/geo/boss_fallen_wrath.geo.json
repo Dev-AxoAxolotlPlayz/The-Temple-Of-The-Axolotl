@@ -161,6 +161,11 @@
 					]
 				},
 				{
+					"name": "Left Horn Tip A",
+					"parent": "Center",
+					"pivot": [11.8, 29.61926, -30.87254]
+				},
+				{
 					"name": "Center4",
 					"parent": "Left  Horn Pair",
 					"pivot": [13.6, 20.81926, -29.47254],
@@ -219,6 +224,11 @@
 							}
 						}
 					]
+				},
+				{
+					"name": "Left Horn Tip B",
+					"parent": "Center4",
+					"pivot": [13.6, 29.41926, -29.47254]
 				},
 				{
 					"name": "Right Horn Pair",
@@ -286,6 +296,11 @@
 					]
 				},
 				{
+					"name": "Right Horn Tip B",
+					"parent": "Center2",
+					"pivot": [-13.6, 29.51926, -29.47254]
+				},
+				{
 					"name": "Center3",
 					"parent": "Right Horn Pair",
 					"pivot": [-11.8, 20.81926, -30.87254],
@@ -344,6 +359,11 @@
 							}
 						}
 					]
+				},
+				{
+					"name": "Right Horn Tip A",
+					"parent": "Center3",
+					"pivot": [-11.8, 29.51926, -30.87254]
 				},
 				{
 					"name": "Crown Tilt",
@@ -452,6 +472,11 @@
 							}
 						}
 					]
+				},
+				{
+					"name": "Laser Focus Point",
+					"parent": "Center5",
+					"pivot": [0, 29.26883, -32.128]
 				},
 				{
 					"name": "Orbiting Balls",

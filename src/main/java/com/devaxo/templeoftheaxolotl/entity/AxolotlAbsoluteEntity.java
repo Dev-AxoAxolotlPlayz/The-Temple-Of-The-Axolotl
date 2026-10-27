@@ -19,6 +19,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -199,6 +200,13 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
                     }
                 }
         );
+    }
+
+    // Prevent player-attributed damage, including projectiles fired by players.
+    @Override
+    public boolean isInvulnerableTo(DamageSource source) {
+        if (source.getEntity() instanceof Player) return true;
+        return super.isInvulnerableTo(source);
     }
 
     @Override

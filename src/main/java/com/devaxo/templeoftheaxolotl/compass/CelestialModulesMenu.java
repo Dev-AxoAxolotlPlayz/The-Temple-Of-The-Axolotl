@@ -14,7 +14,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
     private final SimpleContainer modules = new SimpleContainer(9);
     private final SimpleContainer discs = new SimpleContainer(9);
     private final Inventory playerInventory;
-    private final int[] control = new int[11];
+    private final int[] control = new int[12];
     private boolean loadingSlots = false;
     public int playing() { return control[0] - 1; }
     public boolean paused() { return control[1] != 0; }
@@ -26,6 +26,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
     public boolean inbound() { return control[8] != 0; }
     public boolean outbound() { return control[9] != 0; }
     public int radius() { return control[10]; }
+    public boolean miningMode() { return control[11] != 0; }
     public boolean logisticsEnabled() { return control[7] != 0; }
 
 
@@ -137,6 +138,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
         control[8] = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.inbound(p) ? 1 : 0;
         control[9] = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.outbound(p) ? 1 : 0;
         control[10] = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.radius(p);
+        control[11] = com.devaxo.templeoftheaxolotl.combat.RingMiningMode.isMining(p) ? 1 : 0;
         broadcastChanges();
     }
     @Override public void broadcastChanges() {
@@ -153,6 +155,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
             control[8] = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.inbound(server) ? 1 : 0;
             control[9] = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.outbound(server) ? 1 : 0;
             control[10] = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.radius(server);
+            control[11] = com.devaxo.templeoftheaxolotl.combat.RingMiningMode.isMining(server) ? 1 : 0;
         }
         super.broadcastChanges();
     }
@@ -167,6 +170,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
         else if (id == 15) CelestialMusicRack.previous(server);
         else if (id == 14 && TempleHudModules.getSlot(server, 4).is(com.devaxo.templeoftheaxolotl.item.ModItems.CELESTIAL_MAGNET.get()))
             com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.cycleMagnet(server);
+        else if (id == 16) com.devaxo.templeoftheaxolotl.combat.RingMiningMode.toggle(server);
         else if (id >= 20 && id <= 22 && com.devaxo.templeoftheaxolotl.entity.ClucklesRegistry.get(server.serverLevel()).has(server.getUUID()) && com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.enabled(server)) {
             if (id == 20) com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.toggleInbound(server);
             if (id == 21) com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.toggleOutbound(server);

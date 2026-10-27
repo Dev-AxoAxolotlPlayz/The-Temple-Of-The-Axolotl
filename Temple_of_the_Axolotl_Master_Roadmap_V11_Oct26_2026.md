@@ -1,3 +1,85 @@
+# Temple of the Axolotl — Master Development Roadmap V11
+
+**Updated:** October 26, 2026 — Ring of the One chakram combat completion, companion animation fixes, Fallen Boss Wrath Phases 1–4 and laser-locator checkpoint  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl`  
+**Status authority:** User-reported gameplay results and decisions through October 26, 2026. This document is **not** an independent audit of the latest Java sources, a Gradle build certificate, or a comprehensive in-game regression report. The original V10 document, including its full V1–V9 history, follows unchanged below.
+
+> **READ THIS FIRST — V11 SUMMARY DOCKET.** The V11 sections below supersede earlier *status labels and active plans* when they conflict with the latest user-confirmed results. Preserve the V9 CUT decisions: no separate Ambrosia, no Repository search/sort, no standalone multiplayer/rejoin/restart regression docket; optional Create Easter eggs remain LATER. **Delivered ≠ compiled ≠ user-tested.** Do not treat proposed features or prior assistant patch descriptions as proof of functioning source code.
+
+## 0. V11 executive summary docket — current project state
+
+### 0A. Newly completed / user-tested since V10
+
+| Workstream | Current status | Evidence, behavior and boundary |
+|---|---|---|
+| **Ring of the One — chakram combat** | **USER-TESTED: combat behavior declared complete** | Holding Attack repeatedly throws a visible Ring on a yaw/pitch-aligned elliptical boomerang trajectory; damage is restricted to the swept perimeter rather than a broad area; hand mirroring, outbound/inbound motion, player-relative homing return during strafing/running, and attack-speed scaling were iterated and user-confirmed. Haste was explicitly used to verify attack-speed variation. User declared the chakram implementation complete after Phase 6. |
+| **Ring of the One — Combat/Mining toggle** | **User-approved integrated design / Phase 5 candidate** | Pickaxe-icon Mining toggle sits below Magnet in Celestial Modules GUI; combat-versus-mining control was bundled with the Phase 4.1 speed fix. Preserve the GUI placement and ensure holding Attack only initiates chakram combat when combat mode is active. The final user-tested Ring behavior is authoritative; independently inspect source before claiming every toggle edge case passes. |
+| **Companion animation / friendly-fire fixes** | **USER-REPORTED FIXED** | Above All and tameable Wrath animation freeze caused by inappropriate hold-on-last-frame settings was corrected; standing/landing transitions and intended friendly-fire protections were user-reported working. Above All is protected from player-attributed friendly fire; Wrath's corresponding protection applies once tamed. Keep companion code and animation JSON separate from boss-Wrath edits. |
+| **Boss Wrath Phase 3 combat test** | **USER-APPROVED checkpoint ('perfect')** | User approved the delivered pursuit/pounce/shockwave/laser patch. Walking to targets instead of pounce-spamming and restricting the 9-block shockwave to the pounce were the principal fixes. This approval does not independently certify every Rampage damage formula, renderer path, or long-run encounter edge case. |
+| **Boss Wrath horn-locator geometry** | **USER-SUPPLIED and locator names confirmed in prior review** | Four empty horn-tip locator bones plus the focus locator were added to the Blockbench geometry after correcting an accidental cube-instead-of-bone mistake. Exact locator names: `Left Horn Tip A`, `Left Horn Tip B`, `Right Horn Tip A`, `Right Horn Tip B`, `Laser Focus Point`. |
+
+### 0B. Boss Fallen Wrath — combat specification and Phase 4 checkpoint
+
+**Separate entities:** `BossWrathEntity` is the hostile Fallen Boss Wrath; `TameableWrathEntity` is the redeemed companion. Do not conflate their animations, targeting, immunities or behavior.
+
+| System | Latest locked behavior | Current verification boundary |
+|---|---|---|
+| Target selection / pursuit | Boss walks/pathfinds toward the next target when out of melee range. Cows are intentional natural enemies for V.B.T.S. combat testing. Pounce is an occasional heavy attack, **not** the default travel method. | Phase 3 delivered; user called it perfect. |
+| Ordinary contact / headbutt | Close-range normal melee/nibble may occur on contact; headbutt damage should land at the **end** of its animation. **Neither** normal collision nor headbutt spawns a shockwave. | Phase 3 delivered; preserve independent attack states and animation-end guards. |
+| Heavy pounce | Distinct heavy pounce with separate cooldown; at the animation's end, trigger **one** horizontal, terrain-following **9-block-radius** ripple. Shockwave has **1.25-block-tall** collision ring, damages targets but adds **no scripted knockback**; wall obstruction does not block it. | Phase 3 delivered; inspect actual animation synchronization and block-display renderer in source before claiming exact geometry. |
+| Normal → Rampage | **10 successful hits exchanged**: a successful boss attack **or** a successful hit received by the boss advances the counter. | Design locked; test hit-event accounting and crown interaction. |
+| Rampage → laser | **3 successful hits exchanged**, including hits **received** by the boss; boosted attack damage and shorter cooldowns. A multi-target shockwave should count as one successful outgoing attack action, not once per cow. | Design locked; actual boosted ordinary-melee damage was a known earlier gap—verify in current code. |
+| Laser charge | **80 ticks / 4 seconds**. Ticks 0–39: four horn-tip energy spheres form and tractor pull is active. Ticks 40–59: four narrow horn beams converge at a focus point in front of central crystal; focus sphere grows; pull continues. | Phase 3 visual candidate delivered; Phase 4 addresses origin placement. |
+| Dodge window | Ticks **60–69**: tractor pull **stops**, central sphere condenses and brightens, target has exactly **0.5 s** to evade. Firing direction is locked rather than retargeting a dodging player. | Design locked; verify animation alignment and target lock in source. |
+| Main laser | Ticks **70–79**: **one thick damaging beam** fires from central focus point along locked direction, penetrating walls. Four feeder beams are visual-only; damage applies to eligible targets intersecting main beam, intended once per target per firing. At tick 80, reset to Normal. | Phase 3 delivered a denser **particle-based** laser, not a particle-independent beam renderer. Visual/damage alignment needs game test. |
+| Crown vulnerability / boss scaling | V10's preferred separate crown hitbox (+2 Rampage counter on crown hit), 250/500/750 HP by difficulty, decoy 2.5×→3.0× scale, 30 armor/20 toughness and boat/lead immunity remain active specifications. | **Do not** mark crown hitbox or anti-execution protections implemented without source/test evidence. Preserve the older V10 caveats. |
+
+**Laser origin geometry, Phase 4:**
+
+| Locator bone | Parent bone (from previous geometry review) | Purpose |
+|---|---|---|
+| `Left Horn Tip A` | `Center` | Left horn emitter A |
+| `Left Horn Tip B` | `Center4` | Left horn emitter B |
+| `Right Horn Tip A` | `Center3` | Right horn emitter A |
+| `Right Horn Tip B` | `Center2` | Right horn emitter B |
+| `Laser Focus Point` | `Center5` | Convergence sphere and thick beam origin |
+
+**Phase 4 status:** A two-file `BossWrathEntity.java` + `boss_fallen_wrath.geo.json` horn-locator savepoint patch was **reported delivered** and positively received. It uses locator positions transformed from the model's **rest pose** and Wrath's entity position/facing; it does **not** yet track animated GeckoLib bone positions every frame. Final live-bone attachment, animation-induced drift, actual beam start positions, and source compilation remain unverified. Do not describe this as full live GeckoLib tracking or a fully validated renderer.
+
+### 0C. Current completed foundation — retained from V10
+
+| Workstream | Retained status / caveat |
+|---|---|
+| Temple world generation and lifecycle | Natural Overworld Temple, shared Temple dimension, 10-floor dungeon with 802 modules placed at three per server tick, demolition/reset/extraction paths were user-tested in prior checkpoints. |
+| Celestial armor and visuals | Four-piece set, innate/passive powers, chibi helmet, robe panels and segmented tail were user-reported complete; interaction and edge-case regression remain. |
+| Repository | 56 data-component-distinct variants, 32 native stacks per variant, server-authoritative deposit/withdrawal and user-tested rejoin persistence. |
+| Sentinel / Trap Stones | Sentinel names and drops, intact→cracked Stonecutter conversion, bulk opening, fire immunity and trident/Aegis exceptions were user-tested; eight textures and Enchantment Book lottery remain verification tasks. |
+| GUI / Modules / Jukebox / Magnet | Approved Modules layout, nine-disc vertical rack to left, R/L/H left-of-armor shortcuts, Magnet controls and conditional Cluckles tab workstream; individual playback, routing and sync edge cases remain. |
+| Cosmetic workstations | Cosmic Brewing Stand and redesigned Celestial Anvil visuals shown/approved; harvest/drop duplication, bank mechanics, icon wiring and animation still need tests. |
+
+### 0D. OPEN / NEXT ACTIONS — prioritized
+
+1. **Commit/save Phase 4 checkpoint** with matching geometry and Java sources; compile latest build and run a controlled V.B.T.S. test for four horn emitters, convergence focus, beam origin, and damage path. Verify that no horn effect remains centered on the entity's X/Z position.
+2. **Optional Phase 4.1 laser fidelity:** replace rest-pose locator calculations with live GeckoLib animated-bone world-space transforms if horn/crown animation visibly drifts; a dedicated beam renderer is still optional/future rather than already implemented.
+3. **Boss combat regression:** verify 10-hit and 3-hit counters (incoming/outgoing), crown +2, animation-end headbutt, one-shot pounce-only 9-block ripple, no knockback, pathfinding between targets, boosted melee damage, wall-penetrating laser, exact 0–40–60–70–80 tick sequence and reset.
+4. **Boss campaign integration:** Sanctum arena and scaling/clearance at 2.5×–3.0×, 250/500/750 HP difficulty, armor/boat/lead enforcement, anti-execution blacklist, loot, cleanup and Origin Wrath progression.
+5. **Other near-term regression:** workstation one-drop harvesting, Cosmic Brewing Stand bank/recipes, updated item sprites, title-menu Music/Master routing versus jukebox Records/Master, Jukebox true Pause/Resume, Modules/Repository/Cluckles/Magnet sync and dungeon loot provenance.
+6. **Longer-term campaign and polish:** Shards→Orbs→Key, Origin Temple/Above All rescue, companion mounts and behavior, Patchouli diary/monoliths, Second Fall optional ending, compact HUD, compiler warnings and final survival playthrough.
+
+### 0E. Preservation, supersession and known cautions
+
+- **Ring of the One combat is complete by user report.** Older V10 and historical 'Ring model/boomerang combat planned' entries are superseded. Exclusive Ring enchantments, ability interactions and broader regression remain open.
+- **Boss Wrath Phase 4 is a savepoint, not final live bone-tracking certification.** A positive response to the patch is not a recorded full in-game laser validation.
+- **Companion Wrath and Above All are distinct from Fallen Boss Wrath.** Preserve the user-confirmed standing animation fixes and friendly-fire behavior.
+- **Do not reactivate V9 cuts:** separate Ambrosia fluid, Repository search/sort, or dedicated multiplayer regression docket. Do not remove existing persistence or multiplayer support. Optional Create Easter eggs remain deferred.
+- **Newer decisions override older appendix wording** for pounce radius (9), Rampage hit accounting (hits both dealt and received), laser sequence (80 ticks), Ring combat completion, and locator-based beam origins. The preserved historical text is for traceability, not the active instruction set.
+- **No code audit in V11.** The current user-provided artifact is the V10 Markdown roadmap, not a fresh complete mod source or build log; source-specific statements about patch contents are based on the preceding patch discussion and should be verified against the actual latest project.
+
+---
+
+# Preserved V10 master roadmap and V1–V9 historical appendices (original text follows unchanged)
+
 # Temple of the Axolotl — Master Development Roadmap V10
 
 **Updated:** October 25, 2026 — V1–V9 unified docket index + Fallen Wrath visual/registration/armor checkpoint  

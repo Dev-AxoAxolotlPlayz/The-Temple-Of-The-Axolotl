@@ -3,6 +3,7 @@ package com.devaxo.templeoftheaxolotl.event;
 
 import com.devaxo.templeoftheaxolotl.TempleOfTheAxolotl;
 import com.devaxo.templeoftheaxolotl.item.ModItems;
+import com.devaxo.templeoftheaxolotl.entity.BossWrathEntity;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -24,8 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @EventBusSubscriber(
-        modid = TempleOfTheAxolotl.MODID,
-        bus = EventBusSubscriber.Bus.GAME
+        modid = TempleOfTheAxolotl.MODID
 )
 public class RingCombatEvents {
 
@@ -96,10 +96,7 @@ public class RingCombatEvents {
                         .registryOrThrow(Registries.ENCHANTMENT)
                         .getHolderOrThrow(EVENT_HORIZON);
 
-        return EnchantmentHelper.getItemEnchantmentLevel(
-                enchantment,
-                ring
-        ) > 0;
+        return EnchantmentHelper.getEnchantmentsForCrafting(ring).getLevel(enchantment) > 0;
     }
 
     @SubscribeEvent

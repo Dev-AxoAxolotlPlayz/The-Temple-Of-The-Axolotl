@@ -29,7 +29,11 @@ public class ModEntities {
     );
     public static final DeferredHolder<EntityType<?>, EntityType<BossWrathEntity>> BOSS_WRATH = ENTITY_TYPES.register(
         "boss_wrath", () -> EntityType.Builder.of(BossWrathEntity::new, MobCategory.MONSTER)
-                .sized(1.3F, 1.875F).build("boss_wrath")
+                .sized(3.0F, 1.5F).fireImmune().build("boss_wrath")
+    );
+    public static final DeferredHolder<EntityType<?>, EntityType<WrathHeadHitbox>> WRATH_HEAD_HITBOX = ENTITY_TYPES.register(
+        "wrath_head_hitbox", () -> EntityType.Builder.of(WrathHeadHitbox::new, MobCategory.MISC)
+                .sized(3.0F, 2.5F).clientTrackingRange(8).updateInterval(1).build("wrath_head_hitbox")
     );
     public static final DeferredHolder<EntityType<?>, EntityType<TameableWrathEntity>> TAMEABLE_WRATH = ENTITY_TYPES.register(
         "tameable_wrath", () -> EntityType.Builder.of(TameableWrathEntity::new, MobCategory.CREATURE).sized(1.3F, 1.25F).build("tameable_wrath")

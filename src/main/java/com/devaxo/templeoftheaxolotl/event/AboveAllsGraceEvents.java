@@ -62,16 +62,14 @@ public final class AboveAllsGraceEvents {
 
         var grace = registry.getOrThrow(GRACE_KEY);
 
-        return EnchantmentHelper.getItemEnchantmentLevel(
-                grace,
-                boots
-        ) > 0;
+        return EnchantmentHelper.getEnchantmentsForCrafting(boots).getLevel(grace) > 0;
     }
 
     @SubscribeEvent
     public static void onIncomingDamage(
             LivingIncomingDamageEvent event
     ) {
+        if (event.getSource().getEntity() instanceof com.devaxo.templeoftheaxolotl.entity.BossWrathEntity) return;
         if (!(event.getEntity() instanceof Player player)) {
             return;
         }

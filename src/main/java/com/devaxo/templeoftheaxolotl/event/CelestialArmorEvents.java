@@ -198,6 +198,7 @@ public final class CelestialArmorEvents {
             LivingIncomingDamageEvent event
     ) {
 
+        if (event.getSource().getEntity() instanceof com.devaxo.templeoftheaxolotl.entity.BossWrathEntity) return;
         if (!(event.getEntity() instanceof Player player)) {
             return;
         }

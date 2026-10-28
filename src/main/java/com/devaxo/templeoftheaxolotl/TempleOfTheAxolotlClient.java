@@ -48,6 +48,8 @@ public class TempleOfTheAxolotlClient {
         event.registerBlockEntityRenderer(com.devaxo.templeoftheaxolotl.eclipse.EclipseBlockEntities.ALTAR.get(), com.devaxo.templeoftheaxolotl.client.renderer.CelestialAnvilRenderer::new);
         event.registerEntityRenderer(ModEntities.CLUCKLES.get(),
                 com.devaxo.templeoftheaxolotl.client.renderer.ClucklesRenderer::new);
+        event.registerEntityRenderer(ModEntities.WRATH_HEAD_HITBOX.get(),
+                com.devaxo.templeoftheaxolotl.client.renderer.WrathHeadHitboxRenderer::new);
         event.registerEntityRenderer(ModEntities.BOSS_WRATH.get(),
                 com.devaxo.templeoftheaxolotl.client.renderer.BossWrathRenderer::new);
         event.registerEntityRenderer(ModEntities.TAMEABLE_WRATH.get(),

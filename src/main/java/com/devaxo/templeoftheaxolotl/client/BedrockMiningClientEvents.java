@@ -19,7 +19,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 @EventBusSubscriber(
         modid = TempleOfTheAxolotl.MODID,
-        bus = EventBusSubscriber.Bus.GAME,
+
         value = Dist.CLIENT
 )
 public class BedrockMiningClientEvents {
@@ -41,7 +41,7 @@ public class BedrockMiningClientEvents {
 
         if (minecraft.screen == null
                 && minecraft.isWindowActive()
-                && minecraft.options.keyAttack.isDown()
+                && RingAttackInput.physicalMiningHeld(minecraft)
                 && SupernovaEvents.hasSupernova(minecraft.player)) {
 
             HitResult hit = minecraft.player.pick(

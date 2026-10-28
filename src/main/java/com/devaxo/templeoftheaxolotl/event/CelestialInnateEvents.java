@@ -73,6 +73,7 @@ public final class CelestialInnateEvents {
         }
 
         DamageSource source = event.getSource();
+        if (source.getEntity() instanceof com.devaxo.templeoftheaxolotl.entity.BossWrathEntity) return;
 
         // A direct hit from a living attacker counts as melee.
         // Projectiles, explosions, and environmental damage do not.
@@ -121,6 +122,7 @@ public final class CelestialInnateEvents {
 
         float damage = event.getNewDamage();
         DamageSource source = event.getSource();
+        if (source.getEntity() instanceof com.devaxo.templeoftheaxolotl.entity.BossWrathEntity) return;
 
         // ----- LEGGINGS: 50% MAGIC DAMAGE REDUCTION -----
 

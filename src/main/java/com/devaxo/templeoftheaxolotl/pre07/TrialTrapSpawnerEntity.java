@@ -29,28 +29,20 @@ public class TrialTrapSpawnerEntity extends BlockEntity {
  public void setTier(int tier){this.tier=Math.max(1,Math.min(4,tier));setChanged();}
  public static void tick(Level world,BlockPos pos,BlockState block,TrialTrapSpawnerEntity trap){
   if(!(world instanceof ServerLevel level)||++trap.age%10!=0||trap.state!=0)return;
-  var players=level.getEntitiesOfClass(ServerPlayer.class,new AABB(pos).inflate(5),p->!p.isSpectator()&&!p.isCreative()&&p.distanceToSqr(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5)<=25);
+  var players=level.getEntitiesOfClass(ServerPlayer.class,new AABB(pos).inflate(3),p->!p.isSpectator()&&!p.isCreative()&&p.distanceToSqr(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5)<=9);
   if(players.isEmpty())return;
   ServerPlayer player=players.get(0);
   int floor=Math.max(1,Math.min(10,com.devaxo.templeoftheaxolotl.traps.TempleProgress.floor(player)));
   // Mark consumed BEFORE spawning; reloads cannot restart the encounter.
   trap.state=2;trap.setChanged();
-  spawnEncounter(level,pos,floor,trap.tier);
-  if(level.random.nextInt(100)<25*(trap.tier-1))spawnEncounter(level,pos,floor,trap.tier);
+  // Universal one-time outcome: 50% single, 20% double, 30% blank.
+  int outcome = level.random.nextInt(100);
+  int encounters = outcome < 50 ? 1 : outcome < 70 ? 2 : 0;
+  for (int i = 0; i < encounters; i++) spawnEncounter(level,pos,floor,trap.tier);
  }
  private static void spawnEncounter(ServerLevel level,BlockPos pos,int floor,int layer){
   int roll=level.random.nextInt(100);
-  if(roll==98){
-   var allay=EntityType.ALLAY.create(level);
-   if(allay!=null){allay.moveTo(pos.getX()+.5,pos.getY()+1,pos.getZ()+.5,0,0);level.addFreshEntity(allay);}
-   return;
-  }
-  if(roll==99){
-   var bat=EntityType.BAT.create(level);
-   if(bat!=null){bat.moveTo(pos.getX()+.5,pos.getY()+1,pos.getZ()+.5,0,0);level.addFreshEntity(bat);}
-   return;
-  }
-  if(roll<20){spawnSentinel(level,pos,floor,layer);return;}
+  if(roll<30){spawnSentinel(level,pos,floor,layer);return;}
   spawnRegularHostile(level,pos);
  }
  /** One weighted regular hostile per regular encounter; no water or terrain modifications. */
@@ -90,6 +82,7 @@ public class TrialTrapSpawnerEntity extends BlockEntity {
    mob.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(Items.NETHERITE_AXE));
    mob.setDropChance(EquipmentSlot.MAINHAND,0);
   }
+  TempleCrew.prepare(level, mob);
   level.addFreshEntity(mob);
  }
  /** Trap-only: creative-enchanted axe and full netherite, none of it farmable. */
@@ -137,6 +130,7 @@ public class TrialTrapSpawnerEntity extends BlockEntity {
     // Prevent Temple Sentinel piglin brutes from zombifying outside the Nether.
     brute.setImmuneToZombification(true);
     equipBrute(level,brute);
+    TempleCrew.prepare(level, brute);
     level.addFreshEntity(brute);
    }
   }else if(roll<28){
@@ -145,16 +139,17 @@ public class TrialTrapSpawnerEntity extends BlockEntity {
    if(drowned==null||guardian==null)return;
    configure(level,drowned,pos,floor,layer,true);
    configure(level,guardian,pos,floor,layer,false);
+   TempleCrew.prepare(level,drowned); TempleCrew.prepare(level,guardian);
    if(level.addFreshEntity(drowned)&&level.addFreshEntity(guardian))guardian.startRiding(drowned,true);
   }else if(roll<52){
    Guardian guardian=EntityType.GUARDIAN.create(level);
-   if(guardian!=null){configure(level,guardian,pos,floor,layer,false);guardian.setNoGravity(true);level.addFreshEntity(guardian);}
+   if(guardian!=null){configure(level,guardian,pos,floor,layer,false);guardian.setNoGravity(true);TempleCrew.prepare(level,guardian);level.addFreshEntity(guardian);}
   }else if(roll<76){
    Skeleton skeleton=EntityType.SKELETON.create(level);
-   if(skeleton!=null){configure(level,skeleton,pos,floor,layer,true);skeleton.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(level.random.nextBoolean()?Items.NETHERITE_SWORD:Items.NETHERITE_AXE));skeleton.setDropChance(EquipmentSlot.MAINHAND,0);level.addFreshEntity(skeleton);}
+   if(skeleton!=null){configure(level,skeleton,pos,floor,layer,true);skeleton.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(level.random.nextBoolean()?Items.NETHERITE_SWORD:Items.NETHERITE_AXE));skeleton.setDropChance(EquipmentSlot.MAINHAND,0);TempleCrew.prepare(level,skeleton);level.addFreshEntity(skeleton);}
   }else{
    Drowned drowned=EntityType.DROWNED.create(level);
-   if(drowned!=null){configure(level,drowned,pos,floor,layer,true);level.addFreshEntity(drowned);}
+   if(drowned!=null){configure(level,drowned,pos,floor,layer,true);TempleCrew.prepare(level,drowned);level.addFreshEntity(drowned);}
   }
  }
  private static void configure(ServerLevel level,Monster mob,BlockPos pos,int floor,int layer,boolean armor){

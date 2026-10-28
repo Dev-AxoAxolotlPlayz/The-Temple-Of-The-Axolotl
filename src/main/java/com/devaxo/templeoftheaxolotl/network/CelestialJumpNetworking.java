@@ -13,16 +13,10 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 public final class CelestialJumpNetworking {
 
     private CelestialJumpNetworking() {}
-
-    @EventBusSubscriber(
-            modid = TempleOfTheAxolotl.MODID,
-            bus = EventBusSubscriber.Bus.MOD
-    )
     public static final class Registration {
 
         private Registration() {}
 
-        @SubscribeEvent
         public static void registerPayloads(
                 RegisterPayloadHandlersEvent event
         ) {

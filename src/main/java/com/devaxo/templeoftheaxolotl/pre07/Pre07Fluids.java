@@ -2,8 +2,6 @@ package com.devaxo.templeoftheaxolotl.pre07;
 import com.devaxo.templeoftheaxolotl.TempleOfTheAxolotl;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import java.util.function.Consumer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
@@ -18,16 +16,8 @@ import java.util.function.Supplier;
 /** Lava-paced fluids: 30 tick flow delay, 2-block spread, 4-tick slope search. */
 public final class Pre07Fluids {
  private static final class IchorFluidType extends FluidType {
-  private final int tint;
-  private IchorFluidType(Properties properties, int tint) { super(properties); this.tint = tint; }
-  @Override public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
-   final int tint = this.tint;
-   consumer.accept(new IClientFluidTypeExtensions() {
-    @Override public int getTintColor() { return 0xFFFFFFFF; }
-    @Override public ResourceLocation getStillTexture() { return ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, tint == 0xFFFFC936 ? "block/pure_ichor_still" : "block/diluted_ichor_still"); }
-    @Override public ResourceLocation getFlowingTexture() { return ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, tint == 0xFFFFC936 ? "block/pure_ichor_flow" : "block/diluted_ichor_flow"); }
-   });
-  }
+  private IchorFluidType(Properties properties, int tint) { super(properties); }
+
  }
  public static final DeferredRegister<FluidType> TYPES=DeferredRegister.create(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.FLUID_TYPES,TempleOfTheAxolotl.MODID);
  public static final DeferredRegister<Fluid> FLUIDS=DeferredRegister.create(Registries.FLUID,TempleOfTheAxolotl.MODID);

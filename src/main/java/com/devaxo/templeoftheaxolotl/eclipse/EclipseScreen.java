@@ -59,10 +59,10 @@ public final class EclipseScreen extends AbstractContainerScreen<EclipseMenu> {
                 .bounds(leftPos + 10, topPos - 21, 113, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Inscription"), b -> send(1))
                 .bounds(leftPos + 131, topPos - 21, 113, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("+100 XP"), b -> send(2))
-                .bounds(leftPos - 62, topPos + 77, 61, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("-100 XP"), b -> send(3))
-                .bounds(leftPos + imageWidth + 1, topPos + 77, 61, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Required XP"), b -> send(2))
+                .bounds(leftPos - 95, topPos + 77, 94, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Withdraw XP"), b -> send(3))
+                .bounds(leftPos + imageWidth + 1, topPos + 77, 90, 20).build());
         if (!menu.isInscription()) {
             addRenderableWidget(Button.builder(Component.literal("TRANSMUTE"), b -> send(4))
                     .bounds(leftPos - 65, topPos + 171, 104, 20).build());
@@ -134,6 +134,19 @@ public final class EclipseScreen extends AbstractContainerScreen<EclipseMenu> {
             slotFrame(g, x, y, 0xFF786398);
         }
     }
+    /** Approximate vanilla level reached from zero using the displayed raw XP amount. */
+    private static int approximateLevel(int points) {
+        if (points <= 0) return 0;
+        int low = 0, high = 22000;
+        while (low < high) {
+            int mid = low + (high - low + 1) / 2;
+            long xp = mid <= 16 ? (long) mid * mid + 6L * mid
+                    : mid <= 31 ? (5L * mid * mid - 81L * mid + 720L) / 2
+                    : (9L * mid * mid - 325L * mid + 4440L) / 2;
+            if (xp <= points) low = mid; else high = mid - 1;
+        }
+        return low;
+    }
     @Override protected void renderLabels(GuiGraphics g, int mx, int my) {
         g.drawString(font, title, titleLabelX, titleLabelY, 0xFFE9D3A5, false);
         g.drawString(font, "Bank: " + menu.bankXp() + " XP", imageWidth + 5, 174, 0xFFF3D48B, false);
@@ -147,7 +160,7 @@ public final class EclipseScreen extends AbstractContainerScreen<EclipseMenu> {
             g.drawCenteredString(font, "OUTPUT", 128, 51, 0xFFE9D3A5);
             g.drawCenteredString(font, "ITEM II", 186, 51, 0xFFE9D3A5);
             g.drawCenteredString(font, "DIAMOND", 128, 95, 0xFF8CE3E5);
-            g.drawCenteredString(font, "Ritual: " + menu.displayedCost() + " XP", 127, 27, 0xFFF3D48B);
+            g.drawCenteredString(font, "Ritual: " + menu.displayedCost() + " XP (≈ Lv " + approximateLevel(menu.displayedCost()) + ")", 127, 27, 0xFFF3D48B);
         }
         g.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFE9D3A5, false);
     }

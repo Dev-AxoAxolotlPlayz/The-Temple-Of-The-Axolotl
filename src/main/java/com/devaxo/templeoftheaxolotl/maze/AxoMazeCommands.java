@@ -132,6 +132,21 @@ public final class AxoMazeCommands {
         job.nextCell++;
         if (job.nextCell == RESET_TOTAL_CELLS) {
             // Snapshots from an earlier maze are invalid after a destructive reset.
+            // Entity sanitation after block cleanup. Players are excluded by the reset guard.
+            // Iterate a snapshot: discarding entities mutates the live entity manager.
+            // Load all chunks covering the reset footprint before enumerating entities.
+            // Otherwise mobs/items serialized in unloaded chunks can reappear later.
+            for (int chunkX = 0; chunkX <= 8; chunkX++) {
+                for (int chunkZ = 0; chunkZ <= 8; chunkZ++) {
+                    job.level.getChunk(chunkX, chunkZ);
+                }
+            }
+            java.util.List<Entity> staleEntities = new java.util.ArrayList<>();
+            job.level.getAllEntities().forEach(e -> {
+                if (!(e instanceof Player)) staleEntities.add(e);
+            });
+            for (Entity entity : staleEntities) entity.discard();
+            TempleOfTheAxolotl.LOGGER.info("Temple reset discarded {} loaded non-player entities.", staleEntities.size());
             retireRewards(job.level);
             lastGeneration = null;
             buildCompleted = false;
@@ -312,6 +327,18 @@ public final class AxoMazeCommands {
             }
             if (job.next == job.placements.size()
                     && job.nextLoot == job.lootPlacements.size()) {
+                // Phase 6: spawn one dormant Fallen Wrath after all templates and loot are ready.
+                BlockPos sanctumPos = world(TEMPLE_ORIGIN, SANCTUM_MIN);
+                com.devaxo.templeoftheaxolotl.entity.BossWrathEntity wrath =
+                        com.devaxo.templeoftheaxolotl.entity.ModEntities.BOSS_WRATH.get().create(job.level);
+                if (wrath == null) throw new IllegalStateException("Could not create Fallen Wrath");
+                // Test-world template min (167,-60,-179), throne center (196.5,-58,-132.5).
+                wrath.moveTo(sanctumPos.getX() + 29.5, sanctumPos.getY() + 5.0,
+                        sanctumPos.getZ() + 46.5, 180.0F, 0.0F);
+                wrath.bindToSanctum(sanctumPos);
+                wrath.setPersistenceRequired();
+                if (!job.level.addFreshEntity(wrath)) throw new IllegalStateException("Could not spawn Fallen Wrath");
+                lastGeneration.generatedEntities().add(wrath.getUUID());
                 activeJob = null;
                 buildCompleted = true;
                 job.source.sendSuccess(() -> Component.literal("The Axolotl Absolute Watches As You Descend"), true);

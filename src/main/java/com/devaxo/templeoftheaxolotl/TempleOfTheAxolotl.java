@@ -135,6 +135,19 @@ public class TempleOfTheAxolotl {
         // Creative tab registration
         CREATIVE_MODE_TABS.register(modEventBus);
 
+        // Register formerly annotation-driven payload handlers on the MOD bus.
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.compass.TempleNavigationPayload.Registration::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.eclipse.EclipseInscriptionPayload.Registration::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.InventoryStorageOpenPayload.Registration::register);
+
+        // Explicit mod-bus lifecycle/network registrations (no deprecated annotation bus selectors).
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.BedrockMiningPayload.Registration::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.CelestialJumpNetworking.Registration::registerPayloads);
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
+            modEventBus.addListener(com.devaxo.templeoftheaxolotl.compass.TempleSeekerClient::onClientSetup);
+            modEventBus.addListener(com.devaxo.templeoftheaxolotl.pre07.Pre07FluidClientExtensions::register);
+        }
+
         // Maze development commands
         NeoForge.EVENT_BUS.addListener(AxoMazeCommands::register);
         NeoForge.EVENT_BUS.register(new DungeonRewardEvents());

@@ -21,6 +21,10 @@ public final class RingAttackInput {
 
     public static void setMiningMode(boolean enabled) { miningMode = enabled; }
 
+    public static boolean physicalMiningHeld(Minecraft mc) {
+        return mc.screen == null && mc.isWindowActive() && physicalAttackDown(mc);
+    }
+
     private static boolean physicalAttackDown(Minecraft mc) {
         InputConstants.Key key = mc.options.keyAttack.getKey();
         long window = mc.getWindow().getWindow();
@@ -40,7 +44,14 @@ public final class RingAttackInput {
     public static void beforeTick(ClientTickEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         // Prevent the vanilla destroy-block loop from treating combat throws as mining.
-        if (ringCombat(mc)) mc.options.keyAttack.setDown(false);
+        if (mc.player == null || mc.level == null || mc.screen != null) return;
+        if (!mc.player.getMainHandItem().is(ModItems.RING_OF_THE_ONE.get())) return;
+        if (miningMode) {
+            // Restore the actual held button BEFORE vanilla processes block damage.
+            mc.options.keyAttack.setDown(physicalAttackDown(mc));
+        } else {
+            mc.options.keyAttack.setDown(false);
+        }
     }
 
     @SubscribeEvent

@@ -170,16 +170,30 @@ public final class TempleHudModules {
                     ItemEntity.class, new AABB(player.blockPosition()).inflate(10.0))) {
                 if (!entity.isAlive() || entity.hasPickUpDelay()) continue;
                 ItemStack stack = entity.getItem();
-                int accepted;
-                if (com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.magnetMode(player) == 1) {
-                    ItemStack transfer = stack.copy();
-                    player.getInventory().add(transfer);
-                    accepted = stack.getCount() - transfer.getCount();
-                } else accepted = CelestialRepository.insert(player, stack);
+                int accepted = 0;
+                int mode = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.magnetMode(player);
+                if (mode == 0 && getSlot(player, 3).is(ModItems.CELESTIAL_REPOSITORY.get())) {
+                    accepted += CelestialRepository.insert(player, stack.copyWithCount(stack.getCount() - accepted));
+                    if (accepted < stack.getCount())
+                        accepted += CelestialRepository.insertSecond(player, stack.copyWithCount(stack.getCount() - accepted));
+                }
+                if (accepted < stack.getCount()) {
+                    ItemStack remainder = stack.copyWithCount(stack.getCount() - accepted);
+                    player.getInventory().add(remainder);
+                    accepted += stack.getCount() - accepted - remainder.getCount();
+                }
+                if (accepted == 0) {
+                    // Preserve the original item entity; no repeated respawning or item duplication.
+                    entity.setDeltaMovement(player.position().subtract(entity.position()).scale(0.08).add(0,0.03,0));
+                }
                 if (accepted <= 0) continue;
                 stack.shrink(accepted);
                 if (stack.isEmpty()) entity.discard();
-                else entity.setItem(stack);
+                else {
+                    entity.setItem(stack);
+                    // Unstored remainder stays as ONE real item entity following the owner.
+                    entity.setDeltaMovement(player.position().subtract(entity.position()).scale(0.08).add(0,0.03,0));
+                }
             }
         }
 

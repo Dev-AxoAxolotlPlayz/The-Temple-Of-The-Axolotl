@@ -31,8 +31,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @EventBusSubscriber(
-        modid = TempleOfTheAxolotl.MODID,
-        bus = EventBusSubscriber.Bus.GAME
+        modid = TempleOfTheAxolotl.MODID
 )
 public class CelestialConvergenceEvents {
 

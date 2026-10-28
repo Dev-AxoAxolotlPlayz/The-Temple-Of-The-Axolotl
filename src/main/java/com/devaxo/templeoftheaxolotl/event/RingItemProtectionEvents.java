@@ -14,8 +14,7 @@ import net.neoforged.neoforge.event.entity.EntityInvulnerabilityCheckEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 @EventBusSubscriber(
-        modid = TempleOfTheAxolotl.MODID,
-        bus = EventBusSubscriber.Bus.GAME
+        modid = TempleOfTheAxolotl.MODID
 )
 public class RingItemProtectionEvents {
 

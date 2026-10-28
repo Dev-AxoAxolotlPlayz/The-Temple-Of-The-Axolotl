@@ -68,9 +68,7 @@ public final class CelestialDoubleJumpInput {
 
         var pounce = registry.getOrThrow(POUNCE_KEY);
 
-        int level = EnchantmentHelper.getItemEnchantmentLevel(
-                pounce, boots
-        );
+        int level = EnchantmentHelper.getEnchantmentsForCrafting(boots).getLevel(pounce);
 
         return 1 + Math.min(level, 6);
     }

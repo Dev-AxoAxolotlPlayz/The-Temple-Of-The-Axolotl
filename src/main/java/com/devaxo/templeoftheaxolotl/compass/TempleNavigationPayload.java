@@ -5,8 +5,6 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 public record TempleNavigationPayload(boolean equipped, boolean valid, int x, int z, boolean arrived, boolean unavailable, boolean compass, boolean clock)
@@ -25,10 +23,8 @@ public record TempleNavigationPayload(boolean equipped, boolean valid, int x, in
                 buf.writeBoolean(payload.clock());
             }, buf -> new TempleNavigationPayload(buf.readBoolean(), buf.readBoolean(), buf.readInt(), buf.readInt(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean()));
     @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
-
-    @EventBusSubscriber(modid = TempleOfTheAxolotl.MODID, bus = EventBusSubscriber.Bus.MOD)
     public static final class Registration {
-        @SubscribeEvent public static void register(RegisterPayloadHandlersEvent event) {
+        public static void register(RegisterPayloadHandlersEvent event) {
             event.registrar("1").playToClient(TYPE, STREAM_CODEC,
                     (payload, context) -> context.enqueueWork(() -> TempleNavigationClient.accept(payload)));
         }

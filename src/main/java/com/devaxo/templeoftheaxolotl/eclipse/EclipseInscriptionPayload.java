@@ -6,8 +6,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 /** Inscription text must be delivered to the server and validated against the actual altar slots. */
@@ -20,10 +18,8 @@ public record EclipseInscriptionPayload(String name, boolean uniformFont) implem
                 buf.writeBoolean(packet.uniformFont());
             }, buf -> new EclipseInscriptionPayload(buf.readUtf(50), buf.readBoolean()));
     @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
-
-    @EventBusSubscriber(modid = TempleOfTheAxolotl.MODID, bus = EventBusSubscriber.Bus.MOD)
     public static final class Registration {
-        @SubscribeEvent public static void register(RegisterPayloadHandlersEvent event) {
+        public static void register(RegisterPayloadHandlersEvent event) {
             event.registrar("1").playToServer(TYPE, STREAM_CODEC, (packet, context) ->
                     context.enqueueWork(() -> {
                         if (context.player() instanceof ServerPlayer player

@@ -49,6 +49,13 @@ public class RingOfTheOneItem extends SwordItem {
     ) {
         // Override SwordItem's Creative Mode
         // block-breaking restriction.
+        // Server-authoritative protection runs before the initial block destruction.
+        // Mining mode remains unchanged, including instant mining and Supernova.
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            return com.devaxo.templeoftheaxolotl.combat.RingMiningMode.isMining(serverPlayer);
+        }
+        // Client-side mining mode is not synchronized here; the server rejects
+        // combat-mode destruction even if the client predicts a brief crack.
         return true;
     }
 

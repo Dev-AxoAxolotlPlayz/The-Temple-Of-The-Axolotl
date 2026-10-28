@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "facing=north,half=lower,waterlogged=false": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_lower",
+      "y": 0
+    },
+    "facing=north,half=lower,waterlogged=true": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_lower",
+      "y": 0
+    },
+    "facing=east,half=lower,waterlogged=false": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_lower",
+      "y": 90
+    },
+    "facing=east,half=lower,waterlogged=true": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_lower",
+      "y": 90
+    },
+    "facing=south,half=lower,waterlogged=false": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_lower",
+      "y": 180
+    },
+    "facing=south,half=lower,waterlogged=true": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_lower",
+      "y": 180
+    },
+    "facing=west,half=lower,waterlogged=false": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_lower",
+      "y": 270
+    },
+    "facing=west,half=lower,waterlogged=true": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_lower",
+      "y": 270
+    },
+    "facing=north,half=upper,waterlogged=false": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_upper",
+      "y": 0
+    },
+    "facing=north,half=upper,waterlogged=true": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_upper",
+      "y": 0
+    },
+    "facing=east,half=upper,waterlogged=false": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_upper",
+      "y": 90
+    },
+    "facing=east,half=upper,waterlogged=true": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_upper",
+      "y": 90
+    },
+    "facing=south,half=upper,waterlogged=false": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_upper",
+      "y": 180
+    },
+    "facing=south,half=upper,waterlogged=true": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_upper",
+      "y": 180
+    },
+    "facing=west,half=upper,waterlogged=false": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_upper",
+      "y": 270
+    },
+    "facing=west,half=upper,waterlogged=true": {
+      "model": "temple_of_the_axolotl:block/abyssal_moai_upper",
+      "y": 270
+    }
+  }
+}

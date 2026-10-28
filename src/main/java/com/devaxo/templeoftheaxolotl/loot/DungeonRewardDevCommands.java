@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.network.chat.ClickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import com.devaxo.templeoftheaxolotl.maze.TempleTravel;
@@ -30,7 +31,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 /** DEV ONLY: reward outcome simulator. Does not teleport or reset the dungeon. */
 public final class DungeonRewardDevCommands {
     private static final int EXTRACTION_TICKS = 600;
-    private record BossSession(UUID temple, long deadline, BlockPos rewardPos) {}
+    private static final int GRACE_TICKS = 200;
+    private record BossSession(UUID temple, long deadline, BlockPos rewardPos) {} // deadline includes 10-second grace and 30-second extraction
     private static final Map<UUID, BossSession> SESSIONS = new HashMap<>();
     private static MinecraftServer currentServer;
 
@@ -47,7 +49,11 @@ public final class DungeonRewardDevCommands {
                 continue;
             }
             long remaining = Math.max(0, session.deadline() - now);
-            player.displayClientMessage(Component.literal("Sanctum extraction: " + ((remaining + 19) / 20) + "s"), true);
+            if (remaining > EXTRACTION_TICKS) {
+                player.displayClientMessage(Component.literal("Collect the Boss Shulker! Extraction starts in " + ((remaining - EXTRACTION_TICKS + 19) / 20) + "s"), true);
+            } else {
+                player.displayClientMessage(Component.literal("Sanctum extraction: " + ((remaining + 19) / 20) + "s"), true);
+            }
             if (remaining == 0 && TempleTravel.exit(player)) {
                 DungeonRewardInventory.succeed(player);
                 SESSIONS.remove(id);
@@ -55,7 +61,21 @@ public final class DungeonRewardDevCommands {
         }
     }
 
+    /** Production boss victory entry point, reusing the existing reward and extraction timer. */
+    public static void completeSanctumVictory(ServerLevel level, net.minecraft.world.entity.Entity boss) {
+        if (level.dimension() != TempleDimensionManager.TEMPLE_DIMENSION) return;
+        // The existing system is per-player. Only reward participants near the defeated boss.
+        for (ServerPlayer player : level.players()) {
+            if (player.isSpectator() || !player.isAlive() || player.distanceToSqr(boss) > 96.0 * 96.0) continue;
+            bossKill(player, boss.blockPosition());
+        }
+    }
+
     private static int bossKill(ServerPlayer player) {
+        return bossKill(player, player.blockPosition());
+    }
+
+    private static int bossKill(ServerPlayer player, BlockPos rewardOrigin) {
         ServerLevel level = player.serverLevel();
         if (level.dimension() != TempleDimensionManager.TEMPLE_DIMENSION) {
             player.sendSystemMessage(Component.literal("BossKill must be run inside the temple dimension."));
@@ -66,7 +86,7 @@ public final class DungeonRewardDevCommands {
             return 0;
         }
         BlockPos found = null;
-        BlockPos origin = player.blockPosition();
+        BlockPos origin = rewardOrigin;
         for (int radius = 0; radius <= 6 && found == null; radius++) {
             for (int dx = -radius; dx <= radius && found == null; dx++) {
                 for (int dz = -radius; dz <= radius && found == null; dz++) {
@@ -91,12 +111,12 @@ public final class DungeonRewardDevCommands {
             return 0;
         }
         ResourceKey<LootTable> key = ResourceKey.create(Registries.LOOT_TABLE,
-                ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, "chests/sanctum_boss_reward"));
+                ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, "chests/sanctum_boss_reward_phase62"));
         box.setLootTable(key, level.random.nextLong());
         box.setChanged();
-        long deadline = player.getServer().overworld().getGameTime() + EXTRACTION_TICKS;
-        SESSIONS.put(player.getUUID(), new BossSession(player.getUUID(), deadline, found));
+        SESSIONS.put(player.getUUID(), new BossSession(player.getUUID(), player.getServer().overworld().getGameTime() + GRACE_TICKS + EXTRACTION_TICKS, found));
         player.sendSystemMessage(Component.literal("Boss defeated. Reward Shulker placed at " + found.toShortString() + "."));
+        player.sendSystemMessage(Component.literal("You have 10 seconds before the 30-second extraction countdown begins!"));
         player.sendSystemMessage(Component.literal("[Extract Now]").withStyle(style -> style
                 .withColor(net.minecraft.ChatFormatting.GREEN)
                 .withUnderlined(true)

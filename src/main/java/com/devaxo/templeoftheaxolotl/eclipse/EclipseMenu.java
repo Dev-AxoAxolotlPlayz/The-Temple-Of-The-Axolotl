@@ -26,6 +26,8 @@ public final class EclipseMenu extends AbstractContainerMenu {
     private final EclipseAltarEntity altar;
     private final boolean inscription;
     private int xpLow, xpHigh;
+    private int sessionXp;
+    private boolean refunded;
     private int costLow, costHigh;
 
     public EclipseMenu(int id, Inventory inventory, BlockPos pos, boolean inscription) {
@@ -62,11 +64,11 @@ public final class EclipseMenu extends AbstractContainerMenu {
             addSlot(new Slot(inventory, 9 + r * 9 + c, 47 + c * 18, 151 + r * 18));
         for (int c = 0; c < 9; c++) addSlot(new Slot(inventory, c, 47 + c * 18, 209));
         addDataSlot(new DataSlot() {
-            @Override public int get() { return altar != null ? altar.getXpPoints() & 0xffff : xpLow; }
+            @Override public int get() { return altar != null ? sessionXp & 0xffff : xpLow; }
             @Override public void set(int v) { xpLow = v & 0xffff; }
         });
         addDataSlot(new DataSlot() {
-            @Override public int get() { return altar != null ? (altar.getXpPoints() >>> 16) & 0x7fff : xpHigh; }
+            @Override public int get() { return altar != null ? (sessionXp >>> 16) & 0x7fff : xpHigh; }
             @Override public void set(int v) { xpHigh = v & 0x7fff; }
         });
         addDataSlot(new DataSlot() {
@@ -165,7 +167,7 @@ public final class EclipseMenu extends AbstractContainerMenu {
         int levels = 1 + (!dyeStack.isEmpty() ? 1 : 0) + (!styleStack.isEmpty() ? 1 : 0);
         int raw = levels * levels + 6 * levels; // Levels 1..3, cumulative vanilla XP.
         int price = Math.max(1, (raw + 1) / 2);
-        if (altar.getXpPoints() < price) return false;
+        if (sessionXp < price) return false;
         var style = net.minecraft.network.chat.Style.EMPTY.withItalic(italic).withBold(bold)
                 .withUnderlined(underline).withStrikethrough(strike).withObfuscated(obfuscated);
         if (dyeStack.getItem() instanceof DyeItem dye) style = style.withColor(dye.getDyeColor().getTextColor());
@@ -177,14 +179,14 @@ public final class EclipseMenu extends AbstractContainerMenu {
         if (!dyeStack.isEmpty()) altar.offerings.removeItem(2, 1);
         if (!styleStack.isEmpty()) altar.offerings.removeItem(3, 1);
         altar.offerings.removeItem(4, 1);
-        altar.setXpPoints(altar.getXpPoints() - price);
+        sessionXp -= price;
         altar.setChanged();
         broadcastChanges();
         return true;
     }
 
     public boolean isInscription() { return inscription; }
-    public int bankXp() { return altar != null && !altar.getLevel().isClientSide ? altar.getXpPoints() : (xpHigh << 16) | xpLow; }
+    public int bankXp() { return altar != null && !altar.getLevel().isClientSide ? sessionXp : (xpHigh << 16) | xpLow; }
 
     @Override public boolean stillValid(Player player) {
         return altar != null && !altar.isRemoved() && player.distanceToSqr(
@@ -197,24 +199,25 @@ public final class EclipseMenu extends AbstractContainerMenu {
             if (targetInscription != inscription) EclipseAltarBlock.open(server, pos, targetInscription);
             return true;
         }
-        if (id == 2) { // Deposit up to 100 raw XP points.
-            int amount = Math.min(100, Math.min(player.totalExperience, Integer.MAX_VALUE - altar.getXpPoints()));
-            if (amount > 0) { player.giveExperiencePoints(-amount); altar.setXpPoints(altar.getXpPoints() + amount); }
+        if (id == 2) { // Deposit only the remaining required raw XP cost.
+            int missing = Math.max(0, ritualCost() - sessionXp);
+            int amount = Math.min(missing, Math.min(Math.max(0, player.totalExperience), Integer.MAX_VALUE - sessionXp));
+            if (amount > 0) { player.giveExperiencePoints(-amount); sessionXp += amount; broadcastChanges(); }
             return true;
         }
-        if (id == 3) { // Withdraw up to 100 raw XP points.
-            int amount = Math.min(100, altar.getXpPoints());
-            if (amount > 0) { altar.setXpPoints(altar.getXpPoints() - amount); player.giveExperiencePoints(amount); }
+        if (id == 3) { // Withdraw the entire temporary balance.
+            int amount = sessionXp;
+            if (amount > 0) { sessionXp = 0; player.giveExperiencePoints(amount); broadcastChanges(); }
             return true;
         }
         if (id == 4 && !inscription) {
             ItemStack result = enchantResult();
             int price = ritualCost();
-            if (result.isEmpty() || price <= 0 || altar.getXpPoints() < price
+            if (result.isEmpty() || price <= 0 || sessionXp < price
                     || !altar.offerings.getItem(2).is(Items.DIAMOND_BLOCK)
                     || !altar.offerings.getItem(5).isEmpty()) return false;
             altar.offerings.setItem(5, result.copy());
-            altar.setXpPoints(altar.getXpPoints() - price);
+            sessionXp -= price;
             altar.offerings.removeItem(0, 1);
             altar.offerings.removeItem(1, 1);
             altar.offerings.removeItem(2, 1); // One diamond block per successful ritual.
@@ -224,6 +227,17 @@ public final class EclipseMenu extends AbstractContainerMenu {
         }
         return false;
     }
+    @Override public void removed(Player player) {
+        // Server-authoritative session refund. Reopening another tab creates a new session.
+        if (!player.level().isClientSide && !refunded) {
+            refunded = true;
+            int refund = sessionXp;
+            sessionXp = 0;
+            if (refund > 0) player.giveExperiencePoints(refund);
+        }
+        super.removed(player);
+    }
+
     @Override public ItemStack quickMoveStack(Player player, int index) {
         ItemStack result = ItemStack.EMPTY;
         Slot slot = slots.get(index);
@@ -234,8 +248,14 @@ public final class EclipseMenu extends AbstractContainerMenu {
             if ((inscription && (index == 1 || index == 5)) || (!inscription && (index == 3 || index == 4))) return ItemStack.EMPTY;
             if (!moveItemStackTo(source, 6, slots.size(), true)) return ItemStack.EMPTY;
         } else {
-            // Deliberately avoid guessing offering slot when shift-clicking.
-            return ItemStack.EMPTY;
+            int[] preferred = inscription ? new int[]{2,3,4,0} : new int[]{2,0,1};
+            boolean moved = false;
+            for (int target : preferred) {
+                if (slots.get(target).mayPlace(source) && moveItemStackTo(source, target, target + 1, false)) {
+                    moved = true; break;
+                }
+            }
+            if (!moved) return ItemStack.EMPTY;
         }
         if (source.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
         else slot.setChanged();

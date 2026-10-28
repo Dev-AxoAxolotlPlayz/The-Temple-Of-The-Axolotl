@@ -1,3 +1,158 @@
+# Temple of the Axolotl — Master Development Roadmap V13
+
+**Updated:** October 27, 2026 — V13 Abyssal Moai, Watergate, ocean strata, pressure, Mer-Axolotl villages and Sub-for-One planning; preserves V12 combat and cosmic weapons  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl`  
+**Authority:** User-confirmed plans and screenshots through October 27, including the V12 baseline and later Abyss brainstorming. **No new source ZIP, build, or complete in-game test was supplied for this V12 update.** V11 and its historical V1–V10 appendices are preserved verbatim below. Latest explicit decisions supersede older active plans, but do not erase history.
+
+> **READ FIRST — V12 STATUS INDEX.** **USER-TESTED** = user observed/approved behavior; **DELIVERED/CANDIDATE** = patch discussed or supplied, not necessarily compiled or verified; **DESIGN LOCKED** = agreed specification, not implemented; **PLANNED** = future work; **CUT** = removed from active scope. Do not claim a source patch is complete from roadmap text alone.
+
+## 0. V13 consolidated docket index — V1 through V12
+
+| Classification | Dockets / features | Current evidence and next boundary |
+|---|---|---|
+| **Completed / user-confirmed** | V1–V6 core Temple dimension, natural Temple generation, 10-floor dungeon with 802 modules at 3/tick, portal lifecycle and reset paths | Retain V11/V10 test boundaries; no fresh dedicated-server certification. |
+| **Completed / user-confirmed** | V4–V5 Celestial armor model/visuals and innate abilities; V5 pounce movement; V6 Sentinel names/drops, Trap Stone opening/stonecutting/fire immunity, Aegis-trident exceptions | Preserve known-working paths; broader regression still open. |
+| **Completed / user-confirmed** | V6–V9 Repository backend (56 distinct variants, 32 native stacks each, deposit/withdraw/rejoin), left-side R/L/H shortcut layout | Existing features stay; search/sort remains cut. |
+| **Completed / user-confirmed** | V8–V9 Brewing Stand and Anvil visual/model checkpoints; V10 Fallen Wrath model shown in game; V11 Ring of the One chakram combat declared complete | Visual approval and Ring combat approval do not certify every mechanic or asset link. |
+| **Completed / user-reported** | V11 Above All / tameable Wrath animation freeze and friendly-fire fixes; Boss Wrath Phase 3 pursuit/pounce/shockwave candidate approved | Keep hostile BossWrathEntity separate from TameableWrathEntity. |
+| **In progress** | V10–V12 Fallen Boss Wrath AI, crown interactions, hitbox, laser origin/envelope, animations, balance, Sanctum | Experimental head hitbox was abandoned; current direction is one enlarged regular entity hitbox, now fitted closer to the body. See §1. |
+| **In progress / needs verification** | RNGesus Curse apparition overlay, Celestial Modules/Cluckles/Magnet, Jukebox pause/audio routing, workstation harvest/recipes, dungeon loot/extraction, Sentinel polish, asset wiring | Eye-overlay design supplied; confirm actual transparent PNG, 50% render opacity and curse-only trigger in game. |
+| **Planned** | Shards → Orbs → Key; Origin Temple/Origin Wrath/Above All rescue; companions; Patchouli diary/monoliths; Second Fall; compact HUD; compiler cleanup | Retain all existing active scope and earlier acceptance criteria. |
+| **Planned — V12/V13** | Abyss dimension, Abyssal faction, Axoleviathan, Axokraken, Axoluthu and worshippers, Cosmo-Bow and Cosmic Trident | **Concept/design only**; no new Java implementation or worldgen confirmed. See §2. |
+| **CUT — V9** | Separate Ambrosia fluid; Repository search/filter/sort; standalone multiplayer/rejoin/restart regression docket | Do not reactivate. Existing persistence/multiplayer support remains. |
+| **LATER — V9** | Optional Create compatibility Easter eggs | Not a near-term dependency. |
+
+## 1. Fallen Boss Wrath — October 27 follow-up and supersession
+
+### 1A. Main collision box — latest chosen direction
+
+- **ABANDONED:** Experimental secondary head hitbox and animated head-corner tracking. The user supplied a `Head Hitbox` pivot, then eight corner locator bones under `Head Hitbox Corners...` in the `Head` hierarchy; multiple attempted Java hitbox positions did not align in game. These bones are historical references, **not** an active requirement to spawn a second hitbox.
+- **CURRENT:** Use **one ordinary entity collision box**, resized to approximate the entire main body. The user first requested roughly **3×** the previous hitbox, then began tuning actual dimensions. The latest explicitly pasted entity registration was `.sized(3.0F, 1.5F)`; later screenshots showed a larger bounding box over the body, but **no final numeric dimensions were confirmed**. Do not infer final measurements from screenshots or silently restore a tall 3× box.
+- Hitbox remains Minecraft's entity-aligned bounding box; a standard AABB does **not** pitch/roll with GeckoLib animation. Prioritize playable reach and body coverage over unverified bone math. Screenshot-based fit is an iterative test, not a final collision certification.
+- Preserve the **separate crown weak-point concept** as a distinct *planned/verification* item only if still desired; dropping the secondary **head** hitbox does not by itself confirm that the crown hitbox was implemented or removed.
+
+### 1B. Laser and combat
+
+- V11's Phase 3 and Phase 4 descriptions remain historical baselines. Phase 5.3–5.5 and subsequent hitbox experiments were discussed; **do not assert successful compilation or completed bone-following hitboxes** from the discussion.
+- **Requested laser outcome:** visible Warden-style sonic envelope around the main laser, actual damage aligned with beam, **stacked damage and no knockback**. This is a later design request that supersedes V11's earlier “once per target per firing” intention **for the requested new laser behavior**; exact stack cadence/damage and game-tested implementation remain unresolved.
+- Preserve the established charge/attack timing and boss movement unless a newer verified code change explicitly supersedes it: 80-tick charge sequence, pounce-only 9-block ripple, normal pursuit rather than pounce spam, hit-based Rampage transitions. Laser animation root scale and bone rotations must not be confused with collision dimensions.
+- Existing boss stats target **30 armor / 20 toughness** and lead/boat immunity; user reported manually correcting an `AbstractBoat` class-reference compile error. Treat source state as user-reported, not freshly audited.
+
+### 1C. RNGesus Curse overlay
+
+- Replace the previous curse apparition with **Fallen Boss Wrath's red eyes**. User supplied a revised red glowing eyes image; black surrounding pixels should be **transparent**, with the overlay displayed at **50% opacity**, reminiscent of the Elder Guardian apparition.
+- This overlay belongs to the **successful RNGesus Curse trap** sequence, not ordinary dungeon entry. Preserve V10's successful trap → teleport → persistent effect → apparition after 20 ticks condition.
+- Art was supplied and overlay patch discussed; **final source integration, transparency and in-game visual timing not independently verified** in this roadmap.
+
+## 2. Abyssal Dimension Docket (V12 baseline + V13 additions, planned)
+
+**Theme:** A deep-ocean Abyss realm ruled by the axolotl-Cthulhu sea king **Axoluthu**. Its aquatic enemies belong to the common **Abyssal faction/classification**, analogous to the Illager classification for raids. Faction affiliation is a design rule; faction-specific AI, tags and combat targeting are not yet implemented.
+
+### 2A. Abyssal creatures and faction
+
+| Creature / group | Locked concept | Status |
+|---|---|---|
+| **Axoleviathan** | Enormous axolotl-inspired ocean predator; detects and hunts players and player boats even from around **80 blocks underwater**. During boat-destroying chomp, **head and part of neck breach** the water, megalodon-style. **1,024 HP, 30 armor, 20 armor toughness**; intentionally small/hard-to-hit collision target (exact dimensions TBD). Killable. | **Planned / design locked**, no AI or hitbox implementation confirmed. |
+| **Axokraken** | Axolotl head and upper torso, with **tentacles instead of lower torso/tail**. Allied with Axoleviathan; both target players rather than hunting each other. When one Axokraken dies, **another immediately spawns within 30 blocks** of its death location. | **Planned**; spawning guardrails and dimension limits TBD. |
+| **Axoluthu worshippers** | Mermaid–axolotl hybrids who worship Axoluthu and share the **Abyssal** faction. | **Planned**; detailed AI/stats/drops TBD. |
+| **Axoluthu** | Sea king, an axolotl-Cthulhu-style major boss. **Cannot be damaged by any attacking weapon except the Cosmic Trident.** Killing an Axoleviathan provokes him and unlocks his fight. On his death, **five Axoleviathans spawn and actively hunt the player** as his final wrath. | **Planned**; boss HP, arena, other environmental damage rules and implementation TBD. |
+
+**Axoleviathan ↔ Axokraken alliance:** They cooperate in hunting players; the leviathan does **not** consume or attack allied Axokrakens as an ordinary mechanic, despite the leviathan's imposing size. No boat is required for leviathan targeting: swimmers are valid targets too.
+
+**Important spawning design note:** “One Axokraken immediately replaces a dead Axokraken within 30 blocks” is the intended gameplay rule. Define safe placement, chunk loading and anti-runaway spawn safeguards when implementing, without silently weakening the user's intended persistent threat.
+
+### 2B. Abyssal celestial weapons
+
+| Weapon | Design | Status |
+|---|---|---|
+| **Cosmo-Bow** | Draw to fire a **small Fallen Wrath-style laser** without consuming or requiring arrows. One laser **impact** modeled on a **fully drawn Power X bow shot plus Instant Damage II tipped-arrow effect**; not a continuous multi-tick damage stack. Beam may remain visible briefly after its one damaging hit. Exact armor/magic/undead interaction and unified damage implementation need decisions. | **Planned / design locked**. |
+| **Cosmic Trident** | The **only attacking weapon that can damage Axoluthu**. Crafted from **four vanilla Tridents, four Orbs of Envy and one Heart of the Abyss**. Thrown versus melee use and further powers remain unspecified. | **Planned / design locked**. |
+
+**Cosmic Trident crafting grid (3×3):**
+
+| | | |
+|:---:|:---:|:---:|
+| Vanilla Trident | Orb of Envy | Vanilla Trident |
+| Orb of Envy | **Heart of the Abyss** | Orb of Envy |
+| Vanilla Trident | Orb of Envy | Vanilla Trident |
+
+**Heart of the Abyss:** **Guaranteed drop from every killed Axoleviathan**, including any Axoleviathans spawned by Axoluthu's wrath unless a later decision explicitly changes it. The Heart is the central crafting ingredient for the Cosmic Trident. No additional drop rate or recipe ingredients should be invented.
+
+### 2C. Abyssal progression and encounter order
+
+1. Explore/survive the Abyss and its hostile Abyssal faction.
+2. Defeat an Axoleviathan, receive **one guaranteed Heart of the Abyss**, and **provoke Axoluthu**, enabling the boss confrontation.
+3. Gather four vanilla Tridents and four Orbs of Envy; craft the **Cosmic Trident** using the grid above.
+4. Fight Axoluthu using the **Cosmic Trident**, the sole authorized attacking weapon.
+5. When Axoluthu dies, **five Axoleviathans spawn** and actively pursue the player.
+
+**Open design details, not secretly settled:** Abyss access/portal and worldgen, exact faction registry/tag structure, Axoluthu health/arena, how the five post-boss leviathans spawn safely, Axokraken replacement persistence, Cosmo-Bow cooldown/damage integration, Cosmic Trident combat abilities beyond boss vulnerability, recipes for the Cosmo-Bow, and whether any nonweapon environmental damage bypasses Axoluthu's protection.
+
+## 2D. NEW V13 — Abyssal Moai and Watergate groundwork (October 27, 2026)
+
+**Status: DESIGN LOCKED / PLANNED, except specifically reported Phase 6.2.9 test outcomes.** The Abyssal Moai begins the **Phase 6.3.x** series, distinct from the Temple dungeon's own architecture. It is early standalone infrastructure intended to decorate the **future Abyss Watergate portal** once the Abyss dimension and physics-based water are implemented. The exact Watergate activation/traversal mechanic is not decided.
+
+- **Abyssal Torch → Abyssal Moai:** Reimagine the interdiction-torch-style block as a **two-block-high, one-block-footprint**, floor-placed Moai-head guardian, with sculk-like dark texture, cyan veins, glowing purple eyes and a purple ethereal flame. Decorative architecture rather than torch spam. Face with placement direction; place/remove both halves as one structure and drop only one item. The bottom half alone runs repulsion to avoid duplicate forces.
+- **Repulsion:** Intended **5-block radius** (not five-block diameter), pushing hostile and currently aggressive neutral-hostile mobs away while leaving peaceful mobs, players and pets unaffected. Avoid vertical launches, wall clipping and stacked repulsion force when fields overlap. Effect stops upon removal.
+- **Phase 6.2.9 test handoff:** Basic placement, peaceful/player exclusions and movement stability were reported PASS. Range was FAIL (approximately 3-block range / 5-block diameter), aggressive Enderman repulsion was FAIL (insufficient force), removal behavior was NOT TESTED. These are Phase 6.3.x fixes, **not** completed work.
+- **Implementation notes for future validation:** Two-block synchronized placement/breaking, correct orientation, item-drop uniqueness, collision, repulsion strength and actual measured radius, neutral hostility detection, server performance, and field-overlap behavior.
+
+## 2E. NEW V13 — Abyss ocean world generation and pressure
+
+**Design direction:** An almost entirely aquatic, vertically layered Abyss with **ocean surface at world Y=200**. Include underwater valleys, deep trenches, underwater volcanic/hydrothermal vents, cliffs and bioluminescent features. Exact world-height bounds, seafloor profile, biome boundaries, terrain generation and presence/absence of islands are **not yet locked**. Water physics is an explicit next major workstream after the Moai, and should be designed before submarine implementation; no water-simulation architecture has been chosen.
+
+**Pressure thresholds are depths measured BELOW the Y=200 water surface, NOT negative world Y coordinates:**
+
+| Exploration equipment | Depth below sea level | Equivalent world coordinate | Intended limit |
+|---|---:|---:|---|
+| Unprotected player | 75 blocks | Y=125 | Cannot safely descend beyond this depth without protection |
+| Protected diver / diving gear | 100 blocks | Y=100 | Gear extends safe range; deeper exploration needs a submersible |
+| Sub-for-One | Deeper than 100 blocks | Below Y=100 | Required for crush-zone exploration; ultimate hull depth rating TBD |
+
+The exact onset/damage progression of pressure crushing, protection item stats and pressure-simulation model remain **undecided**. Ocean strata are conceptually **upper ocean, deep ocean and crush zone**; their exact ecological boundaries need not coincide with the 75/100-block equipment thresholds. Do not invent biome boundary coordinates.
+
+## 2F. NEW V13 — Three-layer ecosystem and settlements
+
+| Region | Inhabitants and encounters | Design direction |
+|---|---|---|
+| **Upper Ocean** | **Mer-Axolotl Axoluthu worshippers** | Underwater **prismarine villages**, visually resembling small floating bubble-shaped clusters of architecture, suspended in open water. **No actual enclosing glass bubble or air dome** (explicitly not Sandy's dome). Keep worshippers in the existing Abyssal faction. Village population, trading, aggression, architecture and exact altitude TBD. |
+| **Deep Ocean** | **Axokraken** | Principal domain of the Axokraken, among underwater valleys and more dangerous waters. Preserve existing Axokraken–Axoleviathan alliance and its on-death replacement rule from §2A. |
+| **Crush Zone** | **Axoleviathan** | Primary habitat/hunting grounds of the Axoleviathan, though it **can traverse all three ocean layers** and hunt outside its home depth. Retain existing ~80-block underwater detection, stats, boat/player targeting, Heart drop and Axoluthu progression from §2A–2C. |
+
+The three-layer ecology adds habitat preferences; it **does not replace** the prior creature AI, boss relationships, faction membership, drop tables or weapon progression.
+
+## 2G. NEW V13 — Sub-for-One solo exploration submarine
+
+**Planned, not implemented.** A **single-player exploration submersible**, not a walkable multi-room ship, developed after water physics and diving/pressure systems. Its purpose is to make the crush zone explorable while preserving the danger of abyssal predators.
+
+- **One-chomp survivability:** A pristine Sub-for-One withstands **exactly one direct Axoleviathan bite**. A second direct bite before repair causes critical hull failure / loss of operability; precise failure, escape, recovery and repair rules TBD. Implement as a deliberate per-bite survivability rule rather than relying on unspecified generic hitpoint numbers.
+- **Predator behavior:** Axoleviathan is **both territorial and an active/opportunistic submarine hunter**. It can patrol, detect and pursue the sub outside its home zone. Precise pursuit duration, detection cues and bite timing remain open.
+- **Proposed vehicle capabilities, not yet locked:** Depth gauge using `depth = max(0, 200 - worldY)`, propulsion, buoyancy/ballast, headlights, sonar, breathing supply, hull-status warnings, and emergency ascent. These are candidate design ideas, **not** confirmed implementation requirements or fixed stats.
+- **Development dependencies:** Water physics and stable fluid/vehicle interaction → pressure and diving gear → single-seat submersible → predator/sub combat balance. Validate buoyancy, collisions, underwater control, depth limits and performance before promising full physical-fluid simulation.
+
+## 2H. NEW V13 — Abyss expansion sequencing and unresolved decisions
+
+1. **Phase 6.3.x:** Finish Abyssal Moai two-block model, placement and repulsion fixes; keep it usable before the Abyss dimension exists.
+2. **Next:** Research/prototype physics-based water and interactions with worldgen, players, mobs and moving vehicles.
+3. **Next:** Build diving equipment and below-sea-level pressure/crush mechanics, with 75/100-block protection thresholds.
+4. **Next:** Develop Sub-for-One and balance it for exactly one Axoleviathan chomp.
+5. **Later:** Build the Abyss dimension's Y=200 ocean, trenches, vents, floating prismarine villages, three-layer creature distribution, Abyss Watergate, and existing Axoluthu/Cosmic Trident campaign. The ordering among these later subprojects is not final.
+
+**Still open:** Watergate operation, water physics feasibility and performance, custom world height, terrain and biome depth boundaries, pressure damage timing, diving equipment recipes, vehicle controls and materials, hull repair/recovery, village generation and worshipper AI, and final creature spawn balance. Preserve V12 §2A–2C as the source of truth for already specified creature stats, alliance, drops and Cosmic weapons.
+
+## 3. V13 priorities and preservation rules
+
+1. **Immediate Fallen Wrath:** test the single resized entity hitbox, preserve verified pounce/pursuit behavior, finish/verify laser visual envelope and stacked hit behavior, and verify curse-eye overlay alpha/opacity/trigger.
+2. **Existing V11 open work:** boss arena/crown/progression, workstation harvesting, brewing bank, Jukebox routing and true Pause/Resume, Modules/Cluckles/Magnet/Repository, dungeon loot and extraction, companion regressions.
+3. **New Abyssal design backlog:** Phase 6.3 Abyssal Moai, physics water, diving pressure, Sub-for-One, Y=200 ocean layers, Mer-Axolotl prismarine villages, Watergate, creature worldgen and spawning, Axoleviathan/Axokraken/Axoluthu, Cosmo-Bow and Cosmic Trident.
+4. **Longer term:** Origin campaign, lore monoliths, optional Second Fall, HUD, warning cleanup, survival playthrough. **Do not reactivate V9 CUT features** or elevate deferred Create Easter eggs.
+5. **Source of truth:** Latest user decisions take precedence; preserve original V11 text below unchanged for traceability. V13 documents requirements and reported observations; it is **not** a build report.
+
+---
+
+# Preserved V11 master roadmap (including complete V1–V10 historical appendices; unchanged)
+
 # Temple of the Axolotl — Master Development Roadmap V11
 
 **Updated:** October 26, 2026 — Ring of the One chakram combat completion, companion animation fixes, Fallen Boss Wrath Phases 1–4 and laser-locator checkpoint  

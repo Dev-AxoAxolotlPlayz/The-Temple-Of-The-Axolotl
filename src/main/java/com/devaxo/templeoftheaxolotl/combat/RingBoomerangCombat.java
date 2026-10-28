@@ -56,6 +56,7 @@ public final class RingBoomerangCombat {
         final int duration;
         final Set<UUID> outwardHits = new HashSet<>();
         final Set<UUID> returnHits = new HashSet<>();
+        final Set<UUID> exitedAfterOutbound = new HashSet<>();
         int age = 0;
         int finishDelay = 0;
         Vec3 previous;
@@ -96,6 +97,16 @@ public final class RingBoomerangCombat {
         UUID id = player.getUUID();
         ServerLevel level = player.serverLevel();
         long now = level.getGameTime();
+        // Remove stale saved ItemDisplays from previous sessions. Never touch unrelated displays.
+        if (level.getGameTime() % 20 == 0) {
+            AABB scan = player.getBoundingBox().inflate(96.0);
+            for (Display.ItemDisplay display : level.getEntitiesOfClass(Display.ItemDisplay.class, scan,
+                    e -> e.getCustomName() != null && e.getCustomName().getString().startsWith("ring_boomerang:"))) {
+                boolean live = ACTIVE.values().stream().anyMatch(f -> f.visual.getUUID().equals(display.getUUID()));
+                if (!live) display.discard();
+            }
+        }
+
 
         if (!player.isAlive() || !player.getMainHandItem().is(ModItems.RING_OF_THE_ONE.get()) || RingMiningMode.isMining(player)) {
             Flight old = ACTIVE.remove(id);
@@ -111,9 +122,9 @@ public final class RingBoomerangCombat {
         if (flight == null) {
             if (!HELD.contains(id) || now < NEXT_THROW.getOrDefault(id, 0L)) return;
             double speed = Math.max(0.2, player.getAttributeValue(Attributes.ATTACK_SPEED));
-            // An eight-tick round trip only has four ticks to draw the return.
-            // Keep a meaningful visible return even with high attack-speed modifiers.
-            int duration = Math.max(12, Math.min(60, (int) Math.ceil(96.0 / speed)));
+            // Match full flight to attack interval (20 ticks / effective attacks per second).
+            // Fast rings traverse the SAME ellipse faster rather than shortening its geometry.
+            int duration = Math.max(4, Math.min(60, (int) Math.ceil(20.0 / speed)));
             flight = new Flight(player, duration);
             ACTIVE.put(id, flight);
             NEXT_THROW.put(id, now + duration);
@@ -190,10 +201,20 @@ public final class RingBoomerangCombat {
                                    Vec3 start, Vec3 end, boolean returning) {
         Set<UUID> hits = returning ? flight.returnHits : flight.outwardHits;
         double radius = 0.45;
+        // Record a genuine departure from the target hitbox before permitting a return hit.
+        // This check runs on both outbound and returning substeps.
+        for (UUID targetId : flight.outwardHits) {
+            LivingEntity oldTarget = (LivingEntity) level.getEntity(targetId);
+            if (oldTarget != null && !oldTarget.getBoundingBox().inflate(radius).contains(start)) {
+                flight.exitedAfterOutbound.add(targetId);
+            }
+        }
         AABB area = new AABB(start, end).inflate(radius);
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, area,
                 entity -> entity.isAlive() && entity != player && !entity.isAlliedTo(player))) {
             if (hits.contains(target.getUUID())) continue;
+            if (returning && flight.outwardHits.contains(target.getUUID())
+                    && !flight.exitedAfterOutbound.contains(target.getUUID())) continue;
             // Intersect the swept centerline with an expanded target box.
             AABB targetBox = target.getBoundingBox().inflate(radius);
             if (targetBox.clip(start, end).isEmpty() && !targetBox.contains(start)) continue;

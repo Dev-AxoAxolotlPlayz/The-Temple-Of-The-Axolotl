@@ -11,8 +11,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
@@ -47,15 +45,9 @@ public record BedrockMiningPayload(
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
-
-    @EventBusSubscriber(
-            modid = TempleOfTheAxolotl.MODID,
-            bus = EventBusSubscriber.Bus.MOD
-    )
     public static class Registration {
 
-        @SubscribeEvent
-        public static void register(
+            public static void register(
                 RegisterPayloadHandlersEvent event
         ) {
             PayloadRegistrar registrar = event.registrar("1");

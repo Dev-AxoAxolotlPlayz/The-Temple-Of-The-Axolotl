@@ -24,7 +24,7 @@ public class ModEntityEvents {
         event.put(ModEntities.CLUCKLES.get(), Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 12).add(Attributes.MOVEMENT_SPEED, 0.32).build());
         event.put(ModEntities.BOSS_WRATH.get(), Mob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 200).add(Attributes.ATTACK_DAMAGE, 10)
+                .add(Attributes.MAX_HEALTH, 200).add(Attributes.KNOCKBACK_RESISTANCE, 1.0).add(Attributes.ATTACK_DAMAGE, 10)
                 .add(Attributes.MOVEMENT_SPEED, 0.23).add(Attributes.FOLLOW_RANGE, 48)
                 .add(Attributes.STEP_HEIGHT, 1.0).add(Attributes.SCALE, 2.5)
                 .add(Attributes.ARMOR, 30.0).add(Attributes.ARMOR_TOUGHNESS, 20.0).build());

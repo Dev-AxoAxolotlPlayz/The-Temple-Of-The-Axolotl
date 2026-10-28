@@ -18,8 +18,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 @EventBusSubscriber(
-        modid = TempleOfTheAxolotl.MODID,
-        bus = EventBusSubscriber.Bus.GAME
+        modid = TempleOfTheAxolotl.MODID
 )
 public class SupernovaEvents {
 
@@ -74,8 +73,14 @@ public class SupernovaEvents {
         }
 
         // Preserve Haste and faster existing modifiers.
-        event.setNewSpeed(
-                Math.max(event.getNewSpeed(), 35.0F)
-        );
+        // The Ring is a SwordItem. For blocks requiring the correct tool,
+        // vanilla divides destroy progress by 100 if the stack is not a valid
+        // mining tool. HarvestCheck alone does not undo that speed penalty.
+        float targetSpeed = 35.0F;
+        if (event.getState().requiresCorrectToolForDrops()
+                && !event.getEntity().getMainHandItem().isCorrectToolForDrops(event.getState())) {
+            targetSpeed *= 100.0F;
+        }
+        event.setNewSpeed(Math.max(event.getNewSpeed(), targetSpeed));
     }
 }

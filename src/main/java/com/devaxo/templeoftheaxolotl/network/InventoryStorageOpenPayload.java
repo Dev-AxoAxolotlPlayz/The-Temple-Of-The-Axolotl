@@ -11,8 +11,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 /** Server-authoritative inventory shortcuts. 0 = Repository; 1 = dungeon reward vault. */
@@ -24,10 +22,8 @@ public record InventoryStorageOpenPayload(int destination) implements CustomPack
                     buf -> new InventoryStorageOpenPayload(buf.readVarInt()));
 
     @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
-
-    @EventBusSubscriber(modid = TempleOfTheAxolotl.MODID, bus = EventBusSubscriber.Bus.MOD)
     public static final class Registration {
-        @SubscribeEvent public static void register(RegisterPayloadHandlersEvent event) {
+        public static void register(RegisterPayloadHandlersEvent event) {
             event.registrar("1").playToServer(TYPE, STREAM_CODEC, (packet, context) ->
                     context.enqueueWork(() -> {
                         if (!(context.player() instanceof ServerPlayer player)) return;

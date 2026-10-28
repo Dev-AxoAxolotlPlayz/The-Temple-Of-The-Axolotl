@@ -84,7 +84,7 @@ public final class TrapRuntime {
                 for (int dz = -3; dz <= 3; dz++) {
                     BlockPos at = center.offset(dx, dy, dz);
 
-                    if (!level.hasChunkAt(at)
+                    if (!level.hasChunk(at.getX() >> 4, at.getZ() >> 4)
                             || !level.getBlockState(at).is(ModTrapBlocks.RNGESUS_TRAP.get())) {
                         continue;
                     }
@@ -163,7 +163,7 @@ public final class TrapRuntime {
 
                     BlockPos at = origin.offset(dx, dy, dz);
 
-                    if (!level.hasChunkAt(at)
+                    if (!level.hasChunk(at.getX() >> 4, at.getZ() >> 4)
                             || !level.getBlockState(at).is(Blocks.CHISELED_STONE_BRICKS)) {
                         continue;
                     }
@@ -184,7 +184,7 @@ public final class TrapRuntime {
         if (feet.getY() < level.getMinBuildHeight()
                 || feet.getY() + 1 >= level.getMaxBuildHeight()) return false;
 
-        if (!level.hasChunkAt(feet) || !level.hasChunkAt(feet.above())) return false;
+        if (!level.hasChunk(feet.getX() >> 4, feet.getZ() >> 4)) return false;
 
         return level.getBlockState(feet).getCollisionShape(level, feet).isEmpty()
                 && level.getBlockState(feet.above())

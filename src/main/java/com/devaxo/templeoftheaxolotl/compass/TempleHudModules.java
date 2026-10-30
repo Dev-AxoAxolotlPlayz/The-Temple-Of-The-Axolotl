@@ -97,12 +97,13 @@ public final class TempleHudModules {
             case 6 -> stack.is(ModItems.CELESTIAL_ANVIL.get());
             case 7 -> stack.is(ModItems.LOGISTICS_MAESTRO.get());
             case 8 -> stack.is(ModItems.CELESTIAL_JUKEBOX.get());
+            case 9 -> stack.is(ModItems.ABYSS_PRESSURE_GAUGE.get());
             default -> false;
         };
     }
 
     public static void storeSlot(ServerPlayer player, int slot, ItemStack stack) {
-        if (slot >= 0 && slot < 9) save(player, slot, stack);
+        if (slot >= 0 && slot < 18) save(player, slot, stack);
     }
 
     @SubscribeEvent
@@ -129,7 +130,7 @@ public final class TempleHudModules {
 
     @SubscribeEvent
     public static void onClone(PlayerEvent.Clone event) {
-        for (int slot = 0; slot < 9; slot++) {
+        for (int slot = 0; slot < 18; slot++) {
             String storageKey = key(slot);
             if (event.getOriginal().getPersistentData().contains(storageKey)) {
                 event.getEntity().getPersistentData().put(storageKey,
@@ -240,7 +241,8 @@ public final class TempleHudModules {
                         TempleSeekerEvents.arrived(player),
                         TempleSeekerEvents.unavailable(player),
                         getSlot(player, 1).is(Items.COMPASS),
-                        getSlot(player, 2).is(Items.CLOCK)
+                        getSlot(player, 2).is(Items.CLOCK),
+                        getSlot(player, 9).is(ModItems.ABYSS_PRESSURE_GAUGE.get())
                 )
         );
     }

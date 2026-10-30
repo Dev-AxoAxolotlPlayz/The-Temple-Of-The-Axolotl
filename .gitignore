@@ -1,3 +1,4 @@
+
 ### Gradle ###
 .gradle
 build/
@@ -38,3 +39,6 @@ run/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
+
+### Checkpoint Backups ###
+*Checkpoint*.zip

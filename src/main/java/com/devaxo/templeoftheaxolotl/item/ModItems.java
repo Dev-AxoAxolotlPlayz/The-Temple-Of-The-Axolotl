@@ -41,6 +41,7 @@ public final class ModItems {
     public static final DeferredItem<Item> ABYSSAL_TORCH = ITEMS.register("abyssal_torch", () ->
             new net.minecraft.world.item.BlockItem(
                     com.devaxo.templeoftheaxolotl.registry.ModBlocks.ABYSSAL_TORCH.get(), new Item.Properties()));
+    public static final DeferredItem<Item> ABYSS_PRESSURE_GAUGE = basic("abyss_pressure_gauge", 1);
     public static final DeferredItem<Item> CELESTIAL_MAGNET = basic("celestial_magnet", 1);
     public static final DeferredItem<Item> LOGISTICS_MAESTRO = basic("logistics_maestro", 1);
     public static final DeferredItem<Item> CELESTIAL_ANVIL = ITEMS.register("celestial_anvil", () ->
@@ -445,6 +446,7 @@ public final class ModItems {
         output.accept(TEMPLE_LOOTBAG.get());
         output.accept(CELESTIAL_REPOSITORY.get());
         output.accept(CELESTIAL_MAGNET.get());
+        output.accept(ABYSS_PRESSURE_GAUGE.get());
         output.accept(ABYSSAL_TORCH.get());
         output.accept(LOGISTICS_MAESTRO.get());
         output.accept(CELESTIAL_ANVIL.get());

@@ -46,7 +46,7 @@ public final class ClucklesLogistics {
                 int dy=idx/(diameter*diameter)-1;
                 if (dx*dx+dz*dz>r*r) continue;
                 BlockPos pos=center.offset(dx,dy,dz);
-                if (!owner.serverLevel().hasChunkAt(pos)) continue;
+                if (!owner.serverLevel().hasChunk(pos.getX() >> 4, pos.getZ() >> 4)) continue;
                 BlockEntity be=owner.serverLevel().getBlockEntity(pos);
                 if (!(be instanceof Container container)) continue;
                 if (outbound(owner) && distribute(owner,container)) return;

@@ -146,6 +146,8 @@ public class TempleOfTheAxolotl {
         if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
             modEventBus.addListener(com.devaxo.templeoftheaxolotl.compass.TempleSeekerClient::onClientSetup);
             modEventBus.addListener(com.devaxo.templeoftheaxolotl.pre07.Pre07FluidClientExtensions::register);
+            modEventBus.addListener(com.devaxo.templeoftheaxolotl.client.TempleRewardScreenRegistration::register);
+            modEventBus.addListener(com.devaxo.templeoftheaxolotl.eclipse.EclipseScreenRegistration::register);
         }
 
         // Maze development commands

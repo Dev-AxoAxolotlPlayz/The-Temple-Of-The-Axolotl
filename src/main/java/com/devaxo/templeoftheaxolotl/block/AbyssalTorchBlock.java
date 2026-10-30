@@ -77,7 +77,7 @@ public class AbyssalTorchBlock extends Block {
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
     @Override protected BlockState rotate(BlockState state, Rotation rotation) { return state.setValue(FACING, rotation.rotate(state.getValue(FACING))); }
-    @Override protected BlockState mirror(BlockState state, Mirror mirror) { return state.rotate(mirror.getRotation(state.getValue(FACING))); }
+    @Override protected BlockState mirror(BlockState state, Mirror mirror) { return rotate(state, mirror.getRotation(state.getValue(FACING))); }
     @Override public void onPlace(BlockState state, Level level, BlockPos pos, BlockState previous, boolean moving) {
         super.onPlace(state, level, pos, previous, moving);
         if (!level.isClientSide && state.getValue(HALF) == DoubleBlockHalf.LOWER) level.scheduleTick(pos, this, 1);
@@ -87,7 +87,7 @@ public class AbyssalTorchBlock extends Block {
         Vec3 center = new Vec3(pos.getX()+0.5, pos.getY()+1.0, pos.getZ()+0.5);
         for (Mob mob : level.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(RADIUS + 1.0),
                 m -> m.isAlive() && !m.getType().is(MOAI_ALLIES)
-                        && (m instanceof Enemy || (m instanceof NeutralMob n && n.isAngry())))) {
+                        && (m.getType() == EntityType.ZOMBIE_HORSE || m instanceof Enemy || (m instanceof NeutralMob n && n.isAngry())))) {
             Vec3 delta = mob.position().add(0, mob.getBbHeight()*0.5, 0).subtract(center);
             if (delta.lengthSqr() > RADIUS*RADIUS) continue;
             Vec3 horizontal = new Vec3(delta.x, 0, delta.z);

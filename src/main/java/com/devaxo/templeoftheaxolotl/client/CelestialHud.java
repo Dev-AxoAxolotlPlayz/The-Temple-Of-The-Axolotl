@@ -121,13 +121,13 @@ public final class CelestialHud {
         var curse = player.getEffect(ModEffects.RNGESUS_CURSE);
 
         var navigation = TempleNavigationClient.current();
-        if (!boots && !chestplate && curse == null && !navigation.equipped() && !navigation.compass() && !navigation.clock()) {
+        if (!boots && !chestplate && curse == null && !navigation.equipped() && !navigation.compass() && !navigation.clock() && !navigation.pressureGauge()) {
             return;
         }
 
         var graphics = event.getGuiGraphics();
 
-        int width = 190;
+        int width = 190; // Dial fits inside the original panel; no unused right-side extension.
 
         int height = 12
                 + (boots ? 12 : 0)
@@ -136,6 +136,8 @@ public final class CelestialHud {
                 + (navigation.equipped() ? 44 : 0)
                 + (navigation.compass() ? 36 : 0)
                 + (navigation.clock() ? 24 : 0);
+
+        if (navigation.pressureGauge()) height = Math.max(height, 168);
 
         int x = right
                 ? graphics.guiWidth() - width - offsetX
@@ -268,5 +270,54 @@ public final class CelestialHud {
             graphics.drawString(minecraft.font, "Day " + day + "  |  " + time,
                     x + 5, line, 0xFFF5D797, false);
         }
+        if (navigation.pressureGauge()) {
+            // Instrument centered in the free space between the text column and HUD right edge.
+            int cx = x + 147;
+            int cy = y + height - 49;
+            double seaLevel = player.level().dimension() == net.minecraft.world.level.Level.OVERWORLD ? 62.0 : 200.0;
+            double range = player.level().dimension() == net.minecraft.world.level.Level.OVERWORLD ? 92.0 : 200.0;
+            boolean submerged = player.isUnderWater();
+            double pressure = submerged ? Math.max(0.0, Math.min(100.0, (seaLevel - player.getEyeY()) * 100.0 / range)) : 0.0;
+            drawPressureDial(graphics, minecraft, cx, cy, pressure, submerged);
+        }
     }
+    private static void drawPressureDial(net.minecraft.client.gui.GuiGraphics g, Minecraft mc,
+                                         int cx, int cy, double pressure, boolean submerged) {
+        // Pixel-drawn analog instrument: no font glyphs or external image dependencies.
+        g.drawString(mc.font, "ABYSS PRESSURE", cx - 38, cy - 49, 0xFFB6F6FF, false);
+        for (int dy = -35; dy <= 35; dy++) for (int dx = -35; dx <= 35; dx++) {
+            int d = dx * dx + dy * dy;
+            int color = d <= 29 * 29 ? 0xFF101C32 : d <= 33 * 33 ? 0xFF8CB6C8 : 0;
+            if (color != 0) g.fill(cx + dx, cy + dy, cx + dx + 1, cy + dy + 1, color);
+        }
+        // The dial sweeps 270 degrees from 0 (lower-left) to 100 (lower-right).
+        for (int n = 0; n <= 20; n++) {
+            double a = Math.toRadians(135.0 + 270.0 * n / 20.0);
+            int r1 = n % 4 == 0 ? 23 : 26;
+            drawPixelLine(g, cx + (int)Math.round(Math.cos(a) * r1), cy + (int)Math.round(Math.sin(a) * r1),
+                    cx + (int)Math.round(Math.cos(a) * 29), cy + (int)Math.round(Math.sin(a) * 29), 0xFFBCEBFF);
+        }
+        double angle = Math.toRadians(135.0 + 270.0 * pressure / 100.0);
+        drawPixelLine(g, cx, cy, cx + (int)Math.round(Math.cos(angle) * 22),
+                cy + (int)Math.round(Math.sin(angle) * 22), 0xFF51F5FF);
+        g.fill(cx - 2, cy - 2, cx + 3, cy + 3, 0xFFE8FFFF);
+        String readout = String.format(java.util.Locale.ROOT, "%03d", (int)Math.round(pressure));
+        g.drawString(mc.font, readout, cx - mc.font.width(readout)/2, cy + 36,
+                submerged ? 0xFF5BF5FF : 0xFF99AAB9, false);
+    }
+
+    private static void drawPixelLine(net.minecraft.client.gui.GuiGraphics g, int x0, int y0,
+                                      int x1, int y1, int color) {
+        int dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+        int dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+        int err = dx + dy;
+        while (true) {
+            g.fill(x0, y0, x0 + 1, y0 + 1, color);
+            if (x0 == x1 && y0 == y1) break;
+            int e2 = err * 2;
+            if (e2 >= dy) { err += dy; x0 += sx; }
+            if (e2 <= dx) { err += dx; y0 += sy; }
+        }
+    }
+
 }

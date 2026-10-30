@@ -5,6 +5,13 @@ modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
 
+# ==================================================
+# Phase 6.4 - Water Physics Mixin Registration
+# ==================================================
+
+[[mixins]]
+config="temple_of_the_axolotl.mixins.json"
+
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"

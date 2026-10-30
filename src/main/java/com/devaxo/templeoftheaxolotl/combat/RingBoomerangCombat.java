@@ -54,6 +54,8 @@ public final class RingBoomerangCombat {
         final int handedness;
         final Display.ItemDisplay visual;
         final int duration;
+        final double reach;
+        final double sidewaysAmplitude;
         final Set<UUID> outwardHits = new HashSet<>();
         final Set<UUID> returnHits = new HashSet<>();
         final Set<UUID> exitedAfterOutbound = new HashSet<>();
@@ -72,12 +74,16 @@ public final class RingBoomerangCombat {
                     ? new Vec3(1, 0, 0) : right.normalize();
             this.handedness = player.getMainArm() == HumanoidArm.RIGHT ? 1 : -1;
             this.duration = duration;
+            // Snapshot effective interaction reach at launch so changing equipment
+            // cannot warp an active throw. Vanilla base reach is 3 blocks.
+            this.reach = Math.max(0.1, player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE));
+            this.sidewaysAmplitude = 0.9 * (this.reach / 5.0);
             this.visual = new Display.ItemDisplay(EntityType.ITEM_DISPLAY, player.serverLevel());
             // Public NBT loading API: ItemDisplay setters are private in 1.21.1.
             CompoundTag tag = new CompoundTag();
             tag.put("item", player.getMainHandItem().copyWithCount(1).save(player.registryAccess()));
             tag.putString("item_display", "fixed");
-            // Entity rotation (not a second local item transformation) lays the blade flat.
+            // The exported 3D model is upright in FIXED display mode.\n            // Rotate the display 90 degrees around X to flatten the blade plane.
             // A one-tick teleport interpolation reduces trailing when the return curves.
             tag.putInt("teleport_duration", 1);
             this.visual.load(tag);
@@ -124,7 +130,11 @@ public final class RingBoomerangCombat {
             double speed = Math.max(0.2, player.getAttributeValue(Attributes.ATTACK_SPEED));
             // Match full flight to attack interval (20 ticks / effective attacks per second).
             // Fast rings traverse the SAME ellipse faster rather than shortening its geometry.
-            int duration = Math.max(4, Math.min(60, (int) Math.ceil(20.0 / speed)));
+            // Preserve the original attack-speed timing at 5 blocks. Longer
+            // throws cover proportionally more distance at similar speed.
+            double reach = Math.max(0.1, player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE));
+            int duration = Math.max(4, Math.min(200,
+                    (int) Math.ceil((20.0 / speed) * (reach / 5.0))));
             flight = new Flight(player, duration);
             ACTIVE.put(id, flight);
             NEXT_THROW.put(id, now + duration);
@@ -142,8 +152,14 @@ public final class RingBoomerangCombat {
         flight.age++;
         double t = Math.min(1.0, (double) flight.age / flight.duration);
         Vec3 position = path(flight, t, player);
-        flight.visual.setPos(position.x, position.y, position.z);
-        // Spin the flat item around the world-up axis (the blade's normal when level).
+        // The 3D geometry is far wider than the old sprite. Keep the *visual* away
+        // from the camera at launch/catch without changing the hit-swept ellipse.
+        // Fade the offset out toward the far side of the arc.
+        double proximity = Math.pow(Math.abs(2.0 * t - 1.0), 4.0);
+        Vec3 visualPosition = position.add(flight.direction.scale(0.65 * proximity))
+                .add(0.0, -0.30 * proximity, 0.0);
+        flight.visual.setPos(visualPosition.x, visualPosition.y, visualPosition.z);
+        // Spin the flattened item about world up, independent of the flight curve.
         flight.visual.setYRot((float) (flight.age * 24.0));
 
         // Collision follows the actual swept blade path, not the filled ellipse.
@@ -182,8 +198,8 @@ public final class RingBoomerangCombat {
      */
     private static Vec3 path(Flight flight, double t, ServerPlayer player) {
         double theta = Math.PI * 2.0 * Math.max(0.0, Math.min(1.0, t));
-        double forward = 2.5 * (1.0 - Math.cos(theta));
-        double sideways = 0.9 * Math.sin(theta) * flight.handedness;
+        double forward = (flight.reach / 2.0) * (1.0 - Math.cos(theta));
+        double sideways = flight.sidewaysAmplitude * Math.sin(theta) * flight.handedness;
         Vec3 base = flight.origin.add(flight.direction.scale(forward))
                 .add(flight.side.scale(sideways));
         if (t <= 0.5) return base;
@@ -221,9 +237,17 @@ public final class RingBoomerangCombat {
             HitResult wall = level.clip(new ClipContext(start, target.getBoundingBox().getCenter(),
                     ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
             if (wall.getType() != HitResult.Type.MISS) continue;
-            float damage = (float) Math.max(1.0, player.getAttributeValue(Attributes.ATTACK_DAMAGE));
-            // Normal hurt cooldowns still apply; never bypass global invulnerability frames.
-            if (target.hurt(player.damageSources().playerAttack(player), damage)) {
+            // Route through the real enchanted weapon attack pipeline. This invokes
+            // vanilla damage/enchantment effects and our existing LivingDamageEvent
+            // listeners (Event Horizon, Celestial Convergence, etc.) with the actual
+            // Ring in the player's main hand. The ItemDisplay is visual only.
+            //
+            // IMPORTANT: Player.attack uses vanilla attack-strength cooldown and may
+            // perform normal melee side effects. A future dedicated enchantment
+            // pipeline is needed if independent per-target arc damage is required.
+            float healthBefore = target.getHealth();
+            player.attack(target);
+            if (target.getHealth() < healthBefore || !target.isAlive()) {
                 hits.add(target.getUUID());
             }
         }

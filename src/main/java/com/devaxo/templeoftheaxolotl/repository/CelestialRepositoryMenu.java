@@ -13,7 +13,6 @@ import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.Container;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 import net.minecraft.world.entity.player.Inventory;
@@ -114,29 +113,12 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
             addSlot(new Slot(craft, c + r * 3, 159 + c * 18, 27 + r * 18) {
                 @Override public boolean mayPlace(ItemStack stack) { return craftEnabled != 0; }
             });
-        addSlot(new Slot(craftResult, 0, 229, 45) {
-            @Override public boolean mayPlace(ItemStack stack) { return false; }
-            @Override public boolean mayPickup(Player player) { return craftEnabled != 0 && super.mayPickup(player); }
-            @Override public void onTake(Player player, ItemStack stack) {
-                super.onTake(player, stack);
-                if (player instanceof ServerPlayer server) {
-                    var input = craft.asCraftInput();
-                    server.serverLevel().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, server.serverLevel()).ifPresent(holder -> {
-                        var remaining = holder.value().getRemainingItems(input);
-                        for (int i = 0; i < 9; i++) {
-                            ItemStack ingredient = craft.getItem(i);
-                            if (!ingredient.isEmpty()) craft.removeItem(i, 1);
-                            ItemStack leftover = remaining.get(i);
-                            if (!leftover.isEmpty()) {
-                                ItemStack current = craft.getItem(i);
-                                if (current.isEmpty()) craft.setItem(i, leftover.copy());
-                                else if (ItemStack.isSameItemSameComponents(current, leftover)) current.grow(leftover.getCount());
-                                else if (!server.getInventory().add(leftover.copy())) server.drop(leftover.copy(), false);
-                            }
-                        }
-                    });
-                    updateCraft(server);
-                }
+        // Use Minecraft's real crafting result slot. Its onTake implementation
+        // consumes each ingredient and handles recipe remainder items.
+        // A plain Slot does not provide those crafting semantics.
+        addSlot(new ResultSlot(inventory.player, craft, craftResult, 0, 229, 45) {
+            @Override public boolean mayPickup(Player player) {
+                return craftEnabled != 0 && super.mayPickup(player);
             }
         });
         addSlot(new Slot(repair, 0, 277, 29) {
@@ -198,7 +180,7 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
     private static boolean hasMending(ServerPlayer player, ItemStack stack) {
         var holder = player.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
             .getOrThrow(Enchantments.MENDING);
-        return EnchantmentHelper.getItemEnchantmentLevel(holder, stack) > 0;
+        return stack.getOrDefault(net.minecraft.core.component.DataComponents.ENCHANTMENTS, net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY).getLevel(holder) > 0;
     }
     private void updateCraft(ServerPlayer player) {
         if (updatingCraft) return;

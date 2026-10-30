@@ -15,6 +15,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -177,13 +180,16 @@ public class LuckyStarsEvents {
         // The original Minecraft loot roll
         // remains untouched.
 
-        for (float chance : SCAVENGER_CHANCES) {
+        int highestSuccessfulRoll = 0;
+        for (int roll = 0; roll < SCAVENGER_CHANCES.length; roll++) {
+            float chance = SCAVENGER_CHANCES[roll];
 
             // Failed proc: skip this bonus roll.
             if (level.random.nextFloat() >= chance) {
                 continue;
             }
 
+            highestSuccessfulRoll = roll + 1;
             // Successful proc:
             // generate a fresh complete loot roll.
 
@@ -208,6 +214,30 @@ public class LuckyStarsEvents {
 
                 event.getDrops().add(bonusDrop);
             }
+        }
+        // Exactly one harmless starburst, using the highest successful bonus roll.
+        if (highestSuccessfulRoll > 0) {
+            double x = victim.getX();
+            double y = victim.getY() + victim.getBbHeight() * 0.6;
+            double z = victim.getZ();
+            // Dust colors: lavender, soft white, cyan (RGB floats).
+            float r = highestSuccessfulRoll == 1 ? 0.66f : highestSuccessfulRoll == 2 ? 0.95f : 0.28f;
+            float g = highestSuccessfulRoll == 1 ? 0.42f : highestSuccessfulRoll == 2 ? 0.93f : 0.89f;
+            float b = highestSuccessfulRoll == 1 ? 0.88f : highestSuccessfulRoll == 2 ? 1.00f : 1.00f;
+            var dust = new net.minecraft.core.particles.DustParticleOptions(
+                    new org.joml.Vector3f(r, g, b), 1.15f);
+            // Particle positions form a six-point star in the horizontal plane.
+            for (int i = 0; i < 12; i++) {
+                double angle = Math.PI * 2.0 * i / 12.0;
+                double radius = (i % 2 == 0) ? 0.72 : 0.33;
+                level.sendParticles(dust, x + Math.cos(angle) * radius,
+                        y + Math.sin(angle) * radius, z,
+                        2, 0.035, 0.035, 0.035, 0.005);
+            }
+            level.sendParticles(ParticleTypes.END_ROD, x, y, z,
+                    7, 0.25, 0.25, 0.25, 0.025);
+            level.playSound(null, x, y, z, SoundEvents.FIREWORK_ROCKET_TWINKLE,
+                    SoundSource.PLAYERS, 0.55f, 1.3f);
         }
     }
 }

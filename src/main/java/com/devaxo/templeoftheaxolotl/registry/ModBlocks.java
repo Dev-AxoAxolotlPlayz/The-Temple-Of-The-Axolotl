@@ -36,7 +36,7 @@ public final class ModBlocks {
 
     public static final DeferredBlock<Block> ABYSSAL_TORCH = BLOCKS.register("abyssal_torch",
             () -> new com.devaxo.templeoftheaxolotl.block.AbyssalTorchBlock(
-                    BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE).strength(2.5F).noOcclusion().lightLevel(state -> state.getValue(com.devaxo.templeoftheaxolotl.block.AbyssalTorchBlock.HALF) == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER ? 11 : 5)));
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE).strength(2.5F).noOcclusion().lightLevel(state -> 15)));
 
     /** Placeable dark Celestial Anvil; vanilla anvil interaction and geometry. */
     public static final DeferredBlock<Block> CELESTIAL_ANVIL_BLOCK =

@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.devaxo.templeoftheaxolotl.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BoatWaveMixin"
+  ],
+  "client": [
+    "BoatRendererWaveMixin",
+    "LiquidBlockRendererWaveMixin",
+    "WaterShaderCameraMixin",
+    "NightVisionNoFlickerMixin",
+    "AbyssPressureNoHurtCameraMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

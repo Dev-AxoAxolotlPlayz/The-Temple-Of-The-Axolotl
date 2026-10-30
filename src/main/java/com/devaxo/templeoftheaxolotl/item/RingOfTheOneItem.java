@@ -18,12 +18,45 @@ import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Unbreakable;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class RingOfTheOneItem extends SwordItem {
+public class RingOfTheOneItem extends SwordItem implements software.bernie.geckolib.animatable.GeoItem {
+
+    private final software.bernie.geckolib.animatable.instance.AnimatableInstanceCache animationCache =
+            software.bernie.geckolib.util.GeckoLibUtil.createInstanceCache(this);
+
+    @Override
+    public void registerControllers(software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new software.bernie.geckolib.animation.AnimationController<>(this, "ring_blades", 0,
+                state -> state.setAndContinue(software.bernie.geckolib.animation.RawAnimation.begin().thenLoop("Outer_Ring_Stars"))));
+        controllers.add(new software.bernie.geckolib.animation.AnimationController<>(this, "ring_orbs", 0,
+                state -> state.setAndContinue(software.bernie.geckolib.animation.RawAnimation.begin().thenLoop("Orbs"))));
+        controllers.add(new software.bernie.geckolib.animation.AnimationController<>(this, "ring_star", 0,
+                state -> state.setAndContinue(software.bernie.geckolib.animation.RawAnimation.begin().thenLoop("Central_Star"))));
+    }
+
+    @Override
+    public software.bernie.geckolib.animatable.instance.AnimatableInstanceCache getAnimatableInstanceCache() {
+        return animationCache;
+    }
+
+    @Override
+    public void createGeoRenderer(java.util.function.Consumer<software.bernie.geckolib.animatable.client.GeoRenderProvider> consumer) {
+        consumer.accept(new software.bernie.geckolib.animatable.client.GeoRenderProvider() {
+            private com.devaxo.templeoftheaxolotl.client.renderer.RingOfTheOneRenderer renderer;
+
+            @Override
+            public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getGeoItemRenderer() {
+                if (renderer == null) renderer = new com.devaxo.templeoftheaxolotl.client.renderer.RingOfTheOneRenderer();
+                return renderer;
+            }
+        });
+    }
+
 
     private static final String MOD_ID =
             "temple_of_the_axolotl";
@@ -109,7 +142,7 @@ public class RingOfTheOneItem extends SwordItem {
     private static boolean hasSupernova(
             ItemStack stack
     ) {
-        for (var entry : stack.getEnchantments().entrySet()) {
+        for (var entry : stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY).entrySet()) {
 
             if (entry.getIntValue() <= 0) {
                 continue;

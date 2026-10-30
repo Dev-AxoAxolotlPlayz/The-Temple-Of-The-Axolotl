@@ -11,10 +11,10 @@ import net.minecraft.world.item.ItemStack;
 
 /** Nine vertically arranged dedicated slots plus a full player inventory. */
 public final class CelestialModulesMenu extends AbstractContainerMenu {
-    private final SimpleContainer modules = new SimpleContainer(9);
+    private final SimpleContainer modules = new SimpleContainer(18);
     private final SimpleContainer discs = new SimpleContainer(9);
     private final Inventory playerInventory;
-    private final int[] control = new int[12];
+    private final int[] control = new int[14];
     private boolean loadingSlots = false;
     public int playing() { return control[0] - 1; }
     public boolean paused() { return control[1] != 0; }
@@ -27,15 +27,17 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
     public boolean outbound() { return control[9] != 0; }
     public int radius() { return control[10]; }
     public boolean miningMode() { return control[11] != 0; }
+    public boolean helmetNightVisionEnabled() { return control[12] != 0; }
+    public boolean helmetConduitEnabled() { return control[13] != 0; }
     public boolean logisticsEnabled() { return control[7] != 0; }
 
 
     public CelestialModulesMenu(int id, Inventory playerInventory) {
         super(CelestialModulesMenuTypes.MODULES.get(), id);
         this.playerInventory = playerInventory;
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < 18; i++) {
             final int index = i;
-            addSlot(new Slot(modules, i, 45, 17 + i * 18) {
+            addSlot(new Slot(modules, i, i < 9 ? 45 : 64, 17 + (i % 9) * 18) {
                 @Override public boolean mayPlace(ItemStack stack) { return TempleHudModules.accepts(index, stack); }
                 @Override public int getMaxStackSize() { return 1; }
                 @Override public void setChanged() {
@@ -48,9 +50,9 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
         // Player inventory to the right, in vanilla 9-column order.
         for (int row = 0; row < 3; row++)
             for (int col = 0; col < 9; col++)
-                addSlot(new Slot(playerInventory, col + row * 9 + 9, 83 + col * 18, 104 + row * 18));
+                addSlot(new Slot(playerInventory, col + row * 9 + 9, 101 + col * 18, 104 + row * 18));
         for (int col = 0; col < 9; col++)
-            addSlot(new Slot(playerInventory, col, 83 + col * 18, 162));
+            addSlot(new Slot(playerInventory, col, 101 + col * 18, 162));
         // Nine-slot jukebox rack appears to the LEFT of the module column.
         for (int i = 0; i < 9; i++) {
             final int index = i;
@@ -77,7 +79,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
         }
         if (playerInventory.player instanceof ServerPlayer server) {
             loadingSlots = true;
-            for (int i = 0; i < 9; i++) modules.setItem(i, TempleHudModules.getSlot(server, i));
+            for (int i = 0; i < 18; i++) modules.setItem(i, TempleHudModules.getSlot(server, i));
             for (int i = 0; i < 9; i++) discs.setItem(i, CelestialMusicRack.get(server, i));
             loadingSlots = false;
             refresh(server);
@@ -90,17 +92,15 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
         if (!slot.hasItem()) return ItemStack.EMPTY;
         ItemStack original = slot.getItem();
         ItemStack copy = original.copy();
-        if (slotIndex < 9 || slotIndex >= 45) {
-            if (!moveItemStackTo(original, 9, 45, true)) return ItemStack.EMPTY;
+        // Slots: modules 0-17, player inventory 18-53, discs 54-62.
+        if (slotIndex < 18 || slotIndex >= 54) {
+            if (!moveItemStackTo(original, 18, 54, true)) return ItemStack.EMPTY;
         } else {
             int target = -1;
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 18; i++)
                 if (!slots.get(i).hasItem() && TempleHudModules.accepts(i, original)) { target = i; break; }
-            if (target < 0) {
-                if (CelestialMusicRack.isDisc(original) && modules.getItem(8).is(com.devaxo.templeoftheaxolotl.item.ModItems.CELESTIAL_JUKEBOX.get())) {
-                    for (int i = 45; i < 54; i++) if (!slots.get(i).hasItem()) { target = i; break; }
-                }
-            }
+            if (target < 0 && CelestialMusicRack.isDisc(original) && jukeboxInstalled())
+                for (int i = 54; i < 63; i++) if (!slots.get(i).hasItem()) { target = i; break; }
             if (target < 0 || !moveItemStackTo(original, target, target + 1, false)) return ItemStack.EMPTY;
         }
         if (original.isEmpty()) slot.set(ItemStack.EMPTY);
@@ -111,7 +111,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
     @Override public void removed(Player player) {
         super.removed(player);
         if (player instanceof ServerPlayer server)
-            for (int i = 0; i < 9; i++) TempleHudModules.storeSlot(server, i, modules.getItem(i));
+            for (int i = 0; i < 18; i++) TempleHudModules.storeSlot(server, i, modules.getItem(i));
         if (player instanceof ServerPlayer server)
             for (int i = 0; i < 9; i++) CelestialMusicRack.set(server, i, discs.getItem(i));
     }
@@ -139,6 +139,8 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
         control[9] = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.outbound(p) ? 1 : 0;
         control[10] = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.radius(p);
         control[11] = com.devaxo.templeoftheaxolotl.combat.RingMiningMode.isMining(p) ? 1 : 0;
+        control[12] = com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.helmetNightVisionEnabled(p) ? 1 : 0;
+        control[13] = com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.helmetConduitEnabled(p) ? 1 : 0;
         broadcastChanges();
     }
     @Override public void broadcastChanges() {
@@ -156,6 +158,8 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
             control[9] = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.outbound(server) ? 1 : 0;
             control[10] = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.radius(server);
             control[11] = com.devaxo.templeoftheaxolotl.combat.RingMiningMode.isMining(server) ? 1 : 0;
+            control[12] = com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.helmetNightVisionEnabled(server) ? 1 : 0;
+            control[13] = com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.helmetConduitEnabled(server) ? 1 : 0;
         }
         super.broadcastChanges();
     }
@@ -171,6 +175,8 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
         else if (id == 14 && TempleHudModules.getSlot(server, 4).is(com.devaxo.templeoftheaxolotl.item.ModItems.CELESTIAL_MAGNET.get()))
             com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.cycleMagnet(server);
         else if (id == 16) com.devaxo.templeoftheaxolotl.combat.RingMiningMode.toggle(server);
+        else if (id == 17) com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.toggleHelmetNightVision(server);
+        else if (id == 18) com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.toggleHelmetConduit(server);
         else if (id >= 20 && id <= 22 && com.devaxo.templeoftheaxolotl.entity.ClucklesRegistry.get(server.serverLevel()).has(server.getUUID()) && com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.enabled(server)) {
             if (id == 20) com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.toggleInbound(server);
             if (id == 21) com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.toggleOutbound(server);

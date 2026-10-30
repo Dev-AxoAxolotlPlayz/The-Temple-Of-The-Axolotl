@@ -31,6 +31,33 @@ public final class CelestialArmorEvents {
     private static final int REFRESH_INTERVAL = 40;
     private static final int EFFECT_DURATION = 400;
 
+    private static final String CONDUIT_DISABLED_KEY = "tota_helmet_conduit_disabled";
+    private static final String NIGHT_VISION_DISABLED_KEY = "tota_helmet_night_vision_disabled";
+
+    /** Default enabled, stored per player across logins. */
+    public static boolean helmetNightVisionEnabled(Player player) {
+        return !player.getPersistentData().getBoolean(NIGHT_VISION_DISABLED_KEY);
+    }
+
+    public static void toggleHelmetNightVision(Player player) {
+        boolean enable = !helmetNightVisionEnabled(player);
+        player.getPersistentData().putBoolean(NIGHT_VISION_DISABLED_KEY, !enable);
+        if (!enable && hasHelmet(player)) {
+            // Clear the helmet's already-applied long-duration effect immediately.
+            player.removeEffect(MobEffects.NIGHT_VISION);
+        }
+    }
+
+
+    public static boolean helmetConduitEnabled(Player player) {
+        return !player.getPersistentData().getBoolean(CONDUIT_DISABLED_KEY);
+    }
+    public static void toggleHelmetConduit(Player player) {
+        boolean enabled = !helmetConduitEnabled(player);
+        player.getPersistentData().putBoolean(CONDUIT_DISABLED_KEY, !enabled);
+        if (!enabled && hasHelmet(player)) player.removeEffect(MobEffects.CONDUIT_POWER);
+    }
+
     private static final ResourceLocation SWIM_SPEED_ID =
             ResourceLocation.fromNamespaceAndPath(
                     TempleOfTheAxolotl.MODID,
@@ -153,8 +180,10 @@ public final class CelestialArmorEvents {
 
             applyEffect(player, MobEffects.REGENERATION, 0);
             applyEffect(player, MobEffects.DAMAGE_BOOST, 0);
-            applyEffect(player, MobEffects.CONDUIT_POWER, 1);
-            applyEffect(player, MobEffects.NIGHT_VISION, 0);
+            if (helmetConduitEnabled(player)) applyEffect(player, MobEffects.CONDUIT_POWER, 1);
+            if (helmetNightVisionEnabled(player)) {
+                applyEffect(player, MobEffects.NIGHT_VISION, 0);
+            }
         }
 
         // CHESTPLATE

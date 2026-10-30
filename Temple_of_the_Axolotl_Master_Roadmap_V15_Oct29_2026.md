@@ -1,3 +1,222 @@
+# Temple of the Axolotl — Master Development Roadmap V15
+
+**Updated:** October 29, 2026 (development session spanning October 29–30 local time) — Phase 6.4 water completion, Phase 6.5 pressure/HUD/death-message work, Phase 6.6 decompression design.  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl` · **Package:** `com.devaxo.templeoftheaxolotl`  
+**Source basis:** User's V14 master roadmap, conversation-confirmed gameplay and decisions, plus spot inspection of the supplied **Major Checkpoint — 6.5 — Pressures Under the Sea COMPLETED** ZIP. No new Gradle build or full source audit was run for this roadmap. The entire V14 document, including V1–V13 history, follows unchanged.
+
+> **V15 precedence:** This opening update supersedes earlier active status and design wording where later decisions differ. Historical text is retained for traceability. **USER-TESTED** means user observed in game; **SOURCE-OBSERVED** means a source file was inspected in the supplied checkpoint; **CANDIDATE/NEEDS TEST** means a patch or behavior is not runtime-certified; **DESIGN LOCKED** is an agreed future specification; **PLANNED** is not yet implemented. Never conflate these statuses.
+
+## 0. Executive docket — October 29 achievements and immediate status
+
+| Workstream | V15 status | Outcome / next boundary |
+|---|---|---|
+| **6.4 Dreamlike Starry Seas** | **USER-APPROVED COMPLETE** | Dark blue-teal translucent water, cyan/lavender star sparkle, bioluminescent crests, depth-aware underwater color/clarity, and `/tota water enable/disable`; user approved nighttime visuals. **NO TOUCHIE BOAT**: preserve functioning buoyancy and boat physics. |
+| **6.5 Abyss Pressure HUD** | **USER-TESTED** | Analog pressure dial at right of Position/Chronometer, reads player's eye height, scales to 100 at Overworld Y=-30. New second 9-slot module column with Abyss Pressure Gauge item enabling the display; HUD layout and pixel silhouettes approved. |
+| **6.5 Helmet/module GUI** | **USER-TESTED VISUAL FIX** | Crescent-moon Night Vision, fish Conduit Power and horseshoe Magnet silhouettes draw above buttons. NV and Conduit are independent toggles. Prior blank gray icon squares fixed. |
+| **6.5 Pressure damage** | **USER-TESTED / SOURCE-OBSERVED** | Underwater-head-only pressure damage, warning and lethal tiers; player confirmed rapid damage and death. Actual source uses `PlayerTickEvent.Post`, custom `abyss_pressure` damage source and death message subclass. Verify armor/iframe bypass claims independently; damage-type JSON in checkpoint contains only message ID, scaling and exhaustion. |
+| **6.5 Randomized death messages** | **USER-TESTED** | User shared in-game chat screenshot showing multiple distinct Axoluthu messages. Source observed: five helmet-tier messages and eight crush-tier messages selected randomly on death. |
+| **6.5 Hurt-camera shake** | **CANDIDATE / REGRESSION** | Initial `GameRenderer.bobHurt` mixin caused startup `MixinTransformerError`; likely bad injection signature. A corrected-signature patch was supplied, **not yet confirmed to launch or suppress shake**. Treat checkpoint's mixin as suspect until replaced and tested. |
+| **6.5 Physical knockback** | **OPEN BUG / DESIGN DISCUSSION** | Frequent pressure hits produce excessive ping-pong movement. Do not confuse physical motion with camera tilt. User is considering controlled movement restriction instead of allowing uncontrolled repeated knockback. |
+| **6.6 Crushing Pressure** | **DESIGN LOCKED / NOT IMPLEMENTED** | Progressive underwater movement impairment as pressure grows; full effect thresholds, swimming physics and protection interactions to be implemented/tested. |
+| **6.6 The Bends** | **DESIGN LOCKED / NOT IMPLEMENTED** | Accumulating decompression consequence when Crushing Pressure level decreases during ascent; blobfish PNG status icon; not removed by milk, helmet or submarine; protective equipment only stops further accumulation. Diluted Ichor bucket cures existing Bends. |
+
+## 1. Phase 6.4 — Abyssal water and boat preservation
+
+- **Visuals:** Dreamlike Starry Seas aesthetic, translucent navy/teal water, sparkling cyan and lavender star motifs, glowing bioluminescent wake/crest effects. Underwater tint darkens with depth while retaining readable, clear visibility; water visuals can be toggled using `/tota water enable` and `/tota water disable`.
+- **User result:** Water aesthetic approved; user used a screenshot as PC lock screen. Water physics and boat buoyancy declared complete by user. **Do not modify boat physics in Phase 6.5/6.6 fixes** without explicit approval and regression tests.
+- **Reference ranges:** Overworld surface **Y=62** to deepest **Y=-30** (92 blocks); Ethereal Abyss intended surface **Y=200** to deepest **Y=0** (200 blocks). These are the pressure normalization references, not proof that the planned Abyss worldgen is complete.
+
+## 2. Phase 6.5 — Pressure and interface implementation
+
+### 2A. Pressure formula and damage tiers
+
+Current source uses eye height and `clamp((seaLevel - player.getEyeY()) * 100 / depthRange, 0, 100)` with `(seaLevel, depthRange)=(62,92)` for Overworld and `(200,200)` for **every non-Overworld dimension**. **TODO:** restrict Abyss-specific behavior to the actual Abyss dimension instead of treating Nether/End as Abyss by default, if desired.
+
+| Pressure reading | Classification | Current effect / intended protection |
+|---|---|---|
+| **0–25** | Safe | No pressure damage. |
+| **>25–50** | Warning | Warning only; no pressure damage. |
+| **>50–75** | Helmet zone | Without protection, **0.5 HP every 4 ticks**. Diving Helmet protection planned, not certified. |
+| **>75–100** | Crush / submarine zone | Without protection, **1.0 HP every 2 ticks**. Sub-for-One protection planned, not certified. |
+
+- Damage is server-side and only when **head underwater** (`player.isUnderWater()`), alive, non-Creative and non-Spectator. Dry caves and partial foot immersion do not qualify.
+- Damage source is `temple_of_the_axolotl:abyss_pressure`; checkpoint includes `data/temple_of_the_axolotl/damage_type/abyss_pressure.json` and `AbyssPressureEvents.java`. **Important audit item:** a dedicated bypass tag/other mechanisms are needed to substantiate prior 'true damage bypasses armor, resistance, invulnerability frames' claims; the inspected JSON by itself does not prove those bypasses. Preserve observed lethal cadence while validating exact protection interactions.
+- Existing pressure damage and death-message logic should not be weakened or rewritten to solve visual shake or physical knockback.
+
+### 2B. HUD, modules, and screen fixes
+
+- Pressure gauge is an analog circular dial to the right of the Position/Chronometer area; player confirmed 100 at head Y=-30 and continuous eye-level tracking.
+- Gauge requires **Abyss Pressure Gauge** item installed in first slot of a **second 9×1 vertical module column**, adjacent to the original nine slots (18 total).
+- GUI uses the existing Ethereal Abyss background and shows Magnet, Mining, Night Vision and Conduit Power controls. Crescent moon, fish and magnet pixel silhouettes now render in `render()` **after** `super.render`, not underneath widgets in `renderBg`; user confirmed fixed.
+- Retain separate Night Vision and Conduit toggles and existing Ring Mining toggle. HUD background was trimmed to remove excess empty area; verify actual source layout before further resizing.
+
+### 2C. Axoluthu's Cemetery — randomized death messages
+
+- **USER-TESTED:** in-game chat showed different death lines including 'sent to Axoluthu's Cemetery', 'saw something shiny in the dark', 'received a one-way invitation from Axoluthu', 'went deeper than destiny permitted' and 'thought to go for a swim'. Repeats are normal random selection.
+- **SOURCE-OBSERVED:** `RandomizedPressureDamageSource` selects **5 helmet** keys `death.attack.abyss_pressure.helmet.0`–`.4` and **8 crush** keys `death.attack.abyss_pressure.crush.0`–`.7`; translation text is in `en_us.json`. The source's actual grouping overrides the earlier brainstorming-only 11-message count.
+- Death text uses the victim's actual display name dynamically (`%1$s`), **not a hardcoded real name**. Preserve this privacy and localization behavior.
+- Maintain mix of ominous and comic lines: cemetery, weight of the ocean, Abyss unforgiving, Axoluthu's records/invitation, submarines, destiny, sardine, forgotten helmet, tasting the sea, swimming, shiny object. Existing 13 strings remain source authority; don't silently delete any.
+- **Future Sub-for-One:** move 'thought to go for a swim' and 'saw something shiny in the dark' into a dedicated submarine-incident pool when a robust event/context exists. Current appearance in crush pool is acceptable until then.
+- Translation follow-ups: validate `death.attack.abyss_pressure.player` fallback and the Celestial Anvil's `block.temple_of_the_axolotl.celestial_anvil` localization, if still missing in actual build.
+
+### 2D. Outstanding camera and knockback bugs
+
+1. **Startup regression:** original `AbyssPressureNoHurtCameraMixin.java` in checkpoint targets `GameRenderer.bobHurt` with `(Camera camera, float partialTick, CallbackInfo)`; the injection signature is suspect for Minecraft 1.21.1. User supplied crash report showing `MixinTransformerError` during class initialization and downstream `RenderType` initialization failure. A replacement signature patch was delivered after the checkpoint, but **no user-confirmed successful run** has been recorded. Verify against exact mappings and `latest.log` before certifying.
+2. **Camera requirement:** suppress only pressure-induced hurt-camera tilt. Retain ordinary combat hurt-camera effects and all pressure damage.
+3. **Motion requirement:** pressure damage currently causes extreme ping-pong motion under rapid repeated hits. Investigate knockback and velocity pathways independently of hurt-camera mixin. Avoid per-tick velocity reset that would break natural swimming/buoyancy. User's newer design suggests controlled immobilization via Crushing Pressure; exact physics remain pending.
+4. **Non-regression:** NO TOUCHIE BOAT; no unrequested changes to damage cadence, death text, HUD, or other mods.
+
+## 3. NEW Phase 6.6 — Crushing Pressure and The Bends
+
+**Overall status: DESIGN LOCKED / NOT IMPLEMENTED.** This is the next active docket. Phase 6.6 introduces movement impairment and decompression consequences while preserving Phase 6.5's pressure-damage foundation.
+
+### 3A. Crushing Pressure — descent effect
+
+- Custom underwater status effect **Crushing Pressure**. Conceptual intensity increases with current pressure; reduces ability to swim/move, becoming very restrictive at extreme depth. Pressure should feel oppressive rather than randomly launching players.
+- Candidate tiers: pressure **>50–75 = Crushing Pressure I**; **>75–100 = Crushing Pressure II**. Earlier discussion considered mild movement slowdown in warning zone **>25–50**; this is an **optional balance proposal, not a finalized threshold**.
+- Restrict player-controlled swimming/acceleration, not ordinary gravity, currents, or protected vehicle handling. Preserve normal movement where pressure is safe. Ensure only head-submerged context triggers underwater pressure mechanics.
+- Diving Helmet and Sub-for-One are intended to protect appropriate tiers; exact protection flags, helmet behavior, submarine pressure seal and how effect clears while protected require implementation decisions. Do not imply equipment already exists.
+- Visual indicator/status-effect icon for Crushing Pressure is open; cracked helmet is a **suggested** icon, not final approved art.
+
+### 3B. The Bends — ascent consequence (LOCKED)
+
+**Trigger rule:** When a player's active **Crushing Pressure level decreases by one due to ascending across a pressure boundary**, add **The Bends I** (one accumulated severity level). Multiple unprotected level decreases accumulate additional Bends levels. This is **not** a generic timer that starts merely upon reaching the surface; the *level drop during ascent* is the event. Do not trigger when the effect changes solely due to equipment changes or unrelated clearing.
+
+- **The Bends persists** after the player surfaces; entering the Sub-for-One or putting on the Diving Helmet **does not remove or reduce existing Bends**.
+- **Protected equipment prevents further Bends accumulation** but does not cure existing levels. Distinguish current Crushing Pressure level from persistent Bends severity.
+- **Milk does not cure it**; no bucket-of-milk bypass. A durable per-player severity/exposure state may be needed so vanilla status-effect clearing does not erase the condition. Administrator/debug commands should remain practical unless later specified.
+- **The Bends icon:** a **blobfish PNG** in the status-effect UI. User approved the blobfish idea and illustrated presentation; production sprite/art and in-game registration remain to be created.
+- **Effect gameplay:** intermittent Slowness, Mining Fatigue and mild damage were *suggested* as potential symptoms; actual severity effects, durations, level cap, persistence across death/relog, exact detection on rapid versus gradual ascent, and cure interaction need explicit implementation/balance decisions. **Do not present suggestions as locked.**
+- This is an intentionally game-simplified decompression mechanic, not a real-world medical model.
+
+### 3C. Diluted Ichor — new cure (LOCKED)
+
+- Existing **Diluted Ichor Bucket** gains an additional consumable use: **drink one bucket to fully cure all accumulated Bends levels**, then return an empty bucket.
+- Milk remains ineffective; Diving Helmet and Sub-for-One only prevent further accumulation. **Diluted Ichor does not cancel active Crushing Pressure or provide lasting immunity**; a new unsafe ascent can produce new Bends.
+- Preserve the existing Diluted/Pure Ichor distinction and Cosmic Brewing Stand production; **do not resurrect the CUT Ambrosia fluid** or obsolete water-cauldron recipe.
+- Drinking duration/animation, inventory edge cases, creative behavior and item use interactions remain implementation details. Longer-than-potion consumption was proposed but not locked.
+
+### 3D. Phase 6.6 acceptance tests / implementation order
+
+1. Establish explicit pressure-tier and previous-tier state, with server authority, eye-level depth calculation, and exact Abyss dimension selection.
+2. Add Crushing Pressure status effect and deterministic swimming resistance; confirm smooth motion and no camera shake/knockback regressions.
+3. Detect **ascent-driven** tier drops; grant one additional Bends level per qualifying tier crossed, including multi-tier rapid ascent. Avoid double-counting on ticks, relog or equipment transitions.
+4. Implement persistence, milk immunity, equipment-based prevention of **new** Bends, and status-effect display with blobfish PNG.
+5. Implement Diluted Ichor drink-to-cure, bucket return and no permanent immunity; verify current brewing/crafting uses are unchanged.
+6. Verify protected vs unprotected ascent, surface transition, Creative/Spectator, death/relog, vanilla effect clearing, HUD pressure values, and Sub-for-One future integration. Set explicit decisions for severity cap, effects, safe ascent and death reset before final certification.
+7. Regression: water shader toggles, boat buoyancy, module GUI, death messages, Eternal Guard, ordinary combat camera and natural swimming.
+
+## 4. Updated overall roadmap — active order and preserved commitments
+
+| Priority | Docket | Status / next milestone |
+|---|---|---|
+| **Immediate repair** | 6.5 camera shake and excessive pressure knockback | Correct/test mixin, isolate motion effects; preserve all existing pressure logic. |
+| **Next major phase** | **6.6 Crushing Pressure / The Bends / Diluted Ichor cure** | Implement and game-test new movement/decompression system, blobfish icon, anti-milk rules. |
+| **Next equipment** | Diving Helmet | Provide tier-appropriate protection; prevent further Bends without erasing existing severity. Exact crafting and mechanics TBD. |
+| **Next vehicle** | Sub-for-One | One-seat submersible, safe crush-zone exploration, exactly one Axoleviathan bite survived when pristine, second bite catastrophic unless repaired; future submarine death-message pool. |
+| **Abyss world/portal** | Ethereal Abyss Y=200 sea, ocean strata, trenches, vents, Mer-Axolotl villages; Abyss Watergate | Preserve naturally generated Deep Ocean / Deep Frozen Ocean ruins, **7 houses, 4 bubble-glass trail modules, 1 central Watergate, 1 jukebox, several Moais**, disc playback activation. Worldgen and portal are not completed by water-shader work. |
+| **Abyss fauna/boss** | Axokraken, Axoleviathan, worshippers, Axoluthu | Preserve alliance, 1,024 HP leviathan, 30 armor/20 toughness, guaranteed Heart, replacement Axokraken, Cosmic Trident-only boss weapon, five leviathans after boss death. |
+| **Other existing work** | Ring, Fallen Boss Wrath, Sanctum, Origin campaign, companion AI, Repository/Modules, workstations, audio, dungeon economy, lore | Retain V14/V13 detailed status and unresolved regression checks; new water work does not automatically certify or cancel these. |
+| **Deferred/CUT** | Create Easter eggs (later); separate Ambrosia, Repository search/sort, standalone multiplayer regression docket (cut) | No reactivation without explicit new user decision. |
+
+### Release and continuity guardrails
+
+- **NO TOUCHIE BOAT** — user-approved Phase 6.4 boat physics and water visuals must remain intact.
+- Keep existing randomized pressure death messages and their dynamic player-name formatting.
+- No global cancellation of camera shake or damage knockback for unrelated damage sources.
+- Do not confuse a screenshot, supplied ZIP, successful compilation, user approval or design agreement with an exhaustive implementation test.
+- Preserve original V14 and all historical appendices below, unchanged; newest V15 active decisions take precedence over old prospective wording (especially V13's outdated 75/100-block pressure specification).
+
+---
+
+# Preserved V14 master roadmap and V1–V13 historical appendices (unchanged)
+
+# Temple of the Axolotl — Master Development Roadmap V14
+
+**Updated:** October 28, 2026 — Phase 6.3.x Ring and Abyssal Moai progress, warning cleanup, Abyss Watergate and Sunken Merfolk Village design.  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl`  
+**Authority:** User-reported tests, screenshots, patch discussion, and design decisions through October 28. **This is a planning and progress docket, not an independent audit of the latest source ZIP.** V13 and all its earlier historical appendices are preserved in full below. Latest explicit decisions supersede older status descriptions.
+
+> **READ FIRST — V14 STATUS CONVENTION.** **USER-TESTED** = behavior observed and confirmed by user; **COMPILED** = user-reported build passed, not gameplay certification; **CANDIDATE** = patch or implementation discussed/delivered but not independently validated; **DESIGN LOCKED** = agreed specification, not implemented; **PLANNED** = work remaining. Never treat a design note as source implementation or a compilation pass as runtime verification. **No warning suppressions** are allowed as a substitute for real API migrations.
+
+## 0. V14 executive progress checkpoint
+
+| Workstream | Latest status | October 28 outcome / remaining boundary |
+|---|---|---|
+| **Ring of the One — 3D visuals** | **USER-TESTED / refined** | Elaborate Blockbench ring completed with animation and hand-painted high-resolution texture. User reported **318 bones / 1,176 cubes**, **256×256 minimum UV atlas** and **2048×2048 rendered texture** for acceptable smooth gradients. Ring item/first-person/flight render orientations iterated; user confirmed flight working. Inventory icon continued needing orientation adjustments; do not infer final axis/angle from an earlier request. |
+| **Ring — arcing chakram attacks** | **USER-TESTED / refined** | Elliptical flight and return improved; outward zenith and arc width must derive from the **player's actual entity-interaction/reach attribute**, not a fixed 8-block constant. Longer/wider arcs should proportionally extend return time. User reported path fix working. Preserve attack-speed scaling and swept-perimeter hit detection. |
+| **Ring — enchantments** | **USER-REPORTED WORKING FOR LATEST PATCH; regression still appropriate** | Arc attacks must carry applicable Ring enchantments, including sword enchantments and **Breach** and **Density** when placed via the Celestial Anvil's intentional nonstandard enchantment rules. Lucky Stars proc-on-kill fireworks: roll 1 **purple/lavender**, roll 2 **white**, roll 3 **cyan**; if multiple rolls occur, show the **highest roll's color**. User said the integrated patch worked; test each enchant and combination individually before blanket certification. |
+| **Abyssal Moai** | **USER-SHOWN MODEL / USER-TESTED PROTOTYPE** | Replaces the prior Abyssal Torch concept while preserving the `abyssal_torch` registry identity. Two-block-high, floor-mounted, facing-aware Moai/gargoyle hybrid with dark navy/sculk stone and cyan details; glow/light emission retained **underwater**, comparable to a sea lantern. Inventory representation should show the **full upright model** facing the viewer, not just its base or rear. User demonstrated a multi-Moai perimeter and reported satisfactory prototype behavior. |
+| **Moai mob repulsion** | **USER-TESTED / targeted exceptions** | Intended five-block radius, hostile and actively aggressive neutral mobs; exclude players, passive mobs, pets, Temple Crew **including Boss Fallen Wrath**, and all Abyssal faction members. **Zombie horses explicitly added as a special repulsion target** despite the normal peaceful/neutral exclusions. Validate zombie horse/rider interactions, field overlap, removal, and full measured radius in current build. |
+| **Java warning cleanup** | **USER-REPORTED CLEAN COMPILE** | Series of Phase 6.3.2 warning fixes migrated deprecated enchantment calls, NeoForge event-bus registrations, client fluid extensions, chunk checks and other reported warning sites **without suppressions**. Latest user-shared `compileTestJava` result: **BUILD SUCCESSFUL**, `compileJava` ran with **no reported warnings**, `compileTestJava NO-SOURCE`. IntelliJ restart/inspections and in-game regressions remain separate verification steps. |
+| **Abyss Watergate / lost merfolk hamlet** | **DESIGN LOCKED / NOT YET IMPLEMENTED** | Rare naturally generated seafloor ruin in **Deep Ocean** and **Deep Frozen Ocean**, with a central giant Watergate, a jukebox shrine, Moai guardians, **seven ruined house modules**, **four bubble-like glass pathways**, and supporting decoration. Details in §2 below. |
+
+## 1. Ring of the One — October 28 implementation notes
+
+### 1A. Blockbench and renderer
+
+- Ring's high-complexity model and animations were user-reported finished. Record model scale and texture resolution **separately**: 256×256 UV layout and 2048×2048 pixel texture are not interchangeable measurements. Avoid reintroducing tiny 16×16 or 32×32 art for this asset.
+- Three distinct display contexts require independent inspection: **GUI icon**, **first-person held item**, and **flying chakram entity**. Rotations that fix one can break another. Previous experimentation included 90° X-axis flattening and Z-axis icon rotation; use the latest model and renderer source to confirm final transforms rather than blindly applying an old angle.
+- Flight animation and arcing attack geometry are separate from the decorative spinning/animated geometry. Avoid an effect where the center appears stationary while only some blades spin.
+
+### 1B. Attack range and enchantments
+
+- Read the current player's effective reach/entity-interaction attribute at throw time. Ellipse zenith, width, and return duration must respond dynamically; don't hard-code a presumed eight-block reach. Preserve player-relative return homing, pitch/yaw alignment, attack-speed scaling, and narrow swept-path damage.
+- Apply Ring enchantments to projectile/arc combat with the correct hit attribution, damage calculations, and on-kill events. The Celestial Anvil intentionally allows unusual sword enchantments plus Breach and Density on the Ring; Fortune and Silk Touch remain mutually exclusive under the existing Anvil specification.
+- Lucky Stars: on a successful enchanted kill, firework-star visual uses **lavender/purple** for roll 1, **white** for roll 2, **cyan** for roll 3. If rolls overlap, **highest successful roll determines the color**. Keep server-side proc logic distinct from client particle effects; avoid duplicate visual triggers.
+
+## 2. Abyssal Docket — Watergate and Sunken Merfolk Village
+
+### 2A. Watergate: worldgen, structure and activation — DESIGN LOCKED
+
+- The **Abyss Watergate is NOT a player-crafted, freely placeable portal entrance** in normal progression. It is the central monument of a naturally generated ancient merfolk ruin on the ocean floor, restricted to **Minecraft's Deep Ocean and Deep Frozen Ocean biomes**.
+- The Watergate's visible frame is one **oversized Blockbench/GeckoLib model anchored to a single controller block**. The surrounding ruins are Minecraft structure-template content. Its visual dimensions can exceed the one-block controller, but generation must clear/reserve the model footprint and the portal collision area; do not assume one block of physical collision covers the full gateway.
+- **Musical key:** A **jukebox included in the structure NBT** plays **The Cosmic and the Seas** music disc to awaken the Watergate. Activation requires **actual playback**, not merely disc storage. Whether ordinary jukeboxes, Celestial Jukeboxes or both qualify, the precise detection radius, and whether activation persists after playback stops remain **OPEN**. Do not automatically place a preplaying disc or assume permanent activation.
+- **Portal effect:** A custom animated **cyan/turquoise Nether Portal-inspired surface** inside the Watergate opening, with a deep-navy center, luminous cyan streaks, and cyan portal-style particles. Vanilla `PORTAL` particles are not simply tintable; use custom particles or a suitable tintable particle type. Server controls actual teleportation/active state; client controls visuals and particles. This is a **planned renderer**, not a working portal yet.
+- Possible activation presentation: dormant → musical awakening → cyan rune/particle buildup → expanding portal surface → active swirling gate → shutdown. This is an **art-direction proposal**; exact timing and shutdown mechanics are not locked.
+
+### 2B. Sunken Merfolk Village — DESIGN LOCKED
+
+**Scale:** A compact, ruined merfolk **hamlet**, **not** an Ancient City-sized settlement. The Ancient City's central monumental frame is a *layout analogy*, not a request to copy its scale.
+
+| Structure element | Count | Requirement |
+|---|---:|---|
+| **Abyss Watergate centerpiece** | **1** | Giant central gateway; controller model integrated into NBT/worldgen structure |
+| **Ruined merfolk house modules** | **7** | Compact, visibly damaged underwater homes around the monument |
+| **Bubble-glass pathway modules** | **4** | Scattered individual glass blocks/clusters suggesting bubble trails and paths through the water; **NOT** sealed glass tunnels, domes, or air-filled roads |
+| **Jukebox** | **1** | Pre-positioned in the NBT as the Watergate's musical activation shrine |
+| **Abyssal Moai sentinels** | **Several; exact count TBD** | Decor and hostile-mob repulsion around the site; keep all faction exceptions |
+| **Other decor** | **As designed in NBT** | Ruined stone/prismarine details, seabed embellishments, ancient architectural remains |
+
+- Bubble pathways should look **organic and watery**: irregular individual transparent or pale-cyan glass blocks, staggered heights, gaps, and small floating clusters, visually reminiscent of bubbles. **They are not glass-enclosed corridors.** This explicitly supersedes any earlier suggestion of intact air-filled tunnels.
+- House arrangement, Moai positions and decorations are authored by the user in Minecraft and saved as NBT templates. One complete structure template is acceptable if it fits; **modular templates/jigsaw generation are an option**, not a mandatory design decision. Seven houses + four paths + one gate = **12 principal layout modules**, with jukebox and Moais embedded in the site rather than incorrectly counted as extra houses.
+- Placement should resemble vanilla underwater ruins: some partial burial and terrain integration are appropriate, but the main gate and its activation point must remain reachable. Ensure reliable ocean-floor anchoring, waterlogging, unobstructed portal opening, and compatibility with uneven terrain. Worldgen spacing/rarity, precise bounding box and whether houses vary by seed are **OPEN**.
+- Distinguish this **ruined Overworld village** from the **living Abyss Upper Ocean mer-axolotl settlements** in V13 §2F. The latter are floating bubble-shaped **prismarine architectural clusters without enclosing glass domes**; the Overworld ruins use **stray glass bubble trails** as pathways. Do not conflate these two designs.
+
+### 2C. Moai presentation and behavior — updated from V13 §2D
+
+- Model style: hybrid **Moai + sentinel gargoyle**, not an ordinary Easter Island statue or generic torch. Dark deep-ocean stone, cyan details, luminous accents. User iterated Blockbench geometry/UVs, fixed z-fighting, and refined the finished appearance.
+- Retain **soul-torch-like light output underwater**, roughly sea-lantern-level emission; validate actual block light and submerged rendering rather than only emissive-looking texture.
+- **Full-model inventory icon**: show the entire upright statue, not only the pedestal, and orient its **face toward the GUI camera**. The user specifically rejected a rear-facing inventory pose.
+- Repulsion must exclude all Temple Crew (including **hostile Boss Fallen Wrath**) and Abyssal faction mobs, while **zombie horses are a deliberate special-case target**. Test hostile jockey mounts as well as rider behavior.
+- Maintain the existing registry identity (`abyssal_torch`) where necessary for compatibility, but present the new Moai model/behavior. Distinguish tested current code from planned final refinements.
+
+## 3. Immediate next steps and regression boundaries
+
+1. **Checkpoint safety:** retain the latest project source/asset ZIP as the authority for any code patch. Do not claim that this roadmap itself modified the mod.
+2. **Ring:** verify GUI/front orientation and full enchantment interactions in combat; preserve the now-working flight visuals and dynamic reach-based ellipsoid.
+3. **Moai:** verify full icon pose, underwater light emission, five-block radius, faction exceptions, zombie horse push, overlapping fields and two-block placement/breaking.
+4. **Compiler/IDE:** IntelliJ restart and Problems panel inspection; distinguish compiler warnings from IDE inspections. Run a game client regression for affected network/event-bus/fluid/trap paths after the warning cleanup. **Never hide warnings with `@SuppressWarnings`.**
+5. **Watergate planning:** build the central gate, seven ruined houses, four bubble-glass trail modules, jukebox and Moais in a test world; save structure NBT and choose whole-template versus jigsaw assembly after measuring footprint.
+6. **Watergate implementation (future):** worldgen in the two Deep Ocean biomes; music-disc playback detection; animated cyan portal renderer and particles; server-side activation/teleportation; underwater structure collision/placement tests.
+7. **Preserve V13 Abyss commitments:** Y=200 sea surface, 75/100-block depth limits, three ocean strata, Sub-for-One one-chomp survival, Axoleviathan/Axokraken alliance, Axoluthu worshippers and boss progression, Cosmo-Bow and Cosmic Trident. None are implicitly implemented by today's planning.
+
+---
+
+# Preserved V13 master roadmap and complete V1–V12 historical appendices (unchanged)
+
 # Temple of the Axolotl — Master Development Roadmap V13
 
 **Updated:** October 27, 2026 — V13 Abyssal Moai, Watergate, ocean strata, pressure, Mer-Axolotl villages and Sub-for-One planning; preserves V12 combat and cosmic weapons  

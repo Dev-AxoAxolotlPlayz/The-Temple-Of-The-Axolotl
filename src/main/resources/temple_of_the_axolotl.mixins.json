@@ -14,7 +14,11 @@
     "AbyssPressureNoHurtCameraMixin",
     "DiaryTitleFontMixin",
     "DiaryCenteredHeadingsMixin",
-    "DiaryRemainingLabelsMixin"
+    "DiaryRemainingLabelsMixin",
+    "TitlePanoramaOnlyMixin",
+    "TitleSolidBackdropMixin",
+    "TitleLogoOnlyMixin",
+    "TitleSplashOnlyMixin"
   ],
   "injectors": {
     "defaultRequire": 1

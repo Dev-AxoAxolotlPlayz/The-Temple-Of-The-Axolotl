@@ -1,3 +1,4 @@
+
 package com.devaxo.templeoftheaxolotl.client;
 
 import com.devaxo.templeoftheaxolotl.TempleOfTheAxolotl;
@@ -5,6 +6,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import java.util.Set;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.ResourceLocation;
@@ -16,12 +19,12 @@ import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+
 import java.util.List;
 
 /**
- * Full replacement for the vanilla title visual pass. Vanilla TitleScreen widgets
- * remain real interactive widgets, but its panorama and logo are never rendered.
+ * Celestial title artwork with centered Minecraft/NeoForge buttons.
+ * All external mod widgets retain their native geometry and render callbacks.
  */
 @EventBusSubscriber(modid = TempleOfTheAxolotl.MODID, value = Dist.CLIENT)
 public final class CelestialTitleMenu {
@@ -37,47 +40,190 @@ public final class CelestialTitleMenu {
     private static boolean onTitle;
     private CelestialTitleMenu() {}
 
+    // Only these Minecraft-owned controls receive the celestial treatment.
+    // External mods (Create, Essential, etc.) retain their original widget rendering.
+    private static final Set<String> VANILLA_TITLE_BUTTONS = Set.of(
+            "menu.singleplayer", "menu.multiplayer", "menu.online",
+            "menu.options", "menu.quit", "menu.language", "narrator.button.language",
+            "options.accessibility.title", "menu.accessibility"
+    );
+
+    private static String translationKey(AbstractWidget widget) {
+        if (widget.getMessage().getContents() instanceof TranslatableContents contents) {
+            return contents.getKey();
+        }
+        return "";
+    }
+
+    private static boolean isStyledTitleButton(AbstractWidget widget) {
+        String key = translationKey(widget);
+        return key.equals("menu.singleplayer") || key.equals("menu.multiplayer")
+                || key.equals("menu.online") || key.equals("menu.options")
+                || key.equals("menu.quit") || key.equals("fml.menu.mods")
+                || (widget.getMessage().getString().equalsIgnoreCase("Mods") && widget.getWidth() >= 90);
+    }
+
+    private static boolean isVanillaTitleButton(AbstractWidget widget) {
+        return VANILLA_TITLE_BUTTONS.contains(translationKey(widget));
+    }
+
     @SubscribeEvent
     public static void onInit(ScreenEvent.Init.Post event) {
         if (!(event.getScreen() instanceof TitleScreen)) return;
         int w = event.getScreen().width;
         int h = event.getScreen().height;
-        List<AbstractWidget> wide = new ArrayList<>();
-        List<AbstractWidget> small = new ArrayList<>();
+        List<AbstractWidget> vanillaWide = new ArrayList<>();
+        List<AbstractWidget> modButtons = new ArrayList<>();
+
         event.getScreen().children().forEach(child -> {
-            if (child instanceof AbstractWidget widget) {
-                if (widget.getWidth() >= 95) wide.add(widget);
-                else small.add(widget);
+            if (!(child instanceof AbstractWidget widget)) return;
+            if (isVanillaTitleButton(widget)) {
+                if (widget.getWidth() >= 95) vanillaWide.add(widget);
+                // Small language/accessibility icons remain at their native positions.
+            } else if (translationKey(widget).equals("fml.menu.mods")
+                    || (widget.getMessage().getString().equalsIgnoreCase("Mods")
+                        && widget.getWidth() >= 90)) {
+                modButtons.add(widget);
             }
+            // Other widgets (especially Create) retain their original size and position.
         });
-        wide.sort(Comparator.comparingInt(AbstractWidget::getY).thenComparingInt(AbstractWidget::getX));
-        // Layout is expressed as fractions of the logical viewport, not fixed GUI pixels.
-        // Vanilla GUI scale changes w/h; these ratios preserve the same composition.
-        int bw = Math.max(80, Math.round(w * 0.18f));
-        int bh = Math.max(12, Math.round(h * 0.047f));
-        int left = Math.max(8, Math.round(w * 0.043f));
-        int gap = Math.max(3, Math.round(h * 0.012f));
-        int step = bh + gap;
-        int start = Math.max(10, Math.round(h * 0.36f));
-        if (start + wide.size() * step > h * 0.87f) {
-            bh = Math.max(10, (int)(h * 0.49f / Math.max(1, wide.size())) - gap);
-            step = bh + gap;
+        vanillaWide.sort(java.util.Comparator.comparingInt(AbstractWidget::getY)
+                .thenComparingInt(AbstractWidget::getX));
+
+        // Three centered rows, two native buttons per row.
+        // Keep every existing click handler and all external-mod widgets intact.
+        int pairWidth = 98;
+        int pairGap = 4;
+        int bh = Math.max(20, Math.min(28, Math.round(h * 0.055f)));
+        int gap = Math.max(4, Math.round(h * 0.012f));
+
+        AbstractWidget singleplayer = null;
+        AbstractWidget multiplayer = null;
+        AbstractWidget realms = null;
+        AbstractWidget options = null;
+        AbstractWidget quit = null;
+        AbstractWidget mods = modButtons.isEmpty() ? null : modButtons.get(0);
+        for (AbstractWidget button : vanillaWide) {
+            switch (translationKey(button)) {
+                case "menu.singleplayer" -> singleplayer = button;
+                case "menu.multiplayer" -> multiplayer = button;
+                case "menu.online" -> realms = button;
+                case "menu.options" -> options = button;
+                case "menu.quit" -> quit = button;
+                default -> { }
+            }
         }
-        for (int i = 0; i < wide.size(); i++) {
-            AbstractWidget b = wide.get(i);
-            b.setX(left);
-            b.setY(start + i * step);
-            b.setWidth(bw);
-            b.setHeight(bh);
+
+        AbstractWidget[][] pairs = {
+                {multiplayer, singleplayer},
+                {realms, options},
+                {mods, quit}
+        };
+        int rows = pairs.length;
+        int stackHeight = rows * bh + (rows - 1) * gap;
+        int start = Math.max(12, Math.min(h - stackHeight - 12,
+                Math.round(h * 0.47f - stackHeight * 0.10f) + Math.round((bh + gap) / 2.0f)));
+        int pairX = (w - (pairWidth * 2 + pairGap)) / 2;
+
+        for (int row = 0; row < pairs.length; row++) {
+            int y = start + 3 + row * (bh + gap);
+            for (int column = 0; column < 2; column++) {
+                AbstractWidget button = pairs[row][column];
+                if (button == null) continue;
+                button.setX(pairX + column * (pairWidth + pairGap));
+                button.setY(y);
+                button.setWidth(pairWidth);
+                button.setHeight(bh);
+            }
         }
-        int smallY = Math.min(h - 16, start + wide.size() * step + gap);
-        int smallWidth = Math.max(12, Math.round(w * 0.024f));
-        for (int i = 0; i < small.size(); i++) {
-            AbstractWidget b = small.get(i);
-            b.setX(left + i * (smallWidth + gap));
-            b.setY(smallY);
-            b.setWidth(smallWidth);
-            b.setHeight(Math.max(12, bh));
+        positionEssentialButtonsLeftOfPlayer(event.getScreen());
+        positionEssentialUpdateLeftOfMods(event.getScreen(), mods);
+        // Language and Accessibility keep their original vanilla positions and sizes.
+        // Essential and Create controls are not repositioned, resized, or reimplemented.
+    }
+
+
+    /**
+     * Experimental Essential-only layout: move its six real action widgets to
+     * the left of its existing player-preview widget. Do not replace renderers,
+     * callbacks, textures, or alter the preview itself.
+     *
+     * If Essential's placeholder widgets aren't present, do nothing.
+     */
+    private static void positionEssentialButtonsLeftOfPlayer(net.minecraft.client.gui.screens.Screen screen) {
+        AbstractWidget preview = null;
+        java.util.Map<String, AbstractWidget> actions = new java.util.HashMap<>();
+        for (var child : screen.children()) {
+            if (!(child instanceof AbstractWidget widget)) continue;
+            String key = translationKey(widget).toLowerCase(java.util.Locale.ROOT);
+            String message = widget.getMessage().getString().toLowerCase(java.util.Locale.ROOT);
+            if (key.contains("essential_player") || message.contains("essential_player")) {
+                preview = widget;
+                continue;
+            }
+            String action = null;
+            for (String candidate : new String[]{"host", "social", "wardrobe", "pictures", "settings", "account"}) {
+                if ((key.contains("essential") && key.contains(candidate))
+                        || (message.contains("essential") && message.contains(candidate))) {
+                    action = candidate;
+                    break;
+                }
+            }
+            if (action != null) actions.putIfAbsent(action, widget);
+        }
+        if (preview == null || actions.size() != 6) return;
+
+        String[] order = {"host", "social", "wardrobe", "pictures", "settings", "account"};
+        int maxWidth = 0;
+        int totalHeight = 0;
+        final int gap = 3;
+        for (String action : order) {
+            AbstractWidget widget = actions.get(action);
+            // Preserve Essential's native width and label/icon layout.
+            // Its social notification badges may rely on these dimensions.
+            maxWidth = Math.max(maxWidth, widget.getWidth());
+            totalHeight += widget.getHeight();
+        }
+        totalHeight += gap * (order.length - 1);
+
+        // Skip relocation rather than covering the preview or going offscreen.
+        final int sideGap = 8;
+        int x = preview.getX() - sideGap - maxWidth - 50;
+        if (x < 4) return;
+        int y = preview.getY() + (preview.getHeight() - totalHeight) / 2;
+        // Three button slots downward, using the actual Essential widget height.
+        y += 3 * (actions.get("host").getHeight() + gap) - 4;
+        y = Math.max(4, Math.min(y, screen.height - totalHeight - 4));
+        if (y < 4 || y + totalHeight > screen.height - 4) return;
+
+        for (String action : order) {
+            AbstractWidget widget = actions.get(action);
+            widget.setX(x + maxWidth - widget.getWidth());
+            widget.setY(y);
+            y += widget.getHeight() + gap;
+        }
+    }
+
+    /**
+     * Position Essential's real "Update Available" widget exactly 6 GUI pixels
+     * left of Mods, vertically centered. Never change its size or callbacks.
+     */
+    private static void positionEssentialUpdateLeftOfMods(
+            net.minecraft.client.gui.screens.Screen screen, AbstractWidget mods) {
+        if (mods == null) return;
+        for (var child : screen.children()) {
+            if (!(child instanceof AbstractWidget widget) || widget == mods) continue;
+            String key = translationKey(widget).toLowerCase(java.util.Locale.ROOT);
+            String label = widget.getMessage().getString().toLowerCase(java.util.Locale.ROOT);
+            boolean isUpdate = (label.contains("update") && label.contains("available"))
+                    || (key.contains("essential") && key.contains("update"));
+            if (!isUpdate) continue;
+            int x = mods.getX() - 6 - widget.getWidth();
+            int y = mods.getY() + (mods.getHeight() - widget.getHeight()) / 2;
+            if (x < 0 || y < 0 || y + widget.getHeight() > screen.height) return;
+            widget.setX(x);
+            widget.setY(y);
+            return;
         }
     }
 
@@ -141,53 +287,49 @@ public final class CelestialTitleMenu {
             return;
         }
         if (!(event.getScreen() instanceof TitleScreen)) return;
-        // Cancel the entire vanilla pass, including the panorama, logo and splash.
-        event.setCanceled(true);
+        // Suppress only the six vanilla/NeoForge button visuals. Their actual
+        // widgets remain alive and receive mouse/keyboard input normally.
+        for (var child : event.getScreen().children()) {
+            if (child instanceof AbstractWidget widget && isStyledTitleButton(widget)) {
+                widget.setAlpha(0.0f);
+            }
+        }
+        // DIAGNOSTIC ONLY: allow TitleScreen.render to execute normally.
+        // Essential's own rendering hooks can now run. Vanilla panorama/logo/splash
+        // WILL return for this test; this isolates the compatibility issue.
+        // The centered widget positions from onInit remain active.
+        return;
+    }
+
+    /** Paint only our six centered buttons after vanilla renders the screen. */
+    @SubscribeEvent
+    public static void renderStyledButtons(ScreenEvent.Render.Post event) {
+        if (!(event.getScreen() instanceof TitleScreen)) return;
         GuiGraphics g = event.getGuiGraphics();
         Minecraft mc = Minecraft.getInstance();
-        int w = event.getScreen().width, h = event.getScreen().height;
-        drawCover(g, STAGE, w, h);
-        drawKelp(g, w, h);
-        // Title and subtitle are already baked into the approved cosmic-ocean artwork.
-        // Do not render the old oversized title layers on top of them.
-
-        // A single movement clock for swimming and staring. Travel freezes during inspection.
-        int duration = Math.max(140, w * 2);
-        int pauseAt = (int)(duration * 0.82); // Inspect the Temple on the right
-        int pauseLength = 95; // Freeze travel while Cluckles inspects
-        int phase = (int)Math.floorMod(ticks, duration + pauseLength);
-        boolean stare = phase >= pauseAt && phase < pauseAt + pauseLength;
-        int travel = phase < pauseAt ? phase : phase < pauseAt + pauseLength ? pauseAt : phase - pauseLength;
-        int x = -45 + (int)((w + 110.0) * travel / duration);
-        int y = h * 79 / 100 + (int)(3 * Math.sin(ticks * .06));
-        float spriteScale = Math.max(0.65f, Math.min(1.6f, w / 600.0f));
-        g.pose().pushPose();
-        g.pose().translate(x, y, 0);
-        g.pose().scale(spriteScale, spriteScale, 1.0f);
-        drawCluckles(g, 0, 0, stare);
-        g.pose().popPose();
-
-        // Render actual Minecraft widgets as celestial-stone controls; input and actions
-        // remain owned by vanilla/NeoForge and are fully functional.
-        event.getScreen().children().forEach(child -> {
-            if (!(child instanceof AbstractWidget b) || !b.visible) return;
-            int x0 = b.getX(), y0 = b.getY(), x1 = x0 + b.getWidth(), y1 = y0 + b.getHeight();
-            boolean hover = b.isMouseOver(event.getMouseX(), event.getMouseY());
-            g.fill(x0 - 2, y0 - 2, x1 + 2, y1 + 2, hover ? 0xFFE5D08D : 0xFF947D56);
-            g.fill(x0, y0, x1, y1, hover ? 0xFF316B72 : 0xE9163D50);
-            g.fill(x0 + 3, y0 + 2, x1 - 3, y0 + 3, hover ? 0xFF91F6E2 : 0xFF4A9D9A);
-            // Fit button text to the available width; no spill into neighboring controls.
-            float textScale = Math.min(1.8f, Math.max(0.5f, b.getHeight() / 19.0f));
-            int textWidth = mc.font.width(b.getMessage());
-            if (textWidth > 0) textScale = Math.min(textScale, (b.getWidth() - 8.0f) / textWidth);
-            textScale = Math.max(0.35f, textScale);
+        for (var child : event.getScreen().children()) {
+            if (!(child instanceof AbstractWidget widget) || !isStyledTitleButton(widget)) continue;
+            // Restore alpha for later screens and for all native input/tooltip logic.
+            widget.setAlpha(1.0f);
+            if (!widget.visible) continue;
+            int x = widget.getX(), y = widget.getY();
+            int width = widget.getWidth(), height = widget.getHeight();
+            boolean hover = widget.isHoveredOrFocused();
+            int fill = !widget.active ? 0xFF1A2D35 : hover ? 0xFF397180 : 0xFF173C4A;
+            int rim = hover ? 0xFFFFDFA0 : 0xFFD4AD70;
+            int inner = hover ? 0xFF75C8D0 : 0xFF487D88;
+            // Render at a higher Z than vanilla widget text, so no native glyphs leak through.
             g.pose().pushPose();
-            g.pose().translate((x0 + x1) / 2.0f, (y0 + y1) / 2.0f, 0);
-            g.pose().scale(textScale, textScale, 1.0f);
-            g.drawCenteredString(mc.font, b.getMessage(), 0, -4,
-                    b.active ? 0xFFF3E9D4 : 0xFF929D9F);
+            g.pose().translate(0.0f, 0.0f, 300.0f);
+            g.fill(x, y, x + width, y + height, rim);
+            g.fill(x + 1, y + 1, x + width - 1, y + height - 1, fill);
+            g.fill(x + 3, y + 3, x + width - 3, y + 4, inner);
+            g.fill(x + 3, y + height - 4, x + width - 3, y + height - 3, inner);
+            int color = !widget.active ? 0xFF999E9C : hover ? 0xFFFFF5DA : 0xFFF0E9D8;
+            g.drawCenteredString(mc.font, widget.getMessage(),
+                    x + width / 2, y + (height - 8) / 2, color);
             g.pose().popPose();
-        });
+        }
     }
 
     /** Limit the persistent menu soundtrack and background to the requested screens. */
@@ -231,6 +373,25 @@ public final class CelestialTitleMenu {
             srcX = (tw - srcW) / 2;
         }
         g.blit(texture, 0, 0, w, h, srcX, srcY, srcW, srcH, tw, th);
+    }
+
+    /** Draw animated title foreground before vanilla and Essential render their widgets. */
+    public static void drawTitleForeground(GuiGraphics g, int w, int h) {
+        drawKelp(g, w, h);
+        int duration = Math.max(140, w * 2);
+        int pauseAt = (int) (duration * 0.82);
+        int pauseLength = 95;
+        int phase = (int) Math.floorMod(ticks, duration + pauseLength);
+        boolean stare = phase >= pauseAt && phase < pauseAt + pauseLength;
+        int travel = phase < pauseAt ? phase : phase < pauseAt + pauseLength ? pauseAt : phase - pauseLength;
+        int x = -45 + (int) ((w + 110.0) * travel / duration);
+        int y = h * 79 / 100 + (int) (3 * Math.sin(ticks * .06));
+        float spriteScale = Math.max(0.65f, Math.min(1.6f, w / 600.0f));
+        g.pose().pushPose();
+        g.pose().translate(x, y, 0);
+        g.pose().scale(spriteScale, spriteScale, 1.0f);
+        drawCluckles(g, 0, 0, stare);
+        g.pose().popPose();
     }
 
     /** Shared animated foreground; never remove the living kelp again. */

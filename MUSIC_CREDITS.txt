@@ -1,7 +1,20 @@
-Temple of the Axolotl - Soundtrack Credits
+Temple of the Axolotl — Soundtrack Credits
 
-The Cosmic and the Seas (Oceanic Trench) - ONECinematicStudio
-Beneath the Surface (The Lost City of Atlantis) - ONECinematicStudio
-Out of Reach (Cosmic Starfighter) - Psychronic
+The Cosmic and the Seas (Oceanic Trench) — ONECinematicStudio
+    https://pixabay.com/music/orchestral-oceanic-trench-deep-sea-dark-ambient-amp-abyssal-cinematic-music-529094/
+Beneath the Surface (The Lost City of Atlantis) — ONECinematicStudio
+    https://pixabay.com/music/orchestral-the-lost-city-of-atlantis-mystical-underwater-cinematic-music-529056/
+Out of Reach (Cosmic Starfighter) — Psychronic
+    https://pixabay.com/music/techno-trance-cosmic-starfighter-314414/
+Music credited to its respective original creators.
 
-Source: Pixabay Content License (verify original individual source pages and redistribution conditions before public release).
+Source: Pixabay
+License: Pixabay Content License
+
+These tracks are included as part of the Temple of the Axolotl Minecraft mod. The original music remains the property of its respective rights holders and is not covered by the mod's All Rights Reserved copyright notice.
+
+Please do not extract or redistribute the music as standalone audio files.
+
+If any original creator or rights holder has concerns about the inclusion or attribution of their work, please reach out through the official Temple of the Axolotl GitHub repository. I am happy to discuss the matter and make appropriate corrections.
+
+Thank you to the talented artists whose music helps bring the cosmic seas to life! 💙

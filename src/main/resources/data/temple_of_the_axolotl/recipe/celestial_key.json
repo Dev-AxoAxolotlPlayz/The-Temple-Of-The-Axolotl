@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "OOO",
+    "OOO",
+    "OOO"
+  ],
+  "key": {
+    "O": {
+      "item": "temple_of_the_axolotl:orb_of_envy"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:celestial_key",
+    "count": 1
+  }
+}

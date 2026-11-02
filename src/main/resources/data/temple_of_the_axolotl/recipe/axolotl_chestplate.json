@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WEB",
+    "NDN",
+    "GCG"
+  ],
+  "key": {
+    "W": {
+      "item": "temple_of_the_axolotl:white_axolotl_trophy"
+    },
+    "E": {
+      "item": "temple_of_the_axolotl:cosmic_essence"
+    },
+    "B": {
+      "item": "temple_of_the_axolotl:black_axolotl_trophy"
+    },
+    "N": {
+      "item": "minecraft:netherite_block"
+    },
+    "D": {
+      "item": "minecraft:bedrock"
+    },
+    "G": {
+      "item": "minecraft:gold_block"
+    },
+    "C": {
+      "item": "minecraft:netherite_chestplate"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:axolotl_chestplate",
+    "count": 1
+  }
+}

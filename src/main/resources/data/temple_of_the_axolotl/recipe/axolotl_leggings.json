@@ -1,0 +1,39 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WEB",
+    "NDN",
+    "RCL"
+  ],
+  "key": {
+    "W": {
+      "item": "temple_of_the_axolotl:white_axolotl_trophy"
+    },
+    "E": {
+      "item": "temple_of_the_axolotl:cosmic_essence"
+    },
+    "B": {
+      "item": "temple_of_the_axolotl:black_axolotl_trophy"
+    },
+    "N": {
+      "item": "minecraft:netherite_block"
+    },
+    "D": {
+      "item": "minecraft:bedrock"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "C": {
+      "item": "minecraft:netherite_leggings"
+    },
+    "L": {
+      "item": "minecraft:lapis_block"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:axolotl_leggings",
+    "count": 1
+  }
+}

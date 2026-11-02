@@ -66,6 +66,7 @@ public class TempleOfTheAxolotl {
                                 output.accept(ModBlocks.TEMPLE_PORTAL_ITEM.get());
                 output.accept(ModBlocks.LORE_BLOCK_ITEM.get());
                 output.accept(ModBlocks.BROKEN_LORE_BLOCK_ITEM.get());
+                                output.accept(ModBlocks.DIARY_ITEM.get());
                                 output.accept(ModBlocks.ABYSSAL_WATERGATE_ITEM.get());
                                 output.accept(com.devaxo.templeoftheaxolotl.brewing.CosmicBrewingRegistries.STAND_ITEM.get());
 

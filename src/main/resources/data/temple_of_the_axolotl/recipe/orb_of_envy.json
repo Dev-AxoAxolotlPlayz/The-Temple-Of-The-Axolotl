@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SS",
+    "SS"
+  ],
+  "key": {
+    "S": {
+      "item": "temple_of_the_axolotl:shard_of_divinity"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:orb_of_envy",
+    "count": 1
+  }
+}

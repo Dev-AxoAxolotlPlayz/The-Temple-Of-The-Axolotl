@@ -42,6 +42,7 @@ public final class ModItems {
             new net.minecraft.world.item.BlockItem(
                     com.devaxo.templeoftheaxolotl.registry.ModBlocks.ABYSSAL_TORCH.get(), new Item.Properties()));
     public static final DeferredItem<Item> ABYSS_PRESSURE_GAUGE = basic("abyss_pressure_gauge", 1);
+    public static final DeferredItem<Item> ABYSSAL_GILLS = basic("abyssal_gills", 1);
     public static final DeferredItem<Item> CELESTIAL_MAGNET = basic("celestial_magnet", 1);
     public static final DeferredItem<Item> LOGISTICS_MAESTRO = basic("logistics_maestro", 1);
     public static final DeferredItem<Item> CELESTIAL_ANVIL = ITEMS.register("celestial_anvil", () ->
@@ -375,6 +376,10 @@ public final class ModItems {
     // AXOLOTL ABOVE ALL - TEMPORARY SPAWN EGG
     // =========================================
 
+    public static final DeferredItem<DeferredSpawnEggItem> ABYSSAL_MERFOLK_SPAWN_EGG = ITEMS.register(
+            "abyssal_merfolk_spawn_egg", () -> new DeferredSpawnEggItem(
+                    ModEntities.ABYSSAL_MERFOLK, 0x153D59, 0x66E7E5, new Item.Properties()));
+
     public static final DeferredItem<DeferredSpawnEggItem> AXOLOTL_ABSOLUTE_SPAWN_EGG =
             ITEMS.register(
                     "axolotl_absolute_spawn_egg",
@@ -447,6 +452,7 @@ public final class ModItems {
         output.accept(CELESTIAL_REPOSITORY.get());
         output.accept(CELESTIAL_MAGNET.get());
         output.accept(ABYSS_PRESSURE_GAUGE.get());
+        output.accept(ABYSSAL_GILLS.get());
         output.accept(ABYSSAL_TORCH.get());
         output.accept(LOGISTICS_MAESTRO.get());
         output.accept(CELESTIAL_ANVIL.get());
@@ -460,6 +466,7 @@ public final class ModItems {
         output.accept(RING_OF_THE_ONE.get());
         output.accept(AXOLOTL_ABSOLUTE.get());
         output.accept(AXOLOTL_ABSOLUTE_SPAWN_EGG.get());
+        output.accept(ABYSSAL_MERFOLK_SPAWN_EGG.get());
         output.accept(CLUCKLES_SPAWN_EGG.get());
         output.accept(TAMEABLE_WRATH_SPAWN_EGG.get());
         output.accept(BOSS_WRATH_SPAWN_EGG.get());

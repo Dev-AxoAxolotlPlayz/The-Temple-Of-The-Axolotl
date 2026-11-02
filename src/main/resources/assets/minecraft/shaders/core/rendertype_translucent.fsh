@@ -72,6 +72,15 @@ void main() {
     if (totaWater > 0.5) {
         // The water marker is encoded in vertex alpha; do not use it for opacity.
         color.a = clamp(tex.a * ColorModulator.a * TOTA_WATER_OPACITY, 0.0, 0.90);
+        // Abyss surface only: conceal the distant seabed from above while
+        // retaining underwater translucency and the existing starry-water effects.
+        // Sea level is 200 in the Abyss, 62 in the Overworld.
+        bool abyssSurface = TotaSeaLevel > 100.0 &&
+                            TotaCameraY >= TotaSeaLevel - 0.05 &&
+                            totaWorldY >= TotaSeaLevel - 0.75;
+        if (abyssSurface) {
+            color.a = max(color.a, 0.975);
+        }
 
         // Retain original biome tint while cooling/darkening the sea.
         // This is a dark multiplier, not a flat color replacement.
@@ -91,7 +100,16 @@ void main() {
         float crest = smoothstep(0.18, 0.68, wave);
         float seed;
         // Drift the stars gently with the same world-space wave function.
-        vec2 starCoords = totaWorldXZ + vec2(wave * 0.12, wave * -0.08);
+        // Project stars onto vertical curtains using the horizontal face axis
+        // and world height; horizontal surfaces keep the original XZ pattern.
+        // Derivatives select the dominant face orientation without changing geometry.
+        float dx = length(vec2(dFdx(totaWorldXZ.x), dFdy(totaWorldXZ.x)));
+        float dz = length(vec2(dFdx(totaWorldXZ.y), dFdy(totaWorldXZ.y)));
+        float dy = length(vec2(dFdx(totaWorldY), dFdy(totaWorldY)));
+        float curtain = step(max(dx, dz) * 0.55, dy);
+        vec2 curtainCoords = vec2(dx >= dz ? totaWorldXZ.x : totaWorldXZ.y, totaWorldY);
+        vec2 starCoords = mix(totaWorldXZ, curtainCoords, curtain)
+                        + vec2(wave * 0.12, wave * -0.08);
         float stars = starField(starCoords, t, seed);
 
         // Narrow luminous ribbons follow the same crests as the vertex shader.

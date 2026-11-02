@@ -20,8 +20,22 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import com.devaxo.templeoftheaxolotl.item.ModItems;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import com.devaxo.templeoftheaxolotl.TempleOfTheAxolotl;
+import java.util.UUID;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -40,6 +54,9 @@ public class TameableWrathEntity extends TamableAnimal implements GeoEntity {
 
     private final AnimatableInstanceCache cache =
             GeckoLibUtil.createInstanceCache(this);
+
+    private UUID secondFallConfirmPlayer;
+    private long secondFallConfirmUntil;
 
     // Flight states
     private static final int GROUNDED = 0;
@@ -138,6 +155,7 @@ public class TameableWrathEntity extends TamableAnimal implements GeoEntity {
             Level level
     ) {
         super(type, level);
+        this.setInvulnerable(true);
     }
 
     @Override
@@ -175,6 +193,9 @@ public class TameableWrathEntity extends TamableAnimal implements GeoEntity {
     protected void registerGoals() {
         super.registerGoals();
 
+        this.targetSelector.addGoal(1, new OwnerHurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new OwnerHurtTargetGoal(this));
+        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.15D, true));
         // Flight takes priority over wandering.
         this.goalSelector.addGoal(1, new RoyalEscortGoal());
 
@@ -206,8 +227,22 @@ public class TameableWrathEntity extends TamableAnimal implements GeoEntity {
     // Prevent player-attributed damage, including projectiles fired by players.
     @Override
     public boolean isInvulnerableTo(DamageSource source) {
-        if (this.isTame() && source.getEntity() instanceof Player) return true;
+        if (source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)) return true;
+        if (source.getDirectEntity() instanceof Projectile) return true;
+        if (source.getEntity() instanceof Player) return true;
         return super.isInvulnerableTo(source);
+    }
+
+    // Fire Aspect can ignite a mob independently of the rejected damage.
+    // Cancel the fire left by a player-attributed hit without changing
+    // environmental fire or ordinary non-player damage rules.
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        if (source.getEntity() instanceof Player) {
+            this.clearFire();
+            return false;
+        }
+        return super.hurt(source, amount);
     }
 
     @Override
@@ -216,6 +251,48 @@ public class TameableWrathEntity extends TamableAnimal implements GeoEntity {
             InteractionHand hand
     ) {
         ItemStack item = player.getItemInHand(hand);
+
+        // Deliberate two-step betrayal. The first offering never consumes the Ring.
+        if (this.isTame() && this.isOwnedBy(player) && item.is(ModItems.RING_OF_THE_ONE.get())) {
+            if (!level().isClientSide && player instanceof ServerPlayer sp) {
+                var adv = sp.server.getAdvancements().get(ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, "the_one_who_fell_twice"));
+                if (adv != null && sp.getAdvancements().getOrStartProgress(adv).isDone()) {
+                    sp.displayClientMessage(Component.literal("Wrath Refuses to go through that again"), true);
+                    return InteractionResult.SUCCESS;
+                }
+            }
+            if (!level().isClientSide && player instanceof ServerPlayer serverPlayer && level() instanceof ServerLevel server) {
+                long now = server.getGameTime();
+                if (!player.getUUID().equals(secondFallConfirmPlayer) || now > secondFallConfirmUntil) {
+                    secondFallConfirmPlayer = player.getUUID();
+                    secondFallConfirmUntil = now + 300L;
+                    setOrderedToSit(true);
+                    setInSittingPose(true);
+                    getNavigation().stop();
+                    triggerAnim("curiosity_controller", "tamed_curiosity");
+                    serverPlayer.displayClientMessage(Component.literal("Wrath stares at the Ring of the One... wondering if you mean it..."), false);
+                } else {
+                    secondFallConfirmPlayer = null;
+                    secondFallConfirmUntil = 0;
+                    BossWrathEntity fallen = ModEntities.BOSS_WRATH.get().create(server);
+                    if (fallen != null) {
+                        fallen.moveTo(getX(), getY(), getZ(), getYRot(), getXRot());
+                        fallen.setOriginDifficulty(3, player.getUUID());
+                        fallen.setSecondFallRing(item.copyWithCount(1));
+                        fallen.setSecondFallBetrayer(player.getUUID());
+                        fallen.addTag("second_fall");
+                        if (server.addFreshEntity(fallen)) {
+                            if (!player.getAbilities().instabuild) item.shrink(1);
+                            var advancement = server.getServer().getAdvancements().get(
+                                    ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, "the_one_who_fell_twice"));
+                            if (advancement != null) serverPlayer.getAdvancements().award(advancement, "completed");
+                            discard();
+                        }
+                    }
+                }
+            }
+            return InteractionResult.sidedSuccess(level().isClientSide);
+        }
 
         // Taming
         if (!this.isTame() && item.is(Items.SOUL_CAMPFIRE)) {
@@ -243,6 +320,18 @@ public class TameableWrathEntity extends TamableAnimal implements GeoEntity {
             return InteractionResult.sidedSuccess(
                     this.level().isClientSide
             );
+        }
+
+        // Only the owner can equip a vanilla netherite sword or axe.
+        if (this.isTame() && this.isOwnedBy(player)
+                && (item.is(Items.NETHERITE_SWORD) || item.is(Items.NETHERITE_AXE))) {
+            if (!this.level().isClientSide) {
+                ItemStack previous = this.getItemBySlot(EquipmentSlot.MAINHAND).copy();
+                this.setItemSlot(EquipmentSlot.MAINHAND, item.copyWithCount(1));
+                if (!player.getAbilities().instabuild) item.shrink(1);
+                if (!previous.isEmpty()) player.getInventory().placeItemBackInInventory(previous);
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
 
         // Owner sit / stand
@@ -274,7 +363,15 @@ public class TameableWrathEntity extends TamableAnimal implements GeoEntity {
     @Override
     public boolean doHurtTarget(net.minecraft.world.entity.Entity target) {
         if (target instanceof LivingEntity victim && victim == getOwner()) return false;
-        return super.doHurtTarget(target);
+        boolean hit = super.doHurtTarget(target);
+        if (hit && target instanceof LivingEntity living) {
+            living.igniteForSeconds(3.0F);
+            living.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                    net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 60, 1));
+            living.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                    net.minecraft.world.effect.MobEffects.BLINDNESS, 60, 0));
+        }
+        return hit;
     }
 
     @Override
@@ -288,6 +385,8 @@ public class TameableWrathEntity extends TamableAnimal implements GeoEntity {
     // Server-side flight physics
     @Override
     public void tick() {
+        // Also enforce for entities loaded from older saves.
+        if (!this.isInvulnerable()) this.setInvulnerable(true);
         super.tick();
 
         if (this.level().isClientSide) {

@@ -1,0 +1,12 @@
+{
+  "name": "Shards and Orbs",
+  "category": "temple_of_the_axolotl:echoes_of_divinity",
+  "icon": "minecraft:paper",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(o)The pages of this memory have yet to be recovered.$()"
+    }
+  ]
+}

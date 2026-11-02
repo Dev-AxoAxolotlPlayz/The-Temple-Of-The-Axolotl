@@ -1,0 +1,31 @@
+{
+  "name": "The Fractured Origin",
+  "category": "temple_of_the_axolotl:the_original_sin",
+  "icon": "minecraft:crying_obsidian",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Beyond false temples, i lie in the first. I can almost hear ghostly steps of my past self. His fall made his stars to fade. to fracture and turn into shards with dismay."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/13.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)the dark may scare me, but i hope my brother forgives his own grief, for that fear, is what i pray for dad to save..."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/15.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_original_sin_the_fractured_origin"
+}

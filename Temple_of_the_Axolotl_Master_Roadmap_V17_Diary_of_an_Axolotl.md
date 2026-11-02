@@ -1,3 +1,189 @@
+# Temple of the Axolotl — Master Development Roadmap V17
+
+**Updated:** October 31, 2026 — Origin endgame completion checkpoint; next active docket is lore integration.  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl` · **Package:** `com.devaxo.templeoftheaxolotl`
+
+> **V17 precedence:** This opening docket supersedes *older active-status labels* and the old diary-title/reveal wording. All V16 and earlier roadmap text is preserved verbatim below as historical reference. **USER-CONFIRMED COMPLETE** means the developer reports the feature finished; this is not an independent source audit. **NEXT / PLANNED** means implementation remains ahead. The new lore-block architecture is a design plan, not a claim that code already exists.
+
+## 0. NEXT ACTIVE DOCKET — Origin lore, Diary of an Axolotl, and scattered lore structures
+
+**Status: NEXT / PLANNED.** This is the immediate follow-up to the completed Origin endgame mechanics, ahead of the deferred Merfolk, Cosmic Trident, and Cosmo-Bow modeling session.
+
+### 0A. Custom lore blocks and consumption
+
+- [ ] Register **two distinct custom blocks**: **Intact Lore Block** (interactive, magical) and **Broken Lore Block** (spent, inactive). Use them as reusable lore components embedded in monuments and other structures; exact visible model/texture versus concealed presentation is not yet chosen.
+- [ ] Right-clicking an **intact** Lore Block in a lore site/Obelisk selects **one random chapter the interacting player has not yet discovered** from the eligible chapter pool. Never award duplicates, including on repeated interactions or rejoining.
+- [ ] **First successful activation consumes the monolith globally in multiplayer**: transform the intact Lore Block to the broken/depleted variant and preserve that state. Other players cannot harvest a new chapter from the same already-consumed monolith. This is the preserved historical multiplayer rule; player-specific chapter unlocks are tracked separately.
+- [ ] Do not consume a Lore Block or award a duplicate when the player has **no eligible undiscovered chapter**; decide whether to show the fading-magic message or a distinct message in this case. Preserve the global one-use behavior for a successful activation.
+- [ ] On interacting with a **broken/depleted** Lore Block, display the **exact action-bar message**: `The Story Seeps as the Magic Fades...`.
+- [ ] **No physical lore scrolls or loose duplicate pages**: discoveries unlock chapters directly in the diary. Maintain server-authoritative per-player persistent unlock flags, and world-persistent consumed-block state. Verify restart, relog, simultaneous multiplayer use, and structure reloads.
+- [ ] Decide how the generic Lore Block carries a chapter pool/site identity (block entity, structure data, or equivalent); preserve future extensibility for different structures and Abyss lore without silently changing Origin behavior.
+
+### 0B. Scattered peaceful lore structures and Obelisks
+
+- [ ] Create/finish **peaceful ponds, ruined statues, and carved monolith/Obelisk lore sites** scattered across the world. These are the three historical categories; exact NBT designs, biome restrictions, frequency, rarity, placement rules and total number are not specified in the roadmap.
+- [ ] Integrate an **Intact Lore Block** into the authored structure templates; preserve the site/Obelisk's decorative geometry and allow the active block to become a **Broken Lore Block** after the first successful activation.
+- [ ] Implement lore-site world generation and test discoverability, block persistence, non-duplication, and reload behavior. Ensure structure templates do not accidentally replenish already-consumed sites.
+- [ ] Preserve clues linking the **Origin Temple**, **Shards of Divinity → Orbs of Envy → Celestial Key**, the prison, and the ending branches. The precise inscription text is to be written, not already finalized.
+
+### 0C. Patchouli book — Diary of an Axolotl
+
+- [ ] Integrate **Patchouli** and create the lore book. **Final confirmed title: `Diary of an Axolotl`** (restores the original historical title, replacing the temporary `Above All’s Diary` proposal).
+- [ ] Book begins with an **obfuscated title**; retain the **same cover before and after revelation**: central yin-yang symbol, halo above, flaming horns on either side. The book's contents and acquired chapters remain unchanged when its title reveals.
+- [ ] Write entries as **Axolotl Above All's first-person memories**. Unlock chapters from lore-site discoveries and, where appropriate, item acquisition, recipes, and hidden advancements/flags. Use persistent, nonduplicate progression rather than inventory scrolls.
+- [ ] Cover the brothers' contrasting powers; their creator **The Axolotl Absolute** (subtly foreshadowed, not prematurely explained); the Ring of the One; Wrath's failed attempt to wield it and torn wings; Above All casting it into the Minecraft-verse; imprisonment in Origin Temple `00001`; shattered key/fragments and decoy temples; Origin confrontation; forgiveness, resurrection and Second Fall. Preserve later corrections to the lore chronology.
+- [ ] Keep Axolotl Absolute's precise motives, appearance and relationship to the original `axolotl_absolute` item unresolved; do not invent canon. Draft the actual chapter text and decide the chapter-to-site/unlock mapping during implementation.
+
+### 0D. Origin Temple iron-door title revelation — latest trigger
+
+- [ ] **Latest confirmed trigger:** when the Origin Temple prison's **iron double doors break/open through the Celestial Key rescue interaction**, permanently reveal the same book's previously obfuscated title as **`Diary of an Axolotl`**. This specifies the precise iron-door event behind the older phrase “upon opening the prison cell,” while retaining the original diary title.
+- [ ] Hook the reveal to the **actual successful double-door rescue event**, not to Origin Wrath's death, mere proximity, an arbitrary block break, or an unrelated iron door.
+- [ ] Keep the existing rescue mechanics intact: one Celestial Key consumed; both doors open/break together; 10-second preparation plus 30-second extraction sequence; companion handling and Origin persistence remain as already completed.
+- [ ] Save the title-reveal flag persistently for the appropriate player/campaign, including relog/restart; previously discovered chapters remain available and no second book is spawned. Determine any precise multiplayer ownership behavior during implementation.
+
+### 0E. Lore acceptance checklist
+
+- [ ] New player sees the obfuscated book title and unchanged cover.
+- [ ] First successful intact Obelisk interaction unlocks exactly one eligible undiscovered chapter and changes the block to Broken.
+- [ ] Repeat interactions do not grant duplicate chapters; depleted block shows `The Story Seeps as the Magic Fades...`.
+- [ ] Other players cannot obtain additional lore from a globally consumed monolith, while their own chapter progress stays separate.
+- [ ] Discovered chapters, consumed blocks, and diary title flags persist across relog, server restart and chunk reload.
+- [ ] A genuine successful Celestial Key double-door rescue reveals **Diary of an Axolotl** without replacing the book or losing progress; unrelated iron doors and boss defeat alone do not reveal it.
+- [ ] Existing Origin mechanics, portal lifecycle, rescue/extraction and regular Temple remain unaffected.
+
+## 1. OCTOBER 31 — Origin endgame work completed today (developer-confirmed)
+
+**Overall Origin endgame mechanics: USER-CONFIRMED COMPLETE.** The Origin docket was revisited specifically to finish previously forgotten endgame mechanics; the developer reports that the mechanical work is now finished. This section supersedes V16's older “planned / partial / unverified” statuses for the features below, but is not a new independent code audit.
+
+| Completed workstream | October 31 completion checkpoint |
+|---|---|
+| Origin dungeon and portal lifecycle | Persistent Fractured Origin, 10 floors of 13×13 maze modules, 5 placements/tick, Sanctum placement, red converted portal, Celestial Key reentry, regular Temple isolation and developer reset/save cleanup. |
+| Origin difficulty and combat | Player-specific regular Wrath defeat counts, locked Origin difficulty tiers, Divine Suppression, crown interaction, Rampage, gravity/laser/pounce and final boss balance/collision. |
+| Origin Sanctum and rescue | Origin Wrath defeat/forgiveness, copper chest rewards, prison iron double-door Celestial Key rescue, 10+30-second extraction and companion handling. |
+| Companion mechanics | Above All riding, protective knockback headbutt; redeemed Wrath's combat headbutt, flight and weapon equipment; dungeon companion restrictions. |
+| Soul-fire resurrection | Fully enchanted Ring of the One offering, Above All proximity requirement, failed-offering Ring protection and repeat resurrection route. |
+| The Second Fall | Ring temptation, warning/confirmation, fallen Wrath transformation, midnight sky, permanent safe blackstone conversion and subsequent recovery/resurrection behavior. |
+| Boss Ring attachment — final visual polish | **Final in-game Ring positioning completed:** normal 100% scale; `weapon_anchor` offset **X = −0.125**, **Y = 0**, **Z = −0.1875** (−2 / −3 Blockbench units); **90° Z rotation**, applied unconditionally in `BossWrathRenderer.renderStackForBone`. Ring lies horizontally and is centered in Fallen Origin Wrath's mouth. Do not restore earlier 25% scaling or conditional `isSecondFall()` transform. |
+| Testing and cleanup | Developer reports Origin endgame tests and compiler-warning cleanup finished. Do not reclassify historical open tasks as outstanding solely because old V16/V15 snapshots still say “planned.” |
+
+**Still not completed as of this checkpoint:** the **lore implementation** in §0: custom intact/broken Lore Blocks, Obelisk/scattered lore sites, Patchouli chapters and the iron-door-triggered **Diary of an Axolotl** title revelation. These are tomorrow's work, not part of today's completed Origin mechanics.
+
+**Next after lore:** Merfolk character designs, Cosmic Trident design, Cosmo-Bow design; preserve the V13/V12 weapon mechanics and recipes as historical specifications.
+
+---
+
+# Preserved V16 roadmap and all earlier historical appendices (unchanged)
+
+# Temple of the Axolotl — Master Development Roadmap V16
+
+**Updated:** October 30, 2026 (late-night development continuing into October 31)  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl` · **Package:** `com.devaxo.templeoftheaxolotl`  
+**Scope:** Origin Temple generation, portal persistence, Origin Fallen Wrath spawning, difficulty persistence, developer resets and evacuation; preserves V15 water/pressure status and every earlier roadmap appendix verbatim.
+
+> **V16 status rules:** **USER-TESTED** = player confirmed in-game; **USER-COMPILED** = player confirmed compilation; **PATCH DELIVERED / UNVERIFIED** = source patch supplied but not confirmed compiled/tested; **DESIGN LOCKED** = agreed future behavior; **PLANNED** = implementation still outstanding; **REGRESSION** = known issue. This opening docket supersedes older *status* claims about Origin Temple while leaving historical text intact. The roadmap is not an independent code audit.
+
+## 0. Executive checkpoint — Rise of the Origin Temple
+
+| Workstream | Current status | Evidence / next boundary |
+|---|---|---|
+| Fractured Origin dimension | **USER-TESTED** | Dedicated `temple_of_the_axolotl:fractured_origin` void dimension, purple/End-like sky, independent of regular Temple. |
+| Origin dungeon generator | **USER-TESTED** | Ten-floor, 13×13 grid per floor; 5 module placements per tick; game reported **1,682 placed modules**, then generation complete. Maintain special-module exclusions and connectivity. |
+| Origin Sanctum and boss placements | **USER-TESTED** | Above All correctly appears in prison cage; Origin Fallen Wrath spawns at intended Sanctum platform; Wrath defeat does **not** invoke regular Temple completion/extraction. |
+| Portal conversion / reentry | **USER-TESTED** | Celestial Key converts regular Temple portal into permanent red Origin portal; further entries require another Key; generated Origin persists without normal Temple cleanup. Current red-block appearance is a placeholder. |
+| Regular Temple regression | **USER-TESTED** | User's nine-test pass includes unchanged regular Temple behavior. Do not change the regular 9×9, 3/tick lifecycle while updating Origin. |
+| `/temple fullresetorigin` original implementation | **USER-TESTED, THEN REGRESSION** | Initial incremental Origin reset and Celestial Key reentry passed. Later tests produced repeated misleading 'maze undo snapshot' messages and unsafe testing workflow. |
+| `/templeexit` / reset evacuation | **PATCH DELIVERED / PARTIALLY OBSERVED** | Developer evacuation patch provided; subsequent log indicated `/templeexit` and reset activity, but full safety/regression certification pending. |
+| Origin Wrath difficulty tracking | **PATCH DELIVERED / UNVERIFIED** | Personal decoy-Wrath kill counter, owner UUID, locked Tier I/II/III, developer test command proposed/patch supplied; no completed tier-behavior game test reported. |
+| Automatic dimension-save wipe | **PATCH DELIVERED / UNVERIFIED — HIGH RISK** | Proposed `/temple fullresetorigin` queues a Fractured Origin-only save deletion on shutdown/restart; no PowerShell intended. **Must validate actual save lifecycle, persistence and clean restart before relying on it.** |
+| Origin campaign completion | **PLANNED / PARTIAL** | Divine Suppression, forgiveness, copper chest, iron doors, companion extraction, permanent beacon beam, soul-fire resurrection and Second Fall not yet certified. |
+
+### 0A. Origin dungeon — current generation specification
+
+- **Dimension:** `temple_of_the_axolotl:fractured_origin`; purple void sky, no ordinary terrain; entirely separate from the normal Temple dimension.
+- **Generation:** 13×13 cells per floor, ten floors; 5 placements per server tick. The observed completion announcement was **1,682 modules** (not 1,690; reserved/special placements and exclusions affect the total).
+- **Dungeon bounding coordinates supplied by developer:** **(0, 0, 0) through (194, 215, 194)** inclusive (X/Y/Z); this is the planned reset region, not proof every structure block fills it. The Origin Sanctum is a larger **60×48×60** NBT structure; vertical transport modules can be **15×32×15** versus ordinary **15×16×15** modules.
+- **Palette:** Origin corruption NBTs are **one-to-one substitutions for their matching normal modules**, not a separate reduced pool. Keep ordinary lava hallways, lava corridors, treasure hallways, bait rooms, trap T-junctions, and all original frequency, placement, connectivity and exclusion rules. Use corrupted variants only where the matching variant exists (corner, straight, T, four-way, decoy, bubble elevator, loot sanctum); retain the fixed regular entrance `tota_chamber_entrance` and its emerald landing block.
+- **Lifecycle:** A converted Origin portal remains red and requires one Celestial Key per entry. Origin structure is normally generated only once and persists indefinitely. The developer reset is the **only intentional regeneration exception**. Never run regular Temple snapshot cleanup automatically against Origin.
+- **Cost:** 4 Shards of Divinity → 1 Orb of Envy; 9 Orbs → 1 Celestial Key (**36 Shards**). Maintain existing normal Temple/portal interactions unless specifically converted.
+
+### 0B. Nine-test checkpoint — ALL PASSED by user
+
+1. Compile Origin patch (**after user corrected a `BlockPos`→`AABB` constructor error** in `OriginMazeCommands.java`).
+2. Generate the Origin Temple.
+3. Spawn Origin Fallen Wrath on the Sanctum platform.
+4. Spawn Above All in the prison cage.
+5. Defeat Origin Wrath without triggering regular Temple extraction.
+6. Exit Fractured Origin.
+7. Execute `/temple fullresetorigin`.
+8. Reenter with a Celestial Key and regenerate.
+9. Confirm regular Temple still works.
+
+**Scope caveat:** These nine passes apply to the earlier working reset/spawn patch, **not automatically** to later difficulty-tier, evacuation, or automatic dimension-wipe patches.
+
+### 0C. Origin Fallen Wrath — difficulty, ownership, suppression
+
+**Triggering player rule:** The player who **initiates Origin Sanctum/dungeon generation** supplies the personal decoy-Wrath victory count. Save the UUID and the selected tier permanently with the generated Sanctum and boss. Other players entering later cannot change the tier. Counters are personal, persistent and increment once per qualifying regular Wrath clear; Origin Wrath does not count toward the regular-decoy total.
+
+| Personal regular/decoy Wrath clears | Origin tier | Curse | Established combat rule | In-fight forgiveness |
+|---|---|---|---|---|
+| 0–10 | I / Easy | YOU SHOULDN'T HAVE I | **≥750 HP**; regular Hard baseline | Yes |
+| 11–15 | II / Medium | YOU SHOULDN'T HAVE II | Divine Suppression; projectile/explosion immunity except optional Create Potato Cannon exception | Yes |
+| 16–20 | II / Medium | YOU SHOULDN'T HAVE II | Same as Medium | **No** |
+| 21+ | III / Hard | YOU SHOULDN'T HAVE III | Medium rules plus Totem/Eternal Guard lethal-save suppression | **No** |
+
+**Do not conflate tier and forgiveness boundaries:** Medium starts at 11; forgiveness is allowed through **15** kills, not only through 10. The old roadmap specifies the exact forgiveness chat phrase: `Sorry I hurt you, but i also forgive you`.
+
+**Divine Suppression:** Medium and Hard are intended to suppress relevant equipment/potion blessings during the fight; historical specification includes disabling Ambrosia blessings, armor-set effects and potion effects. Audit exact intended exemptions and interaction with innate armor powers, Ring effects and multiplayer before implementing. Hard additionally suppresses Totem and Eternal Guard lethal saves. These combat mechanics are **not yet certified implemented**.
+
+**Developer tier test:** `/temple setdecoywrathdefeats 0`, `11` or `21` was included in the delivered difficulty foundation patch. **Command availability and counter persistence require testing in the user's current merged source.** Reset Origin between tier tests and confirm owner UUID/tier remain fixed across relog/restart.
+
+**Boss placement:** Origin Wrath appears at the Sanctum 2×2 platform (original template horizontal center X=85, Z=72, relative to the actual placed/rotated NBT; target Y around −54 after platform offset). Above All's cage placement is already working; preserve its independent spawn. Origin Wrath must be persistently marked **bound to Origin Temple** so defeat or forgiveness never runs the regular Sanctum chest/extraction logic. Preserve hostile `BossWrathEntity` versus redeemed `TameableWrathEntity` distinction.
+
+### 0D. Origin Sanctum endings and extraction — DESIGN LOCKED / NOT COMPLETED
+
+- **Defeat:** A waxed weathered copper chest near Above All's prison contains **one Celestial Key** (for the double iron doors) and **one golden carrot** (to free/tame Above All).
+- **Forgiveness:** If eligible, the exact phrase stops combat and converts Origin Wrath to small, winged Tameable Wrath. The chest additionally contains **one soul campfire** for taming redeemed Wrath.
+- **Rescue trigger:** Using the Celestial Key on the prison's iron double doors consumes one Key and opens/breaks both doors together; *that* starts the existing **10-second preparation + 30-second extraction** sequence. Defeating Wrath alone must not extract the player.
+- **Extraction:** Return the player **and all tamed companions**; never destroy or reset the Origin dimension during ordinary extraction. Implement safe handling for cross-dimensional companion teleport, offline owners, passengers and loaded chunks.
+- **Visuals:** Converted portal gets a **permanent cosmetic red beacon-style beam without vanilla pyramid requirements**. Current red portal block is a temporary visual placeholder.
+- **Further endings:** Post-victory **soul-fire resurrection** of Wrath requires a maximally enchanted Ring of the One sacrificed into soul fire with freed Above All within 4 blocks; invalid offering must preserve Ring and show `The Soul of the Damned refuses the sacrifice`. Optional **Second Fall** remains as specified in the V15/V14 historical material: deliberate Ring offering, warning/confirmation, Hard-tier fallen boss in Overworld, midnight and safe terrain blackstone conversion. Neither is certified implemented.
+- **Solo restriction:** Historical Origin design requires keyholder-only session isolation from initial entry, not merely from boss spawn. **Needs source and gameplay validation** in the new persistent-dimension implementation.
+
+### 0E. Developer reset: regression and intended replacement
+
+**Observed regression:** After the safe-evacuation changes, the developer reported repeated **'A maze undo snapshot is still active'** messages. The shared game log showed generation/reset activity and separate invalid block-attached entity warnings near Y=−57; the user clarified that the spam of concern was the **undo-snapshot text**, not the decorative-entity warnings. The exact repeated caller and lifecycle interaction are **not yet conclusively diagnosed**. Avoid deleting safety checks or assuming that the message alone proves an active snapshot.
+
+**Requested final workflow:**
+
+```mcfunction
+/temple fullresetorigin
+```
+
+1. Evacuate every player from Fractured Origin to a safe Overworld position, preserving/restoring appropriate game modes.
+2. Stop or safely invalidate Origin generation, pending entry teleports and extraction jobs; block reentry while reset pending.
+3. Queue a **Fractured Origin dimension-save-only wipe**, with no block-by-block demolition and no regular Temple undo snapshots.
+4. **Exit/restart Minecraft once**; the mod automatically performs the wipe at a verified safe point in save shutdown/startup lifecycle. **No PowerShell, manual directory deletion or separate script**.
+5. Reset Origin-only saved completion/progress state; preserve regular Temple, Overworld converted portal, Celestial Key rules and personal defeat counters. Next key entry builds a new Origin Temple.
+
+**Safety gate:** The latest delivered automatic-restart wipe patch was **not yet user-compiled or runtime-tested** at roadmap time. Before calling it safe, verify exact folder scope `dimensions/temple_of_the_axolotl/fractured_origin`, startup/shutdown ordering (no live open region files), failed-deletion handling, state reset, backup/recovery, reentry blocking, repeat reset, and no accidental overwrites from older patch versions. Do not represent 'queued' as 'wiped' until restart and world inspection confirm it.
+
+### 0F. Immediate next engineering order
+
+1. **Validate latest automatic restart wipe patch**: compile, run `/temple fullresetorigin`, confirm evacuation and no spam, close/restart, verify fresh dimension regeneration and normal Temple non-regression. Keep a world backup.
+2. **Validate difficulty foundation**: personal counters, developer `setdecoywrathdefeats`, generation trigger UUID, Tier I/II/III locking and persistence; do not mistake a spawned boss for completed combat tier mechanics.
+3. **Implement Origin combat**: Easy/Medium/Hard health and immunities, Divine Suppression, projectile/explosion exceptions, Hard lethal-save prevention; regression-test normal Wrath and Ring.
+4. **Implement forgiveness and Sanctum rescue**: exact phrase and ≤15 threshold, chest reward variants, double-door Celestial Key consumption, companion-inclusive 10+30-second extraction.
+5. **Finish portal visuals**: persistent red beam and red portal polish; test across relogs and unloaded chunks.
+6. **Future Origin narrative**: solo ownership safeguards, Diary of an Axolotl reveal, soul-fire resurrection and optional Second Fall.
+7. **Continue previously active Phase 6.5/6.6 docket**: hurt-camera/knockback fix; Crushing Pressure, Bends, Diluted Ichor cure, Diving Helmet and Sub-for-One. **NO TOUCHIE BOAT**; retain V15's status boundaries.
+8. **Other V15/V14 commitments remain**: Abyss Watergate/ruins, Axoleviathan/Axokraken/Axoluthu, Moai, Ring and Celestial Anvil regressions, all preserved historical features. Do not resurrect cut Repository search/sort or separate Ambrosia fluid.
+
+---
+
+# Preserved V15 master roadmap and V1–V14 historical appendices (unchanged)
+
 # Temple of the Axolotl — Master Development Roadmap V15
 
 **Updated:** October 29, 2026 (development session spanning October 29–30 local time) — Phase 6.4 water completion, Phase 6.5 pressure/HUD/death-message work, Phase 6.6 decompression design.  

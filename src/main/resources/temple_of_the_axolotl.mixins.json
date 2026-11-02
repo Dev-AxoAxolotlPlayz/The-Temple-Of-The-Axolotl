@@ -11,7 +11,10 @@
     "LiquidBlockRendererWaveMixin",
     "WaterShaderCameraMixin",
     "NightVisionNoFlickerMixin",
-    "AbyssPressureNoHurtCameraMixin"
+    "AbyssPressureNoHurtCameraMixin",
+    "DiaryTitleFontMixin",
+    "DiaryCenteredHeadingsMixin",
+    "DiaryRemainingLabelsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

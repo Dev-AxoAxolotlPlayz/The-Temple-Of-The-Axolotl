@@ -1,0 +1,31 @@
+{
+  "name": "The Quiet Green",
+  "category": "temple_of_the_axolotl:the_first_fall",
+  "icon": "minecraft:emerald",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Even if we chose to share, i noticed how he eyed the Ring with a glimmer. The envy and the silence, that comes with his gaze, brother worries me to full extent..."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/25.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Day by day, he stare each day, smiling less and less when we once cared. i thought time would help me and him to grow, sometimes nothing can be wrong to do too.."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/26.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_first_fall_envy"
+}

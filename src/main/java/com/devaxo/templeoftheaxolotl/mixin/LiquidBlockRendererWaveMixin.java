@@ -28,10 +28,16 @@ public abstract class LiquidBlockRendererWaveMixin {
     @ModifyArgs(method = "tesselate", at = @At(value = "INVOKE", target = VERTEX), require = 0)
     private void tota$markWater(Args args, BlockAndTintGetter level, BlockPos pos,
                                 VertexConsumer buffer, BlockState state, FluidState fluid) {
-        if (!CelestialWaterMode.enabled() || !fluid.is(FluidTags.WATER)
-                || !WaterSurfaceVisuals.isExposedWater(level, pos)) return;
+        if (!CelestialWaterMode.enabled() || !fluid.is(FluidTags.WATER)) return;
         float localY = ((Float) args.get(2)) - (pos.getY() & 15);
-        if (localY < 0.80f || localY > 1.02f) return;
+        // Mark ALL water geometry, including flowing sides and waterfall curtains.
+        // 251 is the water-only marker with NO vertex displacement.
+        // Only exposed top vertices retain the original 230..250 wave bands.
+        if (localY < 0.80f || localY > 1.02f
+                || !WaterSurfaceVisuals.isExposedWater(level, pos)) {
+            args.set(7, 251.0f / 255.0f);
+            return;
+        }
         // Alpha is an 8-bit vertex channel. 230..250 encodes 21 depth bands.
         // This is not visible transparency: the fragment shader restores 1.0.
         // The shared-corner depth is approximated from the existing helper's

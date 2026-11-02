@@ -95,6 +95,23 @@ public final class AxoMazeCommands {
         }
     }
 
+    /** Remove orphaned dungeon bosses before a fresh spawn or after a reset.
+     * Only affects Fallen Wrath in the Origin Temple, never companion Wraths.
+     */
+    private static int discardStaleTempleWraths(ServerLevel level) {
+        if (!level.dimension().equals(TempleDimensionManager.TEMPLE_DIMENSION)) return 0;
+        java.util.List<com.devaxo.templeoftheaxolotl.entity.BossWrathEntity> stale =
+                new java.util.ArrayList<>();
+        level.getAllEntities().forEach(entity -> {
+            if (entity instanceof com.devaxo.templeoftheaxolotl.entity.BossWrathEntity wrath)
+                stale.add(wrath);
+        });
+        for (var wrath : stale) wrath.discard();
+        if (!stale.isEmpty()) TempleOfTheAxolotl.LOGGER.warn(
+                "Removed {} leftover Fallen Wrath entities from Origin Temple.", stale.size());
+        return stale.size();
+    }
+
     private static int startFullReset(CommandSourceStack source) {
         ServerLevel level = source.getServer().getLevel(TempleDimensionManager.TEMPLE_DIMENSION);
         if (level == null) { source.sendFailure(Component.literal("Temple dimension unavailable.")); return 0; }
@@ -145,7 +162,10 @@ public final class AxoMazeCommands {
             job.level.getAllEntities().forEach(e -> {
                 if (!(e instanceof Player)) staleEntities.add(e);
             });
+            // The generic pass includes Wrath; this extra check guards against
+            // any lingering boss entity before marking the dimension clean.
             for (Entity entity : staleEntities) entity.discard();
+            discardStaleTempleWraths(job.level);
             TempleOfTheAxolotl.LOGGER.info("Temple reset discarded {} loaded non-player entities.", staleEntities.size());
             retireRewards(job.level);
             lastGeneration = null;
@@ -327,6 +347,9 @@ public final class AxoMazeCommands {
             }
             if (job.next == job.placements.size()
                     && job.nextLoot == job.lootPlacements.size()) {
+                // Previous failed builds can leave a persistent boss behind.
+                // Never let a fresh generation stack a second Fallen Wrath.
+                discardStaleTempleWraths(job.level);
                 // Phase 6: spawn one dormant Fallen Wrath after all templates and loot are ready.
                 BlockPos sanctumPos = world(TEMPLE_ORIGIN, SANCTUM_MIN);
                 com.devaxo.templeoftheaxolotl.entity.BossWrathEntity wrath =

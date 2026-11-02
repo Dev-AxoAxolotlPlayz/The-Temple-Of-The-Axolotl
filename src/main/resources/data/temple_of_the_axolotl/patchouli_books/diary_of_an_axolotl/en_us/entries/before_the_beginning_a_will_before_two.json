@@ -1,0 +1,12 @@
+{
+  "name": "A Will Before Two",
+  "category": "temple_of_the_axolotl:before_the_beginning",
+  "icon": "minecraft:paper",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(o)Further memories await discovery.$()"
+    }
+  ]
+}

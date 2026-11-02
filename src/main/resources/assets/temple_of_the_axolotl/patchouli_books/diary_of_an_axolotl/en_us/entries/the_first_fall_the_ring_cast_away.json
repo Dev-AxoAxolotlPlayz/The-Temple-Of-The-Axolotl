@@ -1,0 +1,20 @@
+{
+  "name": "I tried, Brother",
+  "category": "temple_of_the_axolotl:the_first_fall",
+  "icon": "minecraft:ender_pearl",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)I tried to save him. i threw the ring out of our home. Maybe someone kinder and wiser could learn what we could not. I told myself it was for the best... but my brother saw betrayal at its worst."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/27.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_first_fall_the_ring_cast_away"
+}

@@ -1,0 +1,31 @@
+{
+  "name": "Sharing is Caring",
+  "category": "temple_of_the_axolotl:the_brothers_fate",
+  "icon": "minecraft:lead",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Sharing the ring, is all we can do. Standing together despite not being once before... His scars will remain, my heart will ache, but i hope.. under the same sky... a quiet day..."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/18.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Learning to be brothers once again... to remember what we had.. to what we learned.. our pain can be shared.. to lean on each other, remembering how to love again... Thats enough for me..."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/36.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_brothers_fate_reunion"
+}

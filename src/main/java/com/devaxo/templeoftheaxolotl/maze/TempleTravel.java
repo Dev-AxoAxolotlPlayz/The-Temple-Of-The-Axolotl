@@ -347,6 +347,8 @@ public final class TempleTravel {
                 .requires(source -> source.hasPermission(2)) // temporary developer test command
                 .executes(context -> {
                     ServerPlayer player = context.getSource().getPlayerOrException();
+                    if (player.serverLevel().dimension().equals(OriginTempleState.DIMENSION))
+                        return OriginTempleTravel.devExit(player) ? 1 : 0;
                     if (!player.serverLevel().dimension().equals(TempleDimensionManager.TEMPLE_DIMENSION)) return 0;
                     return exit(player) ? 1 : 0;
                 }));

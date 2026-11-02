@@ -1,0 +1,31 @@
+{
+  "name": "A Flipper for Dad",
+  "category": "temple_of_the_axolotl:before_the_beginning",
+  "icon": "minecraft:heart_of_the_sea",
+  "advancement": "temple_of_the_axolotl:lore/first_fragment",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Before there were temples, before the Ring, before envy divided what once stood together, there were two brothers."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/20.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)We were not born of chance. Our existence was a gift from a will greater than either of us could comprehend. To the Allfather, the Axolotl Absolute, I owe my beginning. Whatever became of us, that truth has never changed. And so, I shall begin with my brother."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/01.png"
+      ],
+      "border": false
+    }
+  ],
+  "sortnum": -1
+}

@@ -1,0 +1,31 @@
+{
+  "name": "Brotherly Redemption",
+  "category": "temple_of_the_axolotl:the_brothers_fate",
+  "icon": "minecraft:golden_apple",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)My brother may have strayed away, I wont turn a blind eye for what he did, Still i know the difference between ignoring the pain, and hoping he could maybe change..."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/07.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)A second chance is a gift, and never a debt... i just hope i am not too late for him to see, that i wont be mad..."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/33.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_brothers_fate_forgiveness"
+}

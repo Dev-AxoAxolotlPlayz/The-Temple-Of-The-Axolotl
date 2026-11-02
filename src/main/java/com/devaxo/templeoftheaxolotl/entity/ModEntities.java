@@ -16,6 +16,11 @@ public class ModEntities {
                     TempleOfTheAxolotl.MODID
             );
 
+    public static final DeferredHolder<EntityType<?>, EntityType<AbyssalMerfolkEntity>> ABYSSAL_MERFOLK = ENTITY_TYPES.register(
+            "abyssal_merfolk", () -> EntityType.Builder.of(AbyssalMerfolkEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.95F).build("abyssal_merfolk")
+    );
+
     public static final DeferredHolder<EntityType<?>, EntityType<AxolotlAbsoluteEntity>>
             AXOLOTL_ABSOLUTE = ENTITY_TYPES.register(
             "axolotl_absolute",

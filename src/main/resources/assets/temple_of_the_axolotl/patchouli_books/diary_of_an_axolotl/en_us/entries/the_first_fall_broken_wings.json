@@ -1,0 +1,31 @@
+{
+  "name": "Wings Like Ash",
+  "category": "temple_of_the_axolotl:the_first_fall",
+  "icon": "minecraft:elytra",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)He held the Ring, alone and by himself. Its power answered with a force no flipper could bear. Horns grew for every moment he tried. the sky darkened, and the pain hurt him so bad."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/11.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)His wings were torn, i remember rushing to hold the ring with him, to stop him from hurting. I remember reaching for him, only for him to turn away. I would have traded every star to help him again."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/06.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_first_fall_broken_wings"
+}

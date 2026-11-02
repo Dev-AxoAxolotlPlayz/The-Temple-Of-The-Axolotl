@@ -73,3 +73,11 @@ reason="Required for Vanilla Backport compatibility."
 versionRange="[1.3.3,)"
 ordering="AFTER"
 side="BOTH"
+
+# Diary of an Axolotl requires Patchouli at runtime.
+[[dependencies.${mod_id}]]
+modId="patchouli"
+type="required"
+versionRange="[1.21.1-93-NEOFORGE,)"
+ordering="AFTER"
+side="BOTH"

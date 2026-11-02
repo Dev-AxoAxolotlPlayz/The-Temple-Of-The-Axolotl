@@ -1,5 +1,5 @@
 
-        package com.devaxo.templeoftheaxolotl.entity;
+package com.devaxo.templeoftheaxolotl.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,6 +20,7 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -36,7 +37,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.EnumSet;
 
-public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
+public class AxolotlAbsoluteEntity extends TamableAnimal
+        implements GeoEntity, net.minecraft.world.entity.PlayerRideableJumping {
 
     private final AnimatableInstanceCache cache =
             GeckoLibUtil.createInstanceCache(this);
@@ -46,6 +48,9 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
     private static final int TAKING_OFF = 1;
     private static final int FLYING = 2;
     private static final int LANDING = 3;
+
+    private static final EntityDataAccessor<Boolean> RIDER_FLYING =
+            SynchedEntityData.defineId(AxolotlAbsoluteEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final EntityDataAccessor<Integer> FLIGHT_STATE =
             SynchedEntityData.defineId(
@@ -138,6 +143,7 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
             Level level
     ) {
         super(type, level);
+        this.setInvulnerable(true);
     }
 
     @Override
@@ -146,6 +152,7 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
     ) {
         super.defineSynchedData(builder);
         builder.define(FLIGHT_STATE, GROUNDED);
+        builder.define(RIDER_FLYING, false);
     }
 
     private int getFlightState() {
@@ -205,8 +212,22 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
     // Prevent player-attributed damage, including projectiles fired by players.
     @Override
     public boolean isInvulnerableTo(DamageSource source) {
+        if (source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)) return true;
+        if (source.getDirectEntity() instanceof Projectile) return true;
         if (source.getEntity() instanceof Player) return true;
         return super.isInvulnerableTo(source);
+    }
+
+    // Fire Aspect can ignite a mob independently of the rejected damage.
+    // Cancel the fire left by a player-attributed hit without changing
+    // environmental fire or ordinary non-player damage rules.
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        if (source.getEntity() instanceof Player) {
+            this.clearFire();
+            return false;
+        }
+        return super.hurt(source, amount);
     }
 
     @Override
@@ -247,7 +268,7 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
         // Owner sit / stand
         if (this.isTame()
                 && this.isOwnedBy(player)
-                && item.isEmpty()) {
+                && item.isEmpty() && player.isShiftKeyDown()) {
 
             if (!this.level().isClientSide) {
 
@@ -266,6 +287,17 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
             );
         }
 
+        // Empty-hand interaction mounts Above All; sneak + empty hand toggles sitting.
+        if (this.isTame() && this.isOwnedBy(player) && item.isEmpty()
+                && !player.isShiftKeyDown()) {
+            if (!this.level().isClientSide) {
+                this.setOrderedToSit(false);
+                this.setInSittingPose(false);
+                player.startRiding(this);
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+
         return super.mobInteract(player, hand);
     }
 
@@ -277,10 +309,118 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
         return null;
     }
 
+    @Override
+    public void travel(Vec3 travelVector) {
+        if (this.getFirstPassenger() instanceof Player rider && this.isOwnedBy(rider)) {
+            // Keep Above All's normal 1-block step clearance while ridden.
+            // The grounded travel path below uses vanilla collision/stepping.
+            var stepHeight = this.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT);
+            if (stepHeight != null && stepHeight.getBaseValue() != 1.0D) {
+                stepHeight.setBaseValue(1.0D);
+            }
+            this.setYRot(rider.getYRot());
+            this.setYHeadRot(rider.getYRot());
+            this.setXRot(rider.getXRot() * 0.5F);
+            float forward = rider.zza;
+            float sideways = rider.xxa;
+            float yaw = rider.getYRot() * ((float)Math.PI / 180F);
+            double dx = (-Math.sin(yaw) * forward + Math.cos(yaw) * sideways) * 0.65;
+            double dz = (Math.cos(yaw) * forward + Math.sin(yaw) * sideways) * 0.65;
+            double vertical = 0;
+            if (this.entityData.get(RIDER_FLYING)) {
+                // Pitch-driven flight: forward + look up/down, neutral = hover.
+                vertical = -Math.sin(Math.toRadians(rider.getXRot())) * forward * 0.65;
+                this.setNoGravity(true);
+                this.fallDistance = 0;
+            }
+            this.setDeltaMovement(dx, this.entityData.get(RIDER_FLYING)
+                    ? vertical : this.getDeltaMovement().y, dz);
+            if (this.entityData.get(RIDER_FLYING)) {
+                this.move(net.minecraft.world.entity.MoverType.SELF, this.getDeltaMovement());
+                this.fallDistance = 0;
+            } else {
+                super.travel(Vec3.ZERO);
+            }
+            return;
+        }
+        super.travel(travelVector);
+    }
+
+    @Override
+    public boolean doHurtTarget(net.minecraft.world.entity.Entity target) {
+        if (target instanceof LivingEntity living && living == this.getOwner()) return false;
+        boolean hit = super.doHurtTarget(target);
+        if (hit && target instanceof LivingEntity living) {
+            double dx = living.getX() - this.getX();
+            double dz = living.getZ() - this.getZ();
+            living.knockback(2.5D, -dx, -dz);
+        }
+        return hit;
+    }
+
+    // GeckoLib rider_anchor pivot: [0, 11.7, -8.2375] in model pixels.
+    // A small vertical lift keeps the player's legs clear of the back.
+    @Override
+    protected Vec3 getPassengerAttachmentPoint(net.minecraft.world.entity.Entity passenger,
+                                               EntityDimensions dimensions, float partialTick) {
+        double localZ = -8.2375D / 16.0D + 0.35D; // Move seat forward; preserve height
+        double yaw = Math.toRadians(this.getYRot());
+        return new Vec3(-Math.sin(yaw) * localZ, 11.7D / 16.0D + 0.32D,
+                Math.cos(yaw) * localZ);
+    }
+
+    private int riderLaunchPower;
+    private boolean riderFlight;
+
+    @Override
+    public boolean isControlledByLocalInstance() {
+        return this.getFirstPassenger() instanceof Player || super.isControlledByLocalInstance();
+    }
+
+    // Minecraft's riding input path needs an explicit controlling passenger.
+    // No saddle requirement: the tamed owner is the controller.
+    @Override
+    public LivingEntity getControllingPassenger() {
+        return this.getFirstPassenger() instanceof Player rider && this.isOwnedBy(rider)
+                ? rider : null;
+    }
+
+    @Override public boolean canJump() {
+        return this.getFirstPassenger() instanceof Player && this.onGround();
+    }
+    @Override public void handleStartJump(int power) {
+        this.riderLaunchPower = Math.max(0, Math.min(100, power));
+    }
+    @Override public void handleStopJump() { }
+    @Override public void onPlayerJump(int power) {
+        if (!(this.getControllingPassenger() instanceof Player) || !this.onGround()) return;
+        this.riderLaunchPower = Math.max(0, Math.min(100, power));
+        // Short charge = ordinary grounded hop. Long charge = flight takeoff.
+        boolean takeOff = this.riderLaunchPower >= 50;
+        this.riderFlight = takeOff;
+        this.entityData.set(RIDER_FLYING, takeOff);
+        this.escortFlight = false;
+        this.flightDestination = null;
+        this.getNavigation().stop();
+        this.setFlightState(takeOff ? FLYING : GROUNDED);
+        this.setNoGravity(takeOff);
+        this.setDeltaMovement(this.getDeltaMovement().add(0,
+                takeOff ? 0.30D + 0.005D * this.riderLaunchPower
+                        : 0.35D + 0.002D * this.riderLaunchPower, 0));
+        this.hasImpulse = true;
+    }
+
     // Server-side flight physics
     @Override
     public void tick() {
+        // Also enforce for entities loaded from older saves.
+        if (!this.isInvulnerable()) this.setInvulnerable(true);
         super.tick();
+
+        // A mounted player must not retain stale fall distance during flight or landing.
+        for (net.minecraft.world.entity.Entity passenger : this.getPassengers()) {
+            passenger.fallDistance = 0.0F;
+        }
 
         if (this.level().isClientSide) {
             return;
@@ -292,7 +432,34 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
 
         int phase = getFlightState();
 
+        if (riderFlight) {
+            if (!(this.getFirstPassenger() instanceof Player)) {
+                riderFlight = false;
+                this.entityData.set(RIDER_FLYING, false);
+                this.escortFlight = false;
+                this.flightDestination = null;
+                if (!this.onGround()) beginLanding();
+                else finishLanding();
+                return;
+            }
+            this.setNoGravity(true);
+            this.fallDistance = 0;
+            // A collision with the ground usually clamps vertical velocity to zero.
+            // Checking for negative Y velocity misses that landing and leaves flight active.
+            if (this.onGround()) {
+                riderFlight = false;
+                this.entityData.set(RIDER_FLYING, false);
+                finishLanding();
+            }
+            return;
+        }
+
         if (phase == GROUNDED) {
+            // Reconcile stale mounted-flight state after dismount/reload.
+            if (this.entityData.get(RIDER_FLYING)) {
+                this.entityData.set(RIDER_FLYING, false);
+            }
+            if (this.isNoGravity()) this.setNoGravity(false);
             return;
         }
 
@@ -322,7 +489,7 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
                     (double) flightTicks / TAKEOFF_TICKS
             );
 
-            double upwardSpeed = 0.03 + progress * 0.10;
+            double upwardSpeed = 0.04 + progress * 0.12;
 
             this.setDeltaMovement(
                     0,
@@ -382,7 +549,7 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
                             + difference.z * difference.z
             );
 
-            double speed = escortFlight ? 0.24 : 0.14;
+            double speed = escortFlight ? 0.48 : 0.32;
 
             double velocityX = 0;
             double velocityZ = 0;
@@ -393,9 +560,9 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
             }
 
             double velocityY = Mth.clamp(
-                    difference.y * 0.12,
-                    escortFlight ? -0.15 : -0.08,
-                    escortFlight ? 0.15 : 0.08
+                    difference.y * 0.16,
+                    escortFlight ? -0.26 : -0.18,
+                    escortFlight ? 0.26 : 0.18
             );
 
             this.setDeltaMovement(
@@ -419,21 +586,23 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
 
             this.setNoGravity(true);
 
-            this.setDeltaMovement(
-                    0,
-                    -0.055,
-                    0
-            );
-
+            // Autonomous landing needs an actual collision-resolved move here.
+            // Merely setting delta movement can leave a flying mob hovering if
+            // its normal tick movement does not consume that velocity.
+            Vec3 descent = new Vec3(0.0D, -0.16D, 0.0D);
+            this.setDeltaMovement(descent);
+            this.move(net.minecraft.world.entity.MoverType.SELF, descent);
+            this.fallDistance = 0.0F;
             this.hasImpulse = true;
 
-            // Never end the landing phase in midair: that causes fall damage.
-            if (this.onGround() && flightTicks >= 18) {
+            // move() updates collision/onGround; a blocked downward move is
+            // also a reliable landing signal for the custom flying entity.
+            if (this.onGround() || (this.verticalCollisionBelow
+                    && this.getDeltaMovement().y <= 0.0D)) {
                 finishLanding();
-            } else if (flightTicks >= LANDING_TICKS && !this.onGround()) {
-                // No ground found: regain altitude and try another approach.
-                setFlightState(FLYING);
             }
+            // Keep descending until actual ground contact. Returning to FLYING
+            // here previously caused an endless FLYING/LANDING loop after dismount.
         }
     }
 
@@ -489,10 +658,13 @@ public class AxolotlAbsoluteEntity extends TamableAnimal implements GeoEntity {
             return;
         }
 
+        flightTicks = 0;
         setFlightState(LANDING);
     }
 
     private void finishLanding() {
+        this.riderFlight = false;
+        this.entityData.set(RIDER_FLYING, false);
         this.fallDistance = 0.0F;
         this.setNoGravity(false);
         this.setDeltaMovement(Vec3.ZERO);

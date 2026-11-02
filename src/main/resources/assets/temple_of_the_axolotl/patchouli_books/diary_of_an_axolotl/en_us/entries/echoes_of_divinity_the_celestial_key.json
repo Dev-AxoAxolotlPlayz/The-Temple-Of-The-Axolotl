@@ -1,0 +1,20 @@
+{
+  "name": "A Key Worth Keeping",
+  "category": "temple_of_the_axolotl:echoes_of_divinity",
+  "icon": "minecraft:tripwire_hook",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Nine of our orbs can make a key. such a small thing to carry so much hope for me to see. If you found one, please hold it carefully... I waited so long to be set free..."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/31.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/echoes_of_divinity_the_celestial_key"
+}

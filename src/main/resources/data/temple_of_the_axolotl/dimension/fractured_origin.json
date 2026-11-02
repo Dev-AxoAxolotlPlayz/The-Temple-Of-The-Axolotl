@@ -1,0 +1,13 @@
+{
+  "type": "temple_of_the_axolotl:fractured_origin",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "minecraft:the_end",
+      "features": false,
+      "lakes": false,
+      "layers": [],
+      "structure_overrides": []
+    }
+  }
+}

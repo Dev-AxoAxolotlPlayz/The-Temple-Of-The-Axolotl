@@ -1,0 +1,20 @@
+{
+  "name": "The First Temple",
+  "category": "temple_of_the_axolotl:the_forgotten_prison",
+  "icon": "minecraft:lodestone",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Not for legend, but my own pain. I remember its halls, corrupted in dismay. the doors that shut me in kept me away. in the lowest chamber, i count my days.."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/29.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_forgotten_prison_temple_00001"
+}

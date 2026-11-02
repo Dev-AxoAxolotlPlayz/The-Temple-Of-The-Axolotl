@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "minecraft:netherite_upgrade_smithing_template"
+  },
+  "base": {
+    "item": "minecraft:jukebox"
+  },
+  "addition": {
+    "item": "temple_of_the_axolotl:cosmic_essence"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:celestial_jukebox",
+    "count": 1
+  }
+}

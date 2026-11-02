@@ -1,0 +1,31 @@
+{
+  "name": "An Open Door",
+  "category": "temple_of_the_axolotl:the_brothers_fate",
+  "icon": "minecraft:iron_door",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)The sound of an opened door seems so nice. I forgot what freedom looks like. I want to see the sky again."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/16.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Perhaps my savior can touch the stars with me. I promise to be gentle with my boops. Just make sure to hold on for me."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/17.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_brothers_fate_freedom"
+}

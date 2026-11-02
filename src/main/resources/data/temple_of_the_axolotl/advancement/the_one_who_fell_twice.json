@@ -1,0 +1,9 @@
+{
+  "display": {
+    "icon": {"id": "temple_of_the_axolotl:ring_of_the_one"},
+    "title": "The One Who Fell Twice...",
+    "description": "You knew what the Ring would do. You offered it anyway.",
+    "frame": "challenge", "hidden": true, "show_toast": true, "announce_to_chat": true
+  },
+  "criteria": {"completed": {"trigger": "minecraft:impossible"}}
+}

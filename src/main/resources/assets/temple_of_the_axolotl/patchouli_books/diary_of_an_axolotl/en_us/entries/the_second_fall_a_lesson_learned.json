@@ -1,0 +1,31 @@
+{
+  "name": "The Wrong Lesson",
+  "category": "temple_of_the_axolotl:the_second_fall",
+  "icon": "minecraft:book",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)I hoped our long sorrow might teach us gentleness. Yet the Ring has another lesson for those who watch closely. "
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/03.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Learning is not always wisdom, when it shows how to hold its power. I wish i understood that sooner... All i did.. was turn to smell a flower i saw... what did i do... why..."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/04.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_second_fall_a_lesson_learned"
+}

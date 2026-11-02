@@ -23,6 +23,24 @@ public final class TempleProgress {
     public static int state(ServerPlayer p) { return p.getPersistentData().getInt(STATE); }
     public static int curse(ServerPlayer p) { return p.getPersistentData().getInt(CURSE); }
 
+    private static final String DECOY_WRATH_DEFEATS = "axoDecoyWrathDefeats";
+    /** Lifetime per-player victories, independent of Temple run progress. */
+    public static int decoyWrathDefeats(ServerPlayer player) {
+        return Math.max(0, player.getPersistentData().getInt(DECOY_WRATH_DEFEATS));
+    }
+    public static void recordDecoyWrathDefeat(ServerPlayer player) {
+        int old = decoyWrathDefeats(player);
+        if (old < Integer.MAX_VALUE) player.getPersistentData().putInt(DECOY_WRATH_DEFEATS, old + 1);
+    }
+    public static int originWrathTier(ServerPlayer player) {
+        int count = decoyWrathDefeats(player);
+        return count <= 10 ? 1 : count <= 20 ? 2 : 3;
+    }
+    /** Developer testing only; never reset by finishRun or resetDev. */
+    public static void setDecoyWrathDefeatsDev(ServerPlayer player, int value) {
+        player.getPersistentData().putInt(DECOY_WRATH_DEFEATS, Math.max(0, value));
+    }
+
     /** Call on entry and on each floor change, including curse teleports; floors 1..10. */
     public static void setFloor(ServerPlayer p, int floor) {
         p.getPersistentData().putInt(FLOOR, Math.max(1, Math.min(10, floor)));

@@ -64,6 +64,9 @@ public class TempleOfTheAxolotl {
 
                                 // Temple portal (custom emerald-looking block)
                                 output.accept(ModBlocks.TEMPLE_PORTAL_ITEM.get());
+                output.accept(ModBlocks.LORE_BLOCK_ITEM.get());
+                output.accept(ModBlocks.BROKEN_LORE_BLOCK_ITEM.get());
+                                output.accept(ModBlocks.ABYSSAL_WATERGATE_ITEM.get());
                                 output.accept(com.devaxo.templeoftheaxolotl.brewing.CosmicBrewingRegistries.STAND_ITEM.get());
 
                                 // =====================================
@@ -75,7 +78,6 @@ public class TempleOfTheAxolotl {
                                 output.accept(ModTrapItems.HONEYBRICK_TRAP.get());
                                 output.accept(ModTrapItems.SNEAK_TRAP.get());
                                 output.accept(Pre07Items.CELESTIAL_CACHE.get());
-                                output.accept(Pre07Fluids.PURE_BUCKET.get());
                                 output.accept(Pre07Fluids.DILUTED_BUCKET.get());
                                 output.accept(Pre07Items.TRIAL_TRAP_SPAWNER.get());
                                 for(var item:Pre07Items.STONES) output.accept(item.get());
@@ -94,6 +96,7 @@ public class TempleOfTheAxolotl {
     ) {
 
         // Register custom spawn-relative temple structure placement.
+        com.devaxo.templeoftheaxolotl.abyss.WatergateEntities.TYPES.register(modEventBus);
         TempleWorldgenPlacements.PLACEMENTS.register(modEventBus);
         TempleRewardMenuTypes.MENUS.register(modEventBus);
         com.devaxo.templeoftheaxolotl.brewing.CosmicBrewingRegistries.BLOCKS.register(modEventBus);
@@ -110,6 +113,9 @@ public class TempleOfTheAxolotl {
 
         // Temple portal block and item registration (register once)
         ModBlocks.register(modEventBus);
+        com.devaxo.templeoftheaxolotl.lore.LoreBlockEntities.TYPES.register(modEventBus);
+        NeoForge.EVENT_BUS.register(new com.devaxo.templeoftheaxolotl.abyss.AbyssTrialEvents());
+        NeoForge.EVENT_BUS.register(new com.devaxo.templeoftheaxolotl.abyss.AbyssTerrainEvents());
 
         // Item registration
         ModItems.ITEMS.register(modEventBus);
@@ -147,11 +153,17 @@ public class TempleOfTheAxolotl {
             modEventBus.addListener(com.devaxo.templeoftheaxolotl.compass.TempleSeekerClient::onClientSetup);
             modEventBus.addListener(com.devaxo.templeoftheaxolotl.pre07.Pre07FluidClientExtensions::register);
             modEventBus.addListener(com.devaxo.templeoftheaxolotl.client.TempleRewardScreenRegistration::register);
+            // Diary formatting must register before Patchouli parses the book.
+            com.devaxo.templeoftheaxolotl.client.DiaryFontRegistration.register();
             modEventBus.addListener(com.devaxo.templeoftheaxolotl.eclipse.EclipseScreenRegistration::register);
         }
 
         // Maze development commands
         NeoForge.EVENT_BUS.addListener(AxoMazeCommands::register);
+        NeoForge.EVENT_BUS.addListener(com.devaxo.templeoftheaxolotl.abyss.MerfolkVillageTestCommands::register);
+        NeoForge.EVENT_BUS.addListener(com.devaxo.templeoftheaxolotl.maze.OriginMazeCommands::register);
+        NeoForge.EVENT_BUS.register(new com.devaxo.templeoftheaxolotl.maze.OriginTempleTravel());
+        NeoForge.EVENT_BUS.register(new com.devaxo.templeoftheaxolotl.maze.OriginSanctumRescue());
         NeoForge.EVENT_BUS.register(new DungeonRewardEvents());
         NeoForge.EVENT_BUS.register(new DungeonRewardDevCommands());
         NeoForge.EVENT_BUS.addListener(TrapRuntime::onPlayerTick);

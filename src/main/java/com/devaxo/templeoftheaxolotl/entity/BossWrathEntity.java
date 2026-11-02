@@ -17,6 +17,9 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.DustParticleOptions;
 import org.joml.Vector3f;
@@ -56,7 +59,39 @@ import java.util.UUID;
 public class BossWrathEntity extends PathfinderMob implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private UUID headPartUUID;
+    private ItemStack secondFallRing = ItemStack.EMPTY;
+    private int secondFallCorruptionCursor = 0;
+    private BlockPos secondFallCorruptionOrigin = BlockPos.ZERO;
+    public void setSecondFallRing(ItemStack ring) {
+        secondFallRing = ring.copyWithCount(1);
+        if (!secondFallRing.isEmpty() && secondFallCorruptionCursor == 0) secondFallCorruptionOrigin = blockPosition();
+        setItemSlot(EquipmentSlot.MAINHAND, secondFallRing.copy());
+        updateWrathBossBarName();
+    }
+    public boolean isSecondFall() { return !secondFallRing.isEmpty(); }
+
     private boolean sanctumBound = false;
+    private int originDifficultyTier = 0;
+    private UUID originTriggeringPlayer;
+    private UUID secondFallBetrayer;
+    private final java.util.Map<UUID, Integer> secondFallContactTicks = new java.util.HashMap<>();
+    private boolean secondFallSkyCaptured = false;
+    private long secondFallPreviousDayTime = 0L;
+    private long secondFallSkyStartGameTime = 0L;
+    private static final long SECOND_FALL_NEW_MOON_MIDNIGHT = 4L * 24000L + 18000L;
+
+    public void setSecondFallBetrayer(UUID playerId) { secondFallBetrayer = playerId; }
+    public void setOriginDifficulty(int tier, UUID playerId) {
+        originDifficultyTier = Math.max(1, Math.min(3, tier));
+        originTriggeringPlayer = playerId;
+        updateWrathBossBarName();
+    }
+    public int getOriginDifficultyTier() { return originDifficultyTier; }
+    public boolean isOriginWrath() { return originDifficultyTier > 0 && getTags().contains("is bound to Origin Temple"); }
+    public BlockPos getSanctumTemplateOrigin() { return sanctumOrigin; }
+    public boolean isOriginResolved() { return victoryProcessed; }
+    public void resolveOriginByForgiveness() { victoryProcessed = true; }
+
     private boolean sanctumActivated = false;
     private boolean victoryProcessed = false;
     private BlockPos sanctumOrigin = BlockPos.ZERO;
@@ -88,7 +123,16 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        if (!secondFallRing.isEmpty()) tag.put("SecondFallRing", secondFallRing.save(registryAccess()));
+        tag.putInt("SecondFallCorruptionCursor", secondFallCorruptionCursor);
+        tag.put("SecondFallCorruptionOrigin", NbtUtils.writeBlockPos(secondFallCorruptionOrigin));
         tag.putBoolean("SanctumBound", sanctumBound);
+        tag.putInt("OriginDifficultyTier", originDifficultyTier);
+        if (originTriggeringPlayer != null) tag.putUUID("OriginTriggeringPlayer", originTriggeringPlayer);
+        if (secondFallBetrayer != null) tag.putUUID("SecondFallBetrayer", secondFallBetrayer);
+        tag.putBoolean("SecondFallSkyCaptured", secondFallSkyCaptured);
+        tag.putLong("SecondFallPreviousDayTime", secondFallPreviousDayTime);
+        tag.putLong("SecondFallSkyStartGameTime", secondFallSkyStartGameTime);
         tag.putBoolean("SanctumActivated", sanctumActivated);
         tag.putBoolean("WrathVictoryProcessed", victoryProcessed);
         tag.put("SanctumOrigin", NbtUtils.writeBlockPos(sanctumOrigin));
@@ -97,15 +141,39 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        if (tag.contains("SecondFallRing")) setSecondFallRing(ItemStack.parseOptional(registryAccess(), tag.getCompound("SecondFallRing")));
+        secondFallCorruptionCursor = tag.getInt("SecondFallCorruptionCursor");
+        if (tag.contains("SecondFallCorruptionOrigin")) secondFallCorruptionOrigin = NbtUtils.readBlockPos(tag, "SecondFallCorruptionOrigin").orElse(blockPosition());
         sanctumBound = tag.getBoolean("SanctumBound");
+        originDifficultyTier = tag.getInt("OriginDifficultyTier");
+        originTriggeringPlayer = tag.hasUUID("OriginTriggeringPlayer") ? tag.getUUID("OriginTriggeringPlayer") : null;
+        secondFallBetrayer = tag.hasUUID("SecondFallBetrayer") ? tag.getUUID("SecondFallBetrayer") : null;
+        secondFallSkyCaptured = tag.getBoolean("SecondFallSkyCaptured");
+        secondFallPreviousDayTime = tag.getLong("SecondFallPreviousDayTime");
+        secondFallSkyStartGameTime = tag.getLong("SecondFallSkyStartGameTime");
         sanctumActivated = tag.getBoolean("SanctumActivated");
         victoryProcessed = tag.getBoolean("WrathVictoryProcessed");
         if (tag.contains("SanctumOrigin")) sanctumOrigin = NbtUtils.readBlockPos(tag, "SanctumOrigin").orElse(BlockPos.ZERO);
+        updateWrathBossBarName();
         bossBar.setVisible(!sanctumBound || sanctumActivated);
     }
 
     private final ServerBossEvent bossBar = new ServerBossEvent(
             Component.literal("Fallen Wrath"), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS);
+
+    private void updateWrathBossBarName() {
+        if (isSecondFall()) { bossBar.setName(Component.literal("The One Who Fell Twice")); return; }
+        if (originDifficultyTier >= 1 && originDifficultyTier <= 3) {
+            String difficulty = switch (originDifficultyTier) {
+                case 1 -> "Easy";
+                case 2 -> "Medium";
+                default -> "Hard";
+            };
+            bossBar.setName(Component.literal("Origin Wrath Difficulty: " + difficulty));
+        } else {
+            bossBar.setName(Component.literal("Fallen Wrath"));
+        }
+    }
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("idle_crown_and_breathing");
     private static final RawAnimation WINGS = RawAnimation.begin().thenLoop("idle_wings");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("walking");
@@ -136,6 +204,7 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
     private int laserTick = -1;
     private Vec3 laserOrigin = Vec3.ZERO;
     private Vec3 laserDirection = new Vec3(0, 0, 1);
+    private Vec3 laserLockedTarget = Vec3.ZERO;
     private boolean shockwaveRegisteredHit;
     private int attackTicks;
     private int attackCooldown;
@@ -179,7 +248,10 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
         @Override public void tick() {
             LivingEntity target = getTarget();
             if (target == null) return;
-            if (laserTick < 0) getLookControl().setLookAt(target, 30.0F, 30.0F);
+            if (laserTick < 0) {
+                getLookControl().setLookAt(target, 180.0F, 90.0F);
+                if (isSecondFall()) faceBetrayer(target);
+            }
             if (attackTicks > 0 || laserTick >= 0 || pendingLaser) {
                 getNavigation().stop();
                 return;
@@ -187,20 +259,27 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
             double distSq = distanceToSqr(target);
             // Pursuit is the default. Pounce is an occasional special attack, never locomotion.
             if (attackCooldown > 0) {
-                getNavigation().moveTo(target, 1.1);
+                getNavigation().moveTo(target, isSecondFall() ? 1.35 : 1.1);
                 return;
             }
             if (distSq <= 3.4 * 3.4 && hasLineOfSight(target)) {
                 startHeadbutt();
-            } else if (pounceCooldown == 0 && onGround() && hasLineOfSight(target)
+            } else if ((!isSecondFall() || getRandom().nextInt(4) == 0) && pounceCooldown == 0 && onGround() && hasLineOfSight(target)
                     && distSq >= POUNCE_MIN_RANGE * POUNCE_MIN_RANGE
                     && distSq <= POUNCE_MAX_RANGE * POUNCE_MAX_RANGE
                     && getRandom().nextInt(5) == 0) {
                 startPounce(target);
             } else {
-                getNavigation().moveTo(target, 1.1);
+                getNavigation().moveTo(target, isSecondFall() ? 1.35 : 1.1);
             }
         }
+    }
+
+    private void faceBetrayer(LivingEntity target) {
+        double dx = target.getX() - getX(), dz = target.getZ() - getZ();
+        if (dx * dx + dz * dz < 0.001) return;
+        float yaw = (float)(Math.atan2(dz, dx) * 180.0 / Math.PI) - 90.0F;
+        setYRot(yaw); setYHeadRot(yaw); yBodyRot = yaw;
     }
 
     private void startHeadbutt() {
@@ -233,7 +312,29 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
         super.tick();
         if (getRemainingFireTicks() > 0) clearFire();
         if (level().isClientSide) return;
-        if (level() instanceof ServerLevel server) checkSanctumActivation(server);
+        if (level() instanceof ServerLevel server) {
+            checkSanctumActivation(server);
+            if (isSecondFall() && isAlive()) {
+                if (!secondFallSkyCaptured) {
+                    secondFallPreviousDayTime = server.getDayTime();
+                    secondFallSkyStartGameTime = server.getGameTime();
+                    secondFallSkyCaptured = true;
+                }
+                // Overworld-wide midnight with a new moon, no sunlight.
+                if (server.dimension() == Level.OVERWORLD
+                        && server.getDayTime() != SECOND_FALL_NEW_MOON_MIDNIGHT)
+                    server.setDayTime(SECOND_FALL_NEW_MOON_MIDNIGHT);
+            }
+            if (isSecondFall() && secondFallBetrayer != null) {
+                ServerPlayer betrayer = server.getServer().getPlayerList().getPlayer(secondFallBetrayer);
+                if (betrayer != null && betrayer.level() == level() && betrayer.isAlive() && !betrayer.isSpectator() && !betrayer.isCreative()) {
+                    if (getTarget() != betrayer) setTarget(betrayer);
+                    if (laserTick < 0) faceBetrayer(betrayer);
+                } else if (getTarget() != null) setTarget(null);
+            }
+            if (isSecondFall() && secondFallCorruptionCursor < 18000 && tickCount % 2 == 0)
+                secondFallCorruptionCursor = SecondFallCorruption.advance(server, secondFallCorruptionOrigin, secondFallCorruptionCursor);
+        }
         if (sanctumBound && !sanctumActivated) {
             getNavigation().stop();
             Player watcher = level().getNearestPlayer(this, 128.0);
@@ -262,13 +363,29 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
         if (laserTick >= 0) tickLaser();
         if (attackTicks > 0) {
             int elapsed = (pouncing ? POUNCE_TICKS : HEADBUTT_TICKS) - attackTicks;
-            // Hit at the end of the 1.5-second headbutt animation.
-            if (!pouncing && attackTicks == 1) performHeadbutt();
+            // 0.83s: the forward lunge is already underway (animation impact window).
+            if (!pouncing && elapsed == 17) performHeadbutt();
             attackTicks--;
             if (attackTicks == 0 && pouncing && !pounceImpactDone) {
                 pounceImpactDone = true;
                 beginShockwave(); // Only the explicit POUNCE state may create a wave.
                 pouncing = false;
+            }
+        }
+        // Ring blades are continuously active: any overlap with Wrath's full body hitbox
+        // causes contact damage, regardless of pounce, laser, or gravity state.
+        if (isSecondFall() && isAlive() && level() instanceof ServerLevel server) {
+            AABB blades = getBoundingBox();
+            for (LivingEntity victim : server.getEntitiesOfClass(LivingEntity.class, blades,
+                    e -> e != this && e.isAlive() && e.getBoundingBox().intersects(blades)
+                            && !(e instanceof Player p && (p.isCreative() || p.isSpectator())))) {
+                int last = secondFallContactTicks.getOrDefault(victim.getUUID(), -1000);
+                if (tickCount - last < 4) continue;
+                secondFallContactTicks.put(victim.getUUID(), tickCount);
+                if (wrathDamage(victim, Math.max(2.0F,
+                        (float)getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * 0.20F))) {
+                    SecondFallEnchantments.onHit(secondFallRing, victim, this);
+                }
             }
         }
         if (pendingLaser && attackTicks <= 0 && laserTick < 0) beginLaser();
@@ -292,15 +409,35 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
         return landed;
     }
 
+    // Supplement the boss's custom rampage damage. Normal melee also goes through vanilla's
+    // equipped-weapon enchantment processing, with the original Ring preserved intact.
+    private float secondFallAttackBonus() {
+        if (secondFallRing.isEmpty()) return 0F;
+        float bonus = 0F;
+        ItemEnchantments enchantments = secondFallRing.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+        for (var entry : enchantments.entrySet()) {
+            var key = entry.getKey().unwrapKey();
+            if (key.isEmpty()) continue;
+            String path = key.get().location().getPath();
+            if (path.equals("sharpness") || path.equals("smite") || path.equals("bane_of_arthropods"))
+                bonus += entry.getIntValue() * 0.5F;
+        }
+        return bonus;
+    }
+
     private void performHeadbutt() {
         LivingEntity target = getTarget();
         if (target == null || !target.isAlive() || !hasLineOfSight(target)) return;
         double reach = getBbWidth() * 0.5 + target.getBbWidth() * 0.5 + 1.0;
         if (distanceToSqr(target) <= reach * reach) {
             if (rampage) {
-                if (wrathDamage(target, 1.25F * Math.max(2.0F, (float)getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE))))
+                if (wrathDamage(target, 1.25F * Math.max(2.0F, (float)getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)) + secondFallAttackBonus())) {
+                    SecondFallEnchantments.onHit(secondFallRing, target, this);
                     registerSuccessfulExchange();
-            } else doHurtTarget(target);
+                }
+            } else {
+                if (doHurtTarget(target) && isSecondFall()) SecondFallEnchantments.onHit(secondFallRing, target, this);
+            }
         }
     }
 
@@ -418,7 +555,7 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
         } else if (++rampageHits >= 3) {
             rampageHits = 0;
             // Finish the current melee animation before charging the laser.
-            pendingLaser = true;
+            if (!isSecondFall() || getRandom().nextInt(4) == 0) pendingLaser = true;
         }
     }
 
@@ -428,12 +565,13 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
         pendingLaser = false;
         laserTick = 0;
         attackCooldown = 0;
-        laserOrigin = laserFocusPoint();
+        laserOrigin = animatedLaserLocator("Laser Focus Point");
         LivingEntity target = getTarget();
         Vec3 aim = target != null && target.isAlive()
                 ? target.getEyePosition().subtract(laserOrigin)
                 : getLookAngle();
         laserDirection = aim.lengthSqr() > 0.001 ? aim.normalize() : getLookAngle();
+        laserLockedTarget = laserOrigin.add(aim.lengthSqr() > 0.001 ? aim : laserDirection.scale(LASER_RANGE));
         laserLockedYaw = (float)(Math.toDegrees(Math.atan2(-laserDirection.x, laserDirection.z)));
         laserLockedPitch = (float)(-Math.toDegrees(Math.asin(laserDirection.y)));
         laserLockedYaw = (float) (Math.atan2(-laserDirection.x, laserDirection.z) * (180.0 / Math.PI));
@@ -453,6 +591,8 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
             {-6.798066, 25.091798, -26.130519}
     };
     private static final double[] FOCUS_COORDS = {0.000000, 29.268830, -32.128000};
+    // Dedicated Gravity Focus Point bone (child of Center5) in the updated model.
+    private static final double[] GRAVITY_FOCUS_COORDS = {0.000000, 37.268830, -32.128000};
 
     // Phase 4: model-pivot-based laser anchors. These are derived from the five
     // empty locator bones in boss_fallen_wrath.geo.json, including the horn
@@ -466,17 +606,127 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
                 .add(0, y / 16.0, 0).add(forward.scale(-z / 16.0));
     }
 
-    private Vec3[] laserHornTips() {
-        return new Vec3[] {
-                modelAnchor(HORN_TIP_COORDS[0][0], HORN_TIP_COORDS[0][1], HORN_TIP_COORDS[0][2]),
-                modelAnchor(HORN_TIP_COORDS[1][0], HORN_TIP_COORDS[1][1], HORN_TIP_COORDS[1][2]),
-                modelAnchor(HORN_TIP_COORDS[2][0], HORN_TIP_COORDS[2][1], HORN_TIP_COORDS[2][2]),
-                modelAnchor(HORN_TIP_COORDS[3][0], HORN_TIP_COORDS[3][1], HORN_TIP_COORDS[3][2])
+    // Unified server-side laser pose. The laser animation already includes the
+    // persistent rampage root scale and upward translation; do not double-apply.
+    // All six locators share the same
+    // animation, scale, pivot hierarchy, and entity-space conversion.
+    private record BonePose(Vec3 pivot, Vec3 restRotation, String parent) {}
+    private static BonePose laserBone(String name) {
+        return switch (name) {
+            case "Axolotl" -> new BonePose(new Vec3(-0.07000000, 14.70944000, -5.86910000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Axolotl Wrath");
+            case "Axolotl Wrath" -> new BonePose(new Vec3(0.00000000, 12.00000000, 0.00000000), new Vec3(0.00000000, 0.00000000, 0.00000000), null);
+            case "Center" -> new BonePose(new Vec3(11.80000000, 20.81926000, -30.87254000), new Vec3(73.84438000, 10.99104000, 88.47347000), "Left  Horn Pair");
+            case "Center2" -> new BonePose(new Vec3(-13.60000000, 20.81926000, -29.47254000), new Vec3(29.72106000, -39.21097000, -77.70990000), "Right Horn Pair");
+            case "Center3" -> new BonePose(new Vec3(-11.80000000, 20.81926000, -30.87254000), new Vec3(73.84438000, -10.99104000, -88.47347000), "Right Horn Pair");
+            case "Center4" -> new BonePose(new Vec3(13.60000000, 20.81926000, -29.47254000), new Vec3(29.72106000, 39.21097000, 77.70990000), "Left  Horn Pair");
+            case "Center5" -> new BonePose(new Vec3(0.00000000, 25.76883000, -32.12800000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Crown");
+            case "Crown" -> new BonePose(new Vec3(0.00000000, 25.47483000, -32.14633000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Crown Tilt");
+            case "Crown Tilt" -> new BonePose(new Vec3(0.00000000, 25.47483000, -32.14633000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Head");
+            case "Full Body" -> new BonePose(new Vec3(-0.35000000, 7.87014000, -5.12254000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Axolotl");
+            case "Gravity Focus Point" -> new BonePose(new Vec3(0.00000000, 37.26883000, -32.12800000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Center5");
+            case "Head" -> new BonePose(new Vec3(-0.40000000, 15.97014000, -10.47254000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Full Body");
+            case "Horns" -> new BonePose(new Vec3(-0.90000000, 20.81926000, -30.17254000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Head");
+            case "Laser Focus Point" -> new BonePose(new Vec3(0.00000000, 29.26883000, -32.12800000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Center5");
+            case "Left  Horn Pair" -> new BonePose(new Vec3(11.80000000, 20.81926000, -30.87254000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Horns");
+            case "Left Horn Tip A" -> new BonePose(new Vec3(11.80000000, 29.61926000, -30.87254000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Center");
+            case "Left Horn Tip B" -> new BonePose(new Vec3(13.60000000, 29.41926000, -29.47254000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Center4");
+            case "Right Horn Pair" -> new BonePose(new Vec3(-13.60000000, 20.81926000, -29.47254000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Horns");
+            case "Right Horn Tip A" -> new BonePose(new Vec3(-11.80000000, 29.51926000, -30.87254000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Center3");
+            case "Right Horn Tip B" -> new BonePose(new Vec3(-13.60000000, 29.51926000, -29.47254000), new Vec3(0.00000000, 0.00000000, 0.00000000), "Center2");
+            default -> throw new IllegalArgumentException("Unknown laser bone: " + name);
         };
     }
 
-    private Vec3 laserFocusPoint() {
-        return modelAnchor(FOCUS_COORDS[0], FOCUS_COORDS[1], FOCUS_COORDS[2]);
+    private static double crownSpin(double t) {
+        if (t <= 2) { double u = Math.max(0, t / 2); return -360 * (1 - Math.pow(1 - u, 3)); }
+        double u = Math.min(1, (t - 2) / 2);
+        return -360 - 1080 * (1 - Math.cos(u * Math.PI / 2));
+    }
+    private static Vec3 sampleVector(double t, double[][] keys, String easing) {
+        if (t <= keys[0][0]) return new Vec3(keys[0][1], keys[0][2], keys[0][3]);
+        for (int i = 1; i < keys.length; i++) {
+            if (t <= keys[i][0]) {
+                double u = (t - keys[i-1][0]) / (keys[i][0] - keys[i-1][0]);
+                if ("easeOutCubic".equals(easing)) u = 1 - Math.pow(1-u,3);
+                else if ("easeInSine".equals(easing)) u = 1 - Math.cos(u*Math.PI/2);
+                return new Vec3(keys[i-1][1] + u*(keys[i][1]-keys[i-1][1]),
+                        keys[i-1][2] + u*(keys[i][2]-keys[i-1][2]),
+                        keys[i-1][3] + u*(keys[i][3]-keys[i-1][3]));
+            }
+        }
+        double[] k = keys[keys.length-1]; return new Vec3(k[1],k[2],k[3]);
+    }
+    private static Vec3 laserBoneRotation(String name, double seconds) {
+        return switch (name) {
+            case "Center2" -> new Vec3(8.90670000, 23.43250000, -64.21390000);
+            case "Center4" -> new Vec3(10.88920000, -29.72970000, 62.12950000);
+            case "Crown" -> new Vec3(0, crownSpin(seconds), 0);
+            case "Crown Tilt" -> new Vec3(-90.00000000, 0.00000000, 180.00000000);
+            case "Head" -> sampleVector(seconds, new double[][]{new double[]{0.0, 0, 0, 0}, new double[]{2.0, 5, 0, 0}}, "linear");
+            case "Left  Horn Pair" -> new Vec3(22.19310000, 51.57940000, 62.64600000);
+            case "Right Horn Pair" -> new Vec3(14.51250000, -56.64090000, -58.04430000);
+            default -> Vec3.ZERO;
+        };
+    }
+    private static Vec3 laserBoneTranslation(String name, double seconds) {
+        return switch (name) {
+            case "Axolotl Wrath" -> new Vec3(0.00000000, 1.50000000, 0.00000000);
+            case "Crown" -> sampleVector(seconds, new double[][]{new double[]{0.0, 0, 0, 0}, new double[]{2.0, 0, 0, -2.1}}, "linear");
+            case "Crown Tilt" -> new Vec3(0.00000000, -2.80000000, -11.00000000);
+            case "Left  Horn Pair" -> new Vec3(-3.70000000, 0.00000000, 0.30000000);
+            case "Right Horn Pair" -> new Vec3(3.90000000, -2.30000000, -1.20000000);
+            default -> Vec3.ZERO;
+        };
+    }
+    private static Vec3 laserBoneScale(String name, double seconds) {
+        return switch (name) {
+            case "Axolotl Wrath" -> new Vec3(1.20000000, 1.20000000, 1.20000000);
+            case "Horns" -> new Vec3(1.10000000, 1.10000000, 1.10000000);
+            default -> new Vec3(1,1,1);
+        };
+    }
+    private static Vec3 rotateEuler(Vec3 point, Vec3 pivot, Vec3 degrees) {
+        point = rotateAroundX(point, pivot, degrees.x);
+        point = rotateAroundY(point, pivot, degrees.y);
+        return rotateAroundZ(point, pivot, degrees.z);
+    }
+    private Vec3 animatedLaserLocator(String name) {
+        double seconds = Math.max(0, laserTick) / 20.0;
+        Vec3 point = laserBone(name).pivot();
+        String bone = name;
+        while (bone != null) {
+            BonePose pose = laserBone(bone);
+            Vec3 pivot = pose.pivot();
+            Vec3 scale = laserBoneScale(bone, seconds);
+            Vec3 relative = point.subtract(pivot);
+            point = pivot.add(relative.x * scale.x, relative.y * scale.y, relative.z * scale.z);
+            point = rotateEuler(point, pivot, pose.restRotation().add(laserBoneRotation(bone, seconds)));
+            point = point.add(laserBoneTranslation(bone, seconds));
+            bone = pose.parent();
+        }
+        return modelAnchor(point.x, point.y, point.z);
+    }
+    private Vec3[] animatedLaserHorns() {
+        return new Vec3[]{animatedLaserLocator("Left Horn Tip A"),
+                animatedLaserLocator("Left Horn Tip B"),
+                animatedLaserLocator("Right Horn Tip A"),
+                animatedLaserLocator("Right Horn Tip B")};
+    }
+
+    private static Vec3 rotateAroundX(Vec3 point, Vec3 pivot, double degrees) {
+        return pivot.add(rotateX(point.subtract(pivot), degrees));
+    }
+
+    private static Vec3 rotateAroundY(Vec3 point, Vec3 pivot, double degrees) {
+        double r = Math.toRadians(degrees), c = Math.cos(r), sn = Math.sin(r);
+        Vec3 v = point.subtract(pivot);
+        return pivot.add(v.x * c + v.z * sn, v.y, -v.x * sn + v.z * c);
+    }
+
+    private static Vec3 rotateAroundZ(Vec3 point, Vec3 pivot, double degrees) {
+        double r = Math.toRadians(degrees), c = Math.cos(r), sn = Math.sin(r);
+        Vec3 v = point.subtract(pivot);
+        return pivot.add(v.x * c - v.y * sn, v.x * sn + v.y * c, v.z);
     }
 
     private void particleLine(ServerLevel server, Vec3 from, Vec3 to,
@@ -508,13 +758,16 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
         setYHeadRot(laserLockedYaw);
         setYBodyRot(laserLockedYaw);
         setXRot(laserLockedPitch);
-        Vec3 start = getEyePosition();
+        Vec3 focus = animatedLaserLocator("Laser Focus Point");
+        // The aim point is locked at charge start; the beam is recomputed from
+        // the fully transformed crown focus as the animation progresses.
+        Vec3 updatedAim = laserLockedTarget.subtract(focus);
+        if (updatedAim.lengthSqr() > 0.0001) laserDirection = updatedAim.normalize();
         Vec3 side = new Vec3(-laserDirection.z, 0, laserDirection.x);
         if (side.lengthSqr() < 0.001) side = new Vec3(1, 0, 0);
         side = side.normalize();
         Vec3 up = side.cross(laserDirection).normalize();
-        Vec3 focus = laserFocusPoint();
-        Vec3[] horns = laserHornTips();
+        Vec3[] horns = animatedLaserHorns();
 
         // 0-2s: four separate horn-tip spheres charge.
         for (Vec3 horn : horns) glowSphere(server, horn, 0.13 + 0.15 * Math.min(1.0, laserTick / 40.0), HORN_GLOW);
@@ -527,46 +780,28 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
                     laserTick >= LASER_DODGE_START ? BEAM_CORE : HORN_GLOW);
         }
 
-        // Pull during 0-3s only. The last 0.5s before firing is a dodge window.
-        if (laserTick < LASER_DODGE_START) {
-            AABB area = getBoundingBox().inflate(LASER_RANGE + 2);
-            for (LivingEntity entity : server.getEntitiesOfClass(LivingEntity.class, area,
-                    e -> e != this && e.isAlive() && !isAlliedTo(e))) {
-                Vec3 delta = entity.position().subtract(start);
-                double along = delta.dot(laserDirection);
-                if (along < 0 || along > LASER_RANGE) continue;
-                Vec3 closest = start.add(laserDirection.scale(along));
-                Vec3 pull = closest.subtract(entity.position());
-                double length = pull.length();
-                if (length > 0.15 && length < 8.0) {
-                    Vec3 nudge = pull.scale(Math.min(0.11, length * 0.08) / length);
-                    entity.setDeltaMovement(entity.getDeltaMovement().scale(0.65).add(nudge));
-                    entity.hurtMarked = true;
-                }
-            }
-        }
-
-        // 3.5-4s: the thick central beam fires. Damage is applied only once.
-        if (laserTick == LASER_DODGE_START) {
-            // Remove stored gravity-pull velocity rather than launching the victim clear of the beam.
+        // Hold captured victims on the locked beam until the actual firing tick.
+        // The old dodge-window release let gravity drop victims out of the beam.
+        if (laserTick < LASER_FIRE_TICK) {
             AABB captureArea = getBoundingBox().inflate(LASER_RANGE + 2);
+            // Pull to the dedicated Gravity Focus Point bone, not the laser focal point.
+            // Uses the same laser/rampage animated hierarchy as the laser focal point.
+            Vec3 gravityAnchor = animatedLaserLocator("Gravity Focus Point");
             for (LivingEntity victim : server.getEntitiesOfClass(LivingEntity.class, captureArea,
                     e -> e != this && e.isAlive() && !isAlliedTo(e))) {
-                Vec3 delta = victim.position().subtract(start);
-                double along = delta.dot(laserDirection);
-                if (along >= 0 && along <= LASER_RANGE &&
-                        victim.position().distanceToSqr(start.add(laserDirection.scale(along))) < 9.0) {
-                    victim.setDeltaMovement(Vec3.ZERO);
-                    victim.hurtMarked = true;
-                }
-            }
-        }
-        if (laserTick == LASER_DODGE_START) {
-            AABB holdArea = getBoundingBox().inflate(LASER_RANGE + 2);
-            for (LivingEntity victim : server.getEntitiesOfClass(LivingEntity.class, holdArea,
-                    e -> e != this && e.isAlive() && !isAlliedTo(e))) {
-                victim.setDeltaMovement(Vec3.ZERO);
+                // Anchor all three axes, rather than projecting onto the beam.
+                Vec3 victimCenter = victim.getBoundingBox().getCenter();
+                Vec3 pull = gravityAnchor.subtract(victimCenter);
+                double distance = pull.length();
+                if (distance >= 12.0) continue;
+                // Counter gravity every tick, including the final charge-up ticks.
+                // Keep horizontal centering without teleporting or moving the beam.
+                Vec3 correction = distance > 0.05
+                        ? pull.scale(Math.min(0.22, distance * 0.20) / distance)
+                        : Vec3.ZERO;
+                victim.setDeltaMovement(correction);
                 victim.hurtMarked = true;
+                victim.fallDistance = 0;
             }
         }
         if (laserTick >= LASER_FIRE_TICK && laserTick < LASER_TOTAL_TICKS) {
@@ -704,24 +939,33 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
         if (!victoryProcessed && sanctumBound && level() instanceof ServerLevel server) {
             victoryProcessed = true;
             System.out.println("[WRATH DEBUG] Victory triggered!");
-            com.devaxo.templeoftheaxolotl.loot.DungeonRewardDevCommands.completeSanctumVictory(server, this);
-            // Random defeat title, visible to nearby players; does not delay rewards.
-            int line = server.random.nextInt(3);
-            String title = switch (line) {
-                case 0 -> "You think this is over...";
-                case 1 -> "Dont Worry...";
-                default -> "Here Ye Lies False Hope...";
-            };
-            String subtitle = switch (line) {
-                case 1 -> "I'll See You Soon...";
-                case 2 -> "Under the Seas...";
-                default -> "";
-            };
-            for (ServerPlayer player : server.players()) {
-                if (player.isSpectator() || player.distanceToSqr(this) > 96 * 96) continue;
-                player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(10, 70, 20));
-                player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(Component.literal(title)));
-                player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(Component.literal(subtitle)));
+            if (isOriginWrath()) {
+                com.devaxo.templeoftheaxolotl.maze.OriginSanctumRescue.resolve(server, this, false);
+            }
+            if (!this.getTags().contains("is bound to Origin Temple")) {
+                if (source.getEntity() instanceof ServerPlayer killer)
+                    com.devaxo.templeoftheaxolotl.traps.TempleProgress.recordDecoyWrathDefeat(killer);
+                com.devaxo.templeoftheaxolotl.loot.DungeonRewardDevCommands.completeSanctumVictory(server, this);
+            }
+            if (!this.getTags().contains("is bound to Origin Temple")) {
+                // Random defeat title, visible to nearby players; does not delay rewards.
+                int line = server.random.nextInt(3);
+                String title = switch (line) {
+                    case 0 -> "You think this is over...";
+                    case 1 -> "Dont Worry...";
+                    default -> "Here Ye Lies False Hope...";
+                };
+                String subtitle = switch (line) {
+                    case 1 -> "I'll See You Soon...";
+                    case 2 -> "Under the Seas...";
+                    default -> "";
+                };
+                for (ServerPlayer player : server.players()) {
+                    if (player.isSpectator() || player.distanceToSqr(this) > 96 * 96) continue;
+                    player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(10, 70, 20));
+                    player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(Component.literal(title)));
+                    player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(Component.literal(subtitle)));
+                }
             }
             float shardRoll = server.random.nextFloat();
             if (shardRoll < 0.40F) {
@@ -736,10 +980,20 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
                 System.out.println("[WRATH SHARD] No shard awarded.");
             }
         }
+        if (level() instanceof ServerLevel server) restoreSecondFallSky(server);
         super.die(source);
     }
 
+    private void restoreSecondFallSky(ServerLevel server) {
+        if (!secondFallSkyCaptured || server.dimension() != Level.OVERWORLD) return;
+        long elapsed = Math.max(0L, server.getGameTime() - secondFallSkyStartGameTime);
+        server.setDayTime(secondFallPreviousDayTime + elapsed);
+        secondFallSkyCaptured = false;
+    }
+
     @Override public void remove(RemovalReason reason) {
+        if (reason != RemovalReason.UNLOADED_TO_CHUNK && level() instanceof ServerLevel server)
+            restoreSecondFallSky(server);
         if (!level().isClientSide && level() instanceof ServerLevel server && headPartUUID != null) {
             Entity part = server.getEntity(headPartUUID);
             if (part != null) part.discard();
@@ -748,7 +1002,13 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
     }
 
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "wrath_idle", 5, state -> state.setAndContinue(IDLE)));
+        // Do not run the idle crown spin/scale on top of the laser crown pose.
+        // The laser animation explicitly contains the persistent rampage root
+        // scale (1.2) and upward shift (+1.5 Blockbench units).
+        controllers.add(new AnimationController<>(this, "wrath_idle", 0, state -> {
+            if (laserTick >= 0) return software.bernie.geckolib.animation.PlayState.STOP;
+            return state.setAndContinue(IDLE);
+        }));
         controllers.add(new AnimationController<>(this, "wrath_wings", 5, state -> state.setAndContinue(WINGS)));
         controllers.add(new AnimationController<>(this, "wrath_walk", 5, state -> {
             if (state.isMoving()) return state.setAndContinue(WALK);

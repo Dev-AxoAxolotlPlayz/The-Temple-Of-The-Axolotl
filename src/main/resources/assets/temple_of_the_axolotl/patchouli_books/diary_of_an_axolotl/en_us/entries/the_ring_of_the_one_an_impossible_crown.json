@@ -1,0 +1,31 @@
+{
+  "name": "A Ring for Two",
+  "category": "temple_of_the_axolotl:the_ring_of_the_one",
+  "icon": "minecraft:gold_nugget",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)When our powers met, brother's darkness and my light, a burst of both forged something new. a ring of both life and demise, the Ring of the One became true, we never thought dad will give us this truth..."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/05.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)It shown both of us, but a third at its center. i could not command off of it, neither could he.. i wonder what this center is, but i know. it was never for just one pair of flippers to hold."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/10.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_ring_of_the_one_an_impossible_crown"
+}

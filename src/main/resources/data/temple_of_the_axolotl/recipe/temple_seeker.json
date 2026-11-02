@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PCP",
+    "SXS",
+    "GEL"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:prismarine_shard"
+    },
+    "C": {
+      "item": "minecraft:prismarine_crystals"
+    },
+    "S": {
+      "item": "minecraft:chiseled_stone_bricks"
+    },
+    "X": {
+      "item": "minecraft:compass"
+    },
+    "G": {
+      "item": "minecraft:gold_block"
+    },
+    "E": {
+      "item": "minecraft:emerald_block"
+    },
+    "L": {
+      "item": "minecraft:sea_lantern"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:temple_seeker",
+    "count": 1
+  }
+}

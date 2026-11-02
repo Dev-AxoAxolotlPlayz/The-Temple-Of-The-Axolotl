@@ -1,0 +1,31 @@
+{
+  "name": "Face to Face",
+  "category": "temple_of_the_axolotl:the_original_sin",
+  "icon": "minecraft:netherite_sword",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Dont be blinded by his fury, for he still my sweet brother. Protect yourself, but dont take my pain. My memories are not for such a weight."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/02.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Please, if you see my brother... Please remember to say for me \"Sorry I hurt you, but i also forgive you\" to him. If mercy is possible, please... dont mistake it for weakness"
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/19.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_original_sin_the_final_confrontation"
+}

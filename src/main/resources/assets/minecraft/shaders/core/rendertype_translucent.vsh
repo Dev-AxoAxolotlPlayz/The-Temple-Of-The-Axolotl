@@ -34,12 +34,12 @@ float totaWave(vec2 xz, float t) {
 void main() {
     vec3 p = Position + ChunkOffset;
     float alphaByte = floor(Color.a * 255.0 + 0.5);
-    totaWater = (alphaByte >= 230.0 && alphaByte <= 250.0) ? 1.0 : 0.0;
+    totaWater = (alphaByte >= 230.0 && alphaByte <= 251.0) ? 1.0 : 0.0;
     totaWaveStrength = 0.0;
     totaWorldXZ = p.xz + TotaCameraXZ;
     totaWorldY = p.y + TotaCameraY;
 
-    if (totaWater > 0.5) {
+    if (totaWater > 0.5 && alphaByte <= 250.0) {
         // 230..250 is the depth/amplitude marker written by Hotfix B.
         // Keep the established small geometry displacement while testing.
         float depthAmplitude = (alphaByte - 230.0) / 20.0;

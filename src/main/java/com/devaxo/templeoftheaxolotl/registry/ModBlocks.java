@@ -25,6 +25,9 @@ public final class ModBlocks {
     public static void addCreativeTab(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(TEMPLE_PORTAL_ITEM.get());
+            event.accept(LORE_BLOCK_ITEM.get());
+            event.accept(BROKEN_LORE_BLOCK_ITEM.get());
+            event.accept(DIARY_ITEM.get());
         }
     }
 
@@ -38,10 +41,36 @@ public final class ModBlocks {
             () -> new com.devaxo.templeoftheaxolotl.block.AbyssalTorchBlock(
                     BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE).strength(2.5F).noOcclusion().lightLevel(state -> 15)));
 
+    public static final DeferredBlock<com.devaxo.templeoftheaxolotl.abyss.WatergateBlock> ABYSSAL_WATERGATE =
+            BLOCKS.register("abyssal_watergate", () -> new com.devaxo.templeoftheaxolotl.abyss.WatergateBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.PRISMARINE).noOcclusion().strength(-1.0F, 3600000.0F).noLootTable()));
+    // Invisible solid blocks for the Watergate's two pillars and top lintel.
+    public static final DeferredBlock<com.devaxo.templeoftheaxolotl.abyss.WatergateFrameBlock> ABYSSAL_WATERGATE_FRAME =
+            BLOCKS.register("abyssal_watergate_frame", () -> new com.devaxo.templeoftheaxolotl.abyss.WatergateFrameBlock(
+                    BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.NONE).strength(-1.0F, 3600000.0F).noOcclusion().noLootTable()));
+
+    public static final DeferredItem<BlockItem> ABYSSAL_WATERGATE_ITEM = ITEMS.register("abyssal_watergate",
+            () -> new BlockItem(ABYSSAL_WATERGATE.get(), new Item.Properties()));
+
     /** Placeable dark Celestial Anvil; vanilla anvil interaction and geometry. */
     public static final DeferredBlock<Block> CELESTIAL_ANVIL_BLOCK =
             BLOCKS.register("celestial_anvil", () -> new com.devaxo.templeoftheaxolotl.eclipse.EclipseAltarBlock(
-                    BlockBehaviour.Properties.ofFullCopy(Blocks.ANVIL).requiresCorrectToolForDrops().lightLevel(state -> 3)));
+                    BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.METAL).strength(5.0F, 1200.0F).requiresCorrectToolForDrops().lightLevel(state -> 3)));
+
+    // One-use lore sources: the intact version transforms into the globally depleted variant.
+    public static final DeferredBlock<com.devaxo.templeoftheaxolotl.lore.LoreBlock> LORE_BLOCK =
+            BLOCKS.register("lore_block", () -> new com.devaxo.templeoftheaxolotl.lore.LoreBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.OBSIDIAN).noOcclusion().strength(-1.0F, 3600000.0F).noLootTable()));
+    public static final DeferredBlock<com.devaxo.templeoftheaxolotl.lore.BrokenLoreBlock> BROKEN_LORE_BLOCK =
+            BLOCKS.register("broken_lore_block", () -> new com.devaxo.templeoftheaxolotl.lore.BrokenLoreBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.OBSIDIAN).noOcclusion().strength(-1.0F, 3600000.0F).noLootTable()));
+    public static final DeferredItem<com.devaxo.templeoftheaxolotl.lore.LoreBlockItem> LORE_BLOCK_ITEM = ITEMS.register("lore_block",
+            () -> new com.devaxo.templeoftheaxolotl.lore.LoreBlockItem(LORE_BLOCK.get(), new Item.Properties(), false));
+    public static final DeferredItem<com.devaxo.templeoftheaxolotl.lore.LoreBlockItem> BROKEN_LORE_BLOCK_ITEM = ITEMS.register("broken_lore_block",
+            () -> new com.devaxo.templeoftheaxolotl.lore.LoreBlockItem(BROKEN_LORE_BLOCK.get(), new Item.Properties(), true));
+
+    public static final DeferredItem<com.devaxo.templeoftheaxolotl.lore.DiaryItem> DIARY_ITEM =
+            ITEMS.register("diary_of_an_axolotl", () -> new com.devaxo.templeoftheaxolotl.lore.DiaryItem(new Item.Properties().stacksTo(1)));
 
     public static final DeferredItem<BlockItem> TEMPLE_PORTAL_ITEM =
             ITEMS.register("temple_portal", () ->

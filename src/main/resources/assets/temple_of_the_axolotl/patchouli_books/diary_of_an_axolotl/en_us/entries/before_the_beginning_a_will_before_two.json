@@ -1,0 +1,31 @@
+{
+  "name": "A Will Before Two",
+  "category": "temple_of_the_axolotl:before_the_beginning",
+  "icon": "minecraft:nether_star",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Before I had a name, I had a beginning. I do not pretend to understand father's hands."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/22.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)All i know is that he gave us a chance to be. If these little flippers could write a thank-you across the stars, I would write it twice."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/21.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/before_the_beginning_a_will_before_two"
+}

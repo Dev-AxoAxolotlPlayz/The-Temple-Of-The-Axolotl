@@ -103,6 +103,9 @@ configurations {
 dependencies {
     implementation 'software.bernie.geckolib:geckolib-neoforge-1.21.1:4.7.1'
 
+    // Patchouli API required to compile the physical diary item.
+    implementation files("libs/Patchouli-1.21.1-93-NEOFORGE.jar")
+
     // Optional JEI dependency examples:
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
     // compileOnly "mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}"

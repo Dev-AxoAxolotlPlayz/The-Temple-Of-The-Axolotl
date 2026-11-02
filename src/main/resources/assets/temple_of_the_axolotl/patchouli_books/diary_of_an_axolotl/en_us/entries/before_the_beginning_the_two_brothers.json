@@ -1,0 +1,31 @@
+{
+  "name": "Me and my Brother",
+  "category": "temple_of_the_axolotl:before_the_beginning",
+  "icon": "minecraft:axolotl_bucket",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)There's been me and my bro. our dad watches over us. We were both different, my brother and me... I liked making thing and keeping them safe, all cute and sweet to hold and boop."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/08.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Then there's my brother, who wonders how many pounces can bend something before it broke. Even if he liked to pounce on my things, he was still my brother, and i was very glad to have him."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/09.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/before_the_beginning_the_two_brothers"
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Opposite Flippers",
+  "category": "temple_of_the_axolotl:the_ring_of_the_one",
+  "icon": "minecraft:fire_charge",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)My gifts create, his pulls apart and unmakes. Sometime we argued about which mattered more. I wish i told him, the world needed both."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/24.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_ring_of_the_one_opposing_powers"
+}

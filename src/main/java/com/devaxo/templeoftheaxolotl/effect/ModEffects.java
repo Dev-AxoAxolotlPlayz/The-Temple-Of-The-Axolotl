@@ -25,5 +25,7 @@ public final class ModEffects {
     public static final DeferredHolder<MobEffect, MobEffect> SAVE_ME =
             EFFECTS.register("save_me", () ->
                     new TempleMarkerEffect(MobEffectCategory.BENEFICIAL, 0xE7C96B));
+    public static final DeferredHolder<MobEffect, MobEffect> THE_BENDS =
+            EFFECTS.register("the_bends", () -> new TempleMarkerEffect(MobEffectCategory.HARMFUL, 0xE7A1B3));
     private ModEffects() {}
 }

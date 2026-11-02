@@ -1,0 +1,20 @@
+{
+  "name": "A Key in Pieces",
+  "category": "temple_of_the_axolotl:the_forgotten_prison",
+  "icon": "minecraft:prismarine_shard",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)He broke my key after he closed my door. he broke it once, then twice again. scattered the pieces with his sentinels, can one curious soul, gather them once more..."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/12.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_forgotten_prison_the_shattered_key"
+}

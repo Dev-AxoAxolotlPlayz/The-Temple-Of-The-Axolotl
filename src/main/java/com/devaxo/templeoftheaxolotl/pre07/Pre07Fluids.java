@@ -30,9 +30,9 @@ public final class Pre07Fluids {
  public static final DeferredHolder<Fluid,BaseFlowingFluid.Source> DILUTED=FLUIDS.register("diluted_ichor",()->new BaseFlowingFluid.Source(dilutedProps()));
  public static final DeferredHolder<Fluid,BaseFlowingFluid.Flowing> DILUTED_FLOWING=FLUIDS.register("flowing_diluted_ichor",()->new BaseFlowingFluid.Flowing(dilutedProps()));
  public static final DeferredBlock<LiquidBlock> PURE_BLOCK=BLOCKS.register("pure_ichor",()->new LiquidBlock(PURE.get(),BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).lightLevel(s->12)));
- public static final DeferredBlock<LiquidBlock> DILUTED_BLOCK=BLOCKS.register("diluted_ichor",()->new LiquidBlock(DILUTED.get(),BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).lightLevel(s->8)));
+ public static final DeferredBlock<LiquidBlock> DILUTED_BLOCK=BLOCKS.register("diluted_ichor",()->new DecayingDilutedIchorBlock(DILUTED.get(),BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).lightLevel(s->8)));
  public static final DeferredItem<Item> PURE_BUCKET=ITEMS.register("pure_ichor_bucket",()->new BucketItem(PURE.get(),new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
- public static final DeferredItem<Item> DILUTED_BUCKET=ITEMS.register("diluted_ichor_bucket",()->new BucketItem(DILUTED.get(),new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
+ public static final DeferredItem<Item> DILUTED_BUCKET=ITEMS.register("diluted_ichor_bucket",()->new DrinkableDilutedIchorBucket(DILUTED.get(),new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
  private static BaseFlowingFluid.Properties pureProps(){return new BaseFlowingFluid.Properties(PURE_TYPE,PURE,PURE_FLOWING).block(PURE_BLOCK).bucket(PURE_BUCKET).slopeFindDistance(2).levelDecreasePerBlock(2).tickRate(30);}
  private static BaseFlowingFluid.Properties dilutedProps(){return new BaseFlowingFluid.Properties(DILUTED_TYPE,DILUTED,DILUTED_FLOWING).block(DILUTED_BLOCK).bucket(DILUTED_BUCKET).slopeFindDistance(2).levelDecreasePerBlock(2).tickRate(30);}
 }

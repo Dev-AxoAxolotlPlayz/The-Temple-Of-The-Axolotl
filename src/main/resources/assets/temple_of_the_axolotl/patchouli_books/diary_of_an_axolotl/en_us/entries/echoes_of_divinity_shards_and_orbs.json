@@ -1,0 +1,31 @@
+{
+  "name": "Our Crowns",
+  "category": "temple_of_the_axolotl:echoes_of_divinity",
+  "icon": "minecraft:amethyst_shard",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Scattered shards can make our orbs again. our crowns fell apart when being sent into this world. our divinity fractals pressed into orbs, even broken things can make our path home."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/30.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Its funny a sort of magic... maybe even a way dad is playing with brother and me. What was scattered to keep us apart, might someday bring my brother back to me."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/23.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/echoes_of_divinity_shards_and_orbs"
+}

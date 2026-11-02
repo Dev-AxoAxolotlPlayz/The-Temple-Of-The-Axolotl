@@ -1,0 +1,12 @@
+{
+  "name": "Opposing Powers",
+  "category": "temple_of_the_axolotl:the_ring_of_the_one",
+  "icon": "minecraft:paper",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(o)The pages of this memory have yet to be recovered.$()"
+    }
+  ]
+}

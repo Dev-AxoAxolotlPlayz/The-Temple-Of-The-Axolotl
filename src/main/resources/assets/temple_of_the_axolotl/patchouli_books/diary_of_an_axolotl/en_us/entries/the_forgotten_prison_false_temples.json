@@ -1,0 +1,20 @@
+{
+  "name": "So Many Lies",
+  "category": "temple_of_the_axolotl:the_forgotten_prison",
+  "icon": "minecraft:stone_bricks",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)So many temples he made, an echo a fragment of my prison today. A maze in a maze, promises hidden in lies... behind this cold door, i wonder... will anyone find mine?"
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/28.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_forgotten_prison_false_temples"
+}

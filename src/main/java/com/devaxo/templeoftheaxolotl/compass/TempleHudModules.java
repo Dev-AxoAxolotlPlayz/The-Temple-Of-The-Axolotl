@@ -98,6 +98,7 @@ public final class TempleHudModules {
             case 7 -> stack.is(ModItems.LOGISTICS_MAESTRO.get());
             case 8 -> stack.is(ModItems.CELESTIAL_JUKEBOX.get());
             case 9 -> stack.is(ModItems.ABYSS_PRESSURE_GAUGE.get());
+            case 10 -> stack.is(ModItems.ABYSSAL_GILLS.get());
             default -> false;
         };
     }
@@ -135,6 +136,23 @@ public final class TempleHudModules {
             if (event.getOriginal().getPersistentData().contains(storageKey)) {
                 event.getEntity().getPersistentData().put(storageKey,
                         event.getOriginal().getPersistentData().get(storageKey).copy());
+            }
+        }
+        // Respawn creates a new Player instance. Copy settings as well as installed modules.
+        // Preserve the exact NBT values (including explicit OFF states and magnet mode).
+        for (String settingKey : new String[]{
+                "temple_of_the_axolotl.ring_mining_mode",
+                "tota_helmet_night_vision_disabled",
+                "tota_helmet_conduit_disabled",
+                "tota_abyssal_gills_disabled",
+                "tota_cluckles_in",
+                "tota_cluckles_out",
+                "tota_cluckles_radius",
+                "tota_cluckles_magnet"
+        }) {
+            if (event.getOriginal().getPersistentData().contains(settingKey)) {
+                event.getEntity().getPersistentData().put(settingKey,
+                        event.getOriginal().getPersistentData().get(settingKey).copy());
             }
         }
         for (String trackingKey : new String[]{"tota_seeker_target", "tota_seeker_state"}) {

@@ -11,6 +11,7 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 public class ModEntityEvents {
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
+        event.put(ModEntities.ABYSSAL_MERFOLK.get(), net.minecraft.world.entity.monster.Drowned.createAttributes().build());
         event.put(
                 ModEntities.AXOLOTL_ABSOLUTE.get(),
                 Mob.createMobAttributes()
@@ -18,7 +19,7 @@ public class ModEntityEvents {
                         .add(Attributes.MOVEMENT_SPEED, 0.25)
                         .add(Attributes.FOLLOW_RANGE, 32.0)
                         .add(Attributes.STEP_HEIGHT, 1.0)
-                        .add(Attributes.SCALE, 1.45)
+                        .add(Attributes.SCALE, 1.45).add(Attributes.ATTACK_DAMAGE, 4.0)
                         .build()
         );
         event.put(ModEntities.CLUCKLES.get(), Mob.createMobAttributes()

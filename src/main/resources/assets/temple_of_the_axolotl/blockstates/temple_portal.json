@@ -1,8 +1,10 @@
-
 {
   "variants": {
-    "": {
+    "origin=false": {
       "model": "temple_of_the_axolotl:block/temple_portal"
+    },
+    "origin=true": {
+      "model": "temple_of_the_axolotl:block/origin_portal"
     }
   }
 }

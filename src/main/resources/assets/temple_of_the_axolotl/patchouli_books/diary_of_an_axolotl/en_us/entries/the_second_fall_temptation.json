@@ -1,0 +1,31 @@
+{
+  "name": "A Familiar Shine",
+  "category": "temple_of_the_axolotl:the_second_fall",
+  "icon": "minecraft:glowstone_dust",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)I know the way my brother looks at the Ring. I knew it long before the first fall. Some gifts are not kindness"
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/34.png"
+      ],
+      "border": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)If he reaches for that power again, I pray someone remembers what it costs us the first time"
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/32.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_second_fall_temptation"
+}

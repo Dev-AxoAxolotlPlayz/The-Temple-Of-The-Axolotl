@@ -1,0 +1,24 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        " ": 6.0
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "temple_of_the_axolotl:font/lilomon.png",
+      "height": 14,
+      "ascent": 11,
+      "chars": [
+        " !\"#$%&'()*+,-./",
+        "0123456789:;<=>?",
+        "@ABCDEFGHIJKLMNO",
+        "PQRSTUVWXYZ[\\]^_",
+        "`abcdefghijklmno",
+        "pqrstuvwxyz{|}~\u0000"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "type": "temple_of_the_axolotl:ethereal_abyss",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "temple_of_the_axolotl:abyssal_seafloor",
+      "features": false,
+      "lakes": false,
+      "layers": [
+        {
+          "block": "minecraft:bedrock",
+          "height": 1
+        },
+        {
+          "block": "minecraft:deepslate",
+          "height": 60
+        },
+        {
+          "block": "minecraft:stone",
+          "height": 40
+        },
+        {
+          "block": "minecraft:sand",
+          "height": 3
+        },
+        {
+          "block": "minecraft:water",
+          "height": 161
+        }
+      ],
+      "structure_overrides": []
+    }
+  }
+}

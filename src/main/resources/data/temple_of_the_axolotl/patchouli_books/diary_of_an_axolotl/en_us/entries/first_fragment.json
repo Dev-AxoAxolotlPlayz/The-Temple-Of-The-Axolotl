@@ -1,0 +1,17 @@
+{
+  "name": "An Homage to the Allfather",
+  "category": "temple_of_the_axolotl:before_the_beginning",
+  "icon": "minecraft:heart_of_the_sea",
+  "advancement": "temple_of_the_axolotl:lore/first_fragment",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Before there were temples, before the Ring, before envy divided what once stood together, there were two brothers.$(br2)We were not born of chance. Our existence was a gift from a will greater than either of us could comprehend."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "To the Allfather, the Axolotl Absolute, I owe my beginning. Whatever became of us, that truth has never changed.$(br2)And so, I shall begin with my brother."
+    }
+  ],
+  "sortnum": -1
+}

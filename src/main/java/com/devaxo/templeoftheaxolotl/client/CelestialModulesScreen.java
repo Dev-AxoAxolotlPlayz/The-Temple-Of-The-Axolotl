@@ -32,6 +32,7 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
         addIcon("⛏", 16, 228, 48, "Mining mode: on / off");
         addIcon("", 17, 228, 71, "Helmet Night Vision: on / off");
         addIcon("", 18, 207, 71, "Helmet Conduit Power: on / off");
+        addIcon("G", 19, 186, 71, "Abyssal Gills: pressure protection up to 75% (on / off)");
     }
     protected void addIcon(String glyph, int id, int x, int y, String tooltip) {
         addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.literal(glyph), b -> clickControl(id))
@@ -86,6 +87,7 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
         // Custom pixel-art icons, avoiding missing Unicode glyphs in Minecraft's font.
         RingAttackInput.setMiningMode(menu.miningMode());
         if (menu.miningMode()) g.renderOutline(leftPos + 227, topPos + 47, 20, 20, 0xFF68F4CA);
+        if (menu.abyssalGillsEnabled()) g.renderOutline(leftPos + 185, topPos + 70, 20, 20, 0xFF68F4CA);
         if (menu.helmetConduitEnabled()) g.renderOutline(leftPos + 206, topPos + 70, 20, 20, 0xFF68F4CA);
         if (menu.helmetNightVisionEnabled()) g.renderOutline(leftPos + 227, topPos + 70, 20, 20, 0xFF68F4CA);
         if (menu.magnetMode() != 2) g.renderOutline(leftPos + 227, topPos + 24, 20, 20, 0xFF68F4CA);

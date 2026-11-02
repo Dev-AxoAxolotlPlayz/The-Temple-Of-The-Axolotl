@@ -1,0 +1,20 @@
+{
+  "name": "When Stars Darken",
+  "category": "temple_of_the_axolotl:the_second_fall",
+  "icon": "minecraft:echo_shard",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)I once feared my brother's past. how i fear his darkness might follow. When he strays again, the sky loses its stars, and the stones turn black. please. dont forget, this wont be the end for us..."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/35.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/the_second_fall_the_world_darkens"
+}

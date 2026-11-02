@@ -1,0 +1,20 @@
+{
+  "name": "Echoes in the Stone",
+  "category": "temple_of_the_axolotl:echoes_of_divinity",
+  "icon": "minecraft:chiseled_stone_bricks",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(lilomon)$(#503a30)Footsteps echo through the maze. the guardians never seem to let them go. But every brave visitor carried a little more hope, for me to dream of being free."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "temple_of_the_axolotl:textures/gui/diary_notes/14.png"
+      ],
+      "border": false
+    }
+  ],
+  "advancement": "temple_of_the_axolotl:lore/echoes_of_divinity_the_decoy_sanctums"
+}

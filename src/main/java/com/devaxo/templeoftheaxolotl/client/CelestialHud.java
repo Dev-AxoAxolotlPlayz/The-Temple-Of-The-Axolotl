@@ -274,10 +274,8 @@ public final class CelestialHud {
             // Instrument centered in the free space between the text column and HUD right edge.
             int cx = x + 147;
             int cy = y + height - 49;
-            double seaLevel = player.level().dimension() == net.minecraft.world.level.Level.OVERWORLD ? 62.0 : 200.0;
-            double range = player.level().dimension() == net.minecraft.world.level.Level.OVERWORLD ? 92.0 : 200.0;
             boolean submerged = player.isUnderWater();
-            double pressure = submerged ? Math.max(0.0, Math.min(100.0, (seaLevel - player.getEyeY()) * 100.0 / range)) : 0.0;
+            double pressure = submerged ? com.devaxo.templeoftheaxolotl.event.TemplePressureScale.pressure(player) : 0.0;
             drawPressureDial(graphics, minecraft, cx, cy, pressure, submerged);
         }
     }

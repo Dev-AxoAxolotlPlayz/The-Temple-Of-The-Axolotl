@@ -1,0 +1,12 @@
+{
+  "name": "False Temples",
+  "category": "temple_of_the_axolotl:the_forgotten_prison",
+  "icon": "minecraft:paper",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(o)The pages of this memory have yet to be recovered.$()"
+    }
+  ]
+}

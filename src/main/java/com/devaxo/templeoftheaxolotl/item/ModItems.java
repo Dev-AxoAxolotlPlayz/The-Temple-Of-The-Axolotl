@@ -23,6 +23,10 @@ public final class ModItems {
     public static final DeferredRegister.Items ITEMS =
             DeferredRegister.createItems(TempleOfTheAxolotl.MODID);
 
+    // Shipyard-only craftable, boat-style water deployment item.
+    public static final DeferredItem<Shorkolotl100Item> SHORKOLOTL_100_ITEM =
+            ITEMS.register("shorkolotl_100_item", () -> new Shorkolotl100Item(new Item.Properties().stacksTo(1)));
+
     public static final DeferredItem<TempleSeekerItem> TEMPLE_SEEKER =
             ITEMS.register("temple_seeker", () -> new TempleSeekerItem(new Item.Properties().stacksTo(1)));
 

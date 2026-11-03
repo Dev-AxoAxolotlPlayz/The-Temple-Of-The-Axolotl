@@ -26,6 +26,11 @@ public final class CelestialJumpNetworking {
                     WrathWarningPayload::handle
             );
             event.registrar("1").playToServer(
+                    ShorkolotlPilotInputPayload.TYPE,
+                    ShorkolotlPilotInputPayload.STREAM_CODEC,
+                    ShorkolotlPilotInputPayload::handle
+            );
+            event.registrar("1").playToServer(
                     RingAttackInputPayload.TYPE,
                     RingAttackInputPayload.STREAM_CODEC,
                     RingAttackInputPayload::handle

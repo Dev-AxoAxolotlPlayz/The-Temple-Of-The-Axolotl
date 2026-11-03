@@ -1,4 +1,3 @@
-
 package com.devaxo.templeoftheaxolotl;
 
 import com.devaxo.templeoftheaxolotl.effect.ModEffects;
@@ -67,6 +66,7 @@ public class TempleOfTheAxolotl {
                 output.accept(ModBlocks.LORE_BLOCK_ITEM.get());
                 output.accept(ModBlocks.BROKEN_LORE_BLOCK_ITEM.get());
                                 output.accept(ModBlocks.DIARY_ITEM.get());
+                                output.accept(ModBlocks.SHIPYARD_CRANE_ITEM.get());
                                 output.accept(ModBlocks.ABYSSAL_WATERGATE_ITEM.get());
                                 output.accept(com.devaxo.templeoftheaxolotl.brewing.CosmicBrewingRegistries.STAND_ITEM.get());
 
@@ -114,6 +114,8 @@ public class TempleOfTheAxolotl {
 
         // Temple portal block and item registration (register once)
         ModBlocks.register(modEventBus);
+        com.devaxo.templeoftheaxolotl.shipyard.ShipyardRegistries.BLOCK_ENTITIES.register(modEventBus);
+        com.devaxo.templeoftheaxolotl.shipyard.ShipyardRegistries.MENUS.register(modEventBus);
         com.devaxo.templeoftheaxolotl.lore.LoreBlockEntities.TYPES.register(modEventBus);
         NeoForge.EVENT_BUS.register(new com.devaxo.templeoftheaxolotl.abyss.AbyssTrialEvents());
         NeoForge.EVENT_BUS.register(new com.devaxo.templeoftheaxolotl.abyss.AbyssTerrainEvents());
@@ -157,6 +159,8 @@ public class TempleOfTheAxolotl {
             // Diary formatting must register before Patchouli parses the book.
             com.devaxo.templeoftheaxolotl.client.DiaryFontRegistration.register();
             modEventBus.addListener(com.devaxo.templeoftheaxolotl.eclipse.EclipseScreenRegistration::register);
+            modEventBus.addListener(com.devaxo.templeoftheaxolotl.shipyard.ShipyardClient::screens);
+            modEventBus.addListener(com.devaxo.templeoftheaxolotl.shipyard.ShipyardClient::renderers);
         }
 
         // Maze development commands

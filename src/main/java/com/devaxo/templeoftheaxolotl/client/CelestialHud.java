@@ -127,17 +127,17 @@ public final class CelestialHud {
 
         var graphics = event.getGuiGraphics();
 
-        int width = 190; // Dial fits inside the original panel; no unused right-side extension.
+        int width = navigation.pressureGauge() ? 230 : 190; // Reserve a separate right-hand column for the dial.
 
         int height = 12
                 + (boots ? 12 : 0)
                 + (chestplate ? 12 : 0)
                 + (curse != null ? 12 : 0)
                 + (navigation.equipped() ? 44 : 0)
-                + (navigation.compass() ? 36 : 0)
+                + (navigation.compass() ? 48 : 0)
                 + (navigation.clock() ? 24 : 0);
 
-        if (navigation.pressureGauge()) height = Math.max(height, 168);
+        if (navigation.pressureGauge()) height = Math.max(height, 180);
 
         int x = right
                 ? graphics.guiWidth() - width - offsetX
@@ -252,7 +252,13 @@ public final class CelestialHud {
             line += 12;
             String biome = player.level().getBiome(player.blockPosition()).unwrapKey()
                     .map(key -> key.location().getPath().replace('_', ' ')).orElse("Unknown");
-            graphics.drawString(minecraft.font, biome + " | " + player.getDirection().getName().toUpperCase(),
+            // Keep biome and facing on their own lines, before the chronometer.
+            // Leave the pressure instrument its own column to prevent overlap.
+            int textWidth = navigation.pressureGauge() ? 143 : width - 10;
+            graphics.drawString(minecraft.font, minecraft.font.plainSubstrByWidth(biome, textWidth),
+                    x + 5, line, 0xFF9BE5DC, false);
+            line += 12;
+            graphics.drawString(minecraft.font, "Facing: " + player.getDirection().getName().toUpperCase(),
                     x + 5, line, 0xFF9BE5DC, false);
         }
         if (navigation.clock()) {
@@ -272,7 +278,7 @@ public final class CelestialHud {
         }
         if (navigation.pressureGauge()) {
             // Instrument centered in the free space between the text column and HUD right edge.
-            int cx = x + 147;
+            int cx = x + 188;
             int cy = y + height - 49;
             boolean submerged = player.isUnderWater();
             double pressure = submerged ? com.devaxo.templeoftheaxolotl.event.TemplePressureScale.pressure(player) : 0.0;

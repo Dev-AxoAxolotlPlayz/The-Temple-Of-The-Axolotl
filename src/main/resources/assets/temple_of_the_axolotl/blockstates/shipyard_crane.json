@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"temple_of_the_axolotl:block/shipyard_crane"},"facing=south":{"model":"temple_of_the_axolotl:block/shipyard_crane","y":180},"facing=east":{"model":"temple_of_the_axolotl:block/shipyard_crane","y":90},"facing=west":{"model":"temple_of_the_axolotl:block/shipyard_crane","y":270}}}

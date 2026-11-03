@@ -1,6 +1,7 @@
 package com.devaxo.templeoftheaxolotl.event;
 
 import com.devaxo.templeoftheaxolotl.TempleOfTheAxolotl;
+import com.devaxo.templeoftheaxolotl.entity.Shorkolotl100Entity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -40,7 +41,8 @@ public final class AbyssPressureEvents {
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         Player player = event.getEntity();
         if (player.level().isClientSide() || player.isCreative() || player.isSpectator()
-                || !player.isAlive() || !player.isUnderWater()
+                || !player.isAlive() || player.getVehicle() instanceof Shorkolotl100Entity
+                || !player.isUnderWater()
                 || TempleBubbleElevatorSafety.inside(player)) return;
 
         Level level = player.level();

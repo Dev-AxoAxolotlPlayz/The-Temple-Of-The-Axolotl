@@ -12,6 +12,7 @@
     "WaterShaderCameraMixin",
     "NightVisionNoFlickerMixin",
     "AbyssPressureNoHurtCameraMixin",
+    "ShorkolotlCameraDistanceMixin",
     "DiaryTitleFontMixin",
     "DiaryCenteredHeadingsMixin",
     "DiaryRemainingLabelsMixin",

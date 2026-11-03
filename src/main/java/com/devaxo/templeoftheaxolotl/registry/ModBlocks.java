@@ -77,6 +77,12 @@ public final class ModBlocks {
                     new BlockItem(TEMPLE_PORTAL.get(), new Item.Properties()));
 
 
+    public static final DeferredBlock<com.devaxo.templeoftheaxolotl.shipyard.ShipyardCraneBlock> SHIPYARD_CRANE =
+            BLOCKS.register("shipyard_crane", () -> new com.devaxo.templeoftheaxolotl.shipyard.ShipyardCraneBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.WARPED_HYPHAE).strength(4.0F).noOcclusion()));
+    public static final DeferredItem<BlockItem> SHIPYARD_CRANE_ITEM = ITEMS.register("shipyard_crane",
+            () -> new BlockItem(SHIPYARD_CRANE.get(), new Item.Properties()));
+
     public static void register(IEventBus modBus) {
         BLOCKS.register(modBus);
         ITEMS.register(modBus);

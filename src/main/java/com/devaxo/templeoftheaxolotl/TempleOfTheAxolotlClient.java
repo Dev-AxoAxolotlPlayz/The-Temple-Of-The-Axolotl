@@ -49,6 +49,8 @@ public class TempleOfTheAxolotlClient {
         event.registerBlockEntityRenderer(com.devaxo.templeoftheaxolotl.brewing.CosmicBrewingRegistries.ENTITY.get(), com.devaxo.templeoftheaxolotl.client.renderer.CosmicBrewingRenderer::new);
         event.registerBlockEntityRenderer(com.devaxo.templeoftheaxolotl.eclipse.EclipseBlockEntities.ALTAR.get(), com.devaxo.templeoftheaxolotl.client.renderer.CelestialAnvilRenderer::new);
         event.registerEntityRenderer(ModEntities.ABYSSAL_MERFOLK.get(), net.minecraft.client.renderer.entity.DrownedRenderer::new);
+        event.registerEntityRenderer(ModEntities.SHORKOLOTL_100.get(),
+                com.devaxo.templeoftheaxolotl.client.renderer.Shorkolotl100Renderer::new);
         event.registerEntityRenderer(ModEntities.CLUCKLES.get(),
                 com.devaxo.templeoftheaxolotl.client.renderer.ClucklesRenderer::new);
         event.registerEntityRenderer(ModEntities.WRATH_HEAD_HITBOX.get(),

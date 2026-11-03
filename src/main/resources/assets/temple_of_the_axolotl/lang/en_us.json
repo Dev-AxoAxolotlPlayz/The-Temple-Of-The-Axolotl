@@ -107,5 +107,7 @@
   "item.temple_of_the_axolotl.abyssal_merfolk_spawn_egg": "Abyssal Merfolk Spawn Egg",
   "block.temple_of_the_axolotl.lore_block": "Lore Block",
   "block.temple_of_the_axolotl.broken_lore_block": "Broken Lore Block",
-  "item.temple_of_the_axolotl.diary_of_an_axolotl": "§k?????????????§r"
+  "item.temple_of_the_axolotl.diary_of_an_axolotl": "§k?????????????§r",
+  "block.temple_of_the_axolotl.shipyard_crane": "Shipyard Crane",
+  "item.temple_of_the_axolotl.shorkolotl_100_item": "Shorkolotl-100"
 }

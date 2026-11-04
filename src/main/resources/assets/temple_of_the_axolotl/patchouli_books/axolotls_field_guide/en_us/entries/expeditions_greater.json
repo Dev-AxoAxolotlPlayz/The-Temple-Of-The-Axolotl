@@ -1,0 +1,12 @@
+{
+  "name": "The Greater Temple",
+  "category": "temple_of_the_axolotl:expeditions",
+  "icon": "minecraft:diamond_sword",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The regular Temple is a ten-floor expedition with a 9 by 9 module grid per floor. Prepare at least enchanted diamond equipment, food, healing, and inventory space. Watch for traps and Sentinels as you descend."
+    }
+  ]
+}

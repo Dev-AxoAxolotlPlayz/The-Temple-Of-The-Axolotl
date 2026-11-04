@@ -1,0 +1,12 @@
+{
+  "name": "Celestial Modules",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:celestial_magnet",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Celestial Modules add tools and utilities to your equipment interface. Explore the available slots, toggles, and item tooltips to learn their functions."
+    }
+  ]
+}

@@ -63,9 +63,12 @@ public class TempleOfTheAxolotl {
 
                                 // Temple portal (custom emerald-looking block)
                                 output.accept(ModBlocks.TEMPLE_PORTAL_ITEM.get());
+                                output.accept(ModBlocks.SHALLOWS_PORTAL_ITEM.get());
+                                output.accept(ModBlocks.SHALLOWS_EXIT_PORTAL_ITEM.get());
                 output.accept(ModBlocks.LORE_BLOCK_ITEM.get());
                 output.accept(ModBlocks.BROKEN_LORE_BLOCK_ITEM.get());
                                 output.accept(ModBlocks.DIARY_ITEM.get());
+                                output.accept(ModBlocks.FIELD_GUIDE_ITEM.get());
                                 output.accept(ModBlocks.SHIPYARD_CRANE_ITEM.get());
                                 output.accept(ModBlocks.ABYSSAL_WATERGATE_ITEM.get());
                                 output.accept(com.devaxo.templeoftheaxolotl.brewing.CosmicBrewingRegistries.STAND_ITEM.get());
@@ -99,6 +102,8 @@ public class TempleOfTheAxolotl {
         // Register custom spawn-relative temple structure placement.
         com.devaxo.templeoftheaxolotl.abyss.WatergateEntities.TYPES.register(modEventBus);
         TempleWorldgenPlacements.PLACEMENTS.register(modEventBus);
+        com.devaxo.templeoftheaxolotl.worldgen.ShallowsRuinStructures.STRUCTURES.register(modEventBus);
+        com.devaxo.templeoftheaxolotl.worldgen.ShallowsRuinPieceTypes.TYPES.register(modEventBus);
         TempleRewardMenuTypes.MENUS.register(modEventBus);
         com.devaxo.templeoftheaxolotl.brewing.CosmicBrewingRegistries.BLOCKS.register(modEventBus);
         com.devaxo.templeoftheaxolotl.brewing.CosmicBrewingRegistries.ITEMS.register(modEventBus);
@@ -148,6 +153,7 @@ public class TempleOfTheAxolotl {
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.compass.TempleNavigationPayload.Registration::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.eclipse.EclipseInscriptionPayload.Registration::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.InventoryStorageOpenPayload.Registration::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.RepositoryRecipeFillPayload::register);
 
         // Explicit mod-bus lifecycle/network registrations (no deprecated annotation bus selectors).
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.BedrockMiningPayload.Registration::register);
@@ -175,6 +181,8 @@ public class TempleOfTheAxolotl {
         NeoForge.EVENT_BUS.addListener(com.devaxo.templeoftheaxolotl.pre07.TrialTrapDeathEvents::onDeath);
         NeoForge.EVENT_BUS.register(new TempleDimensionManager());
         NeoForge.EVENT_BUS.register(new TempleTravel());
+        NeoForge.EVENT_BUS.register(new com.devaxo.templeoftheaxolotl.maze.ShallowsExpedition());
+        NeoForge.EVENT_BUS.register(new com.devaxo.templeoftheaxolotl.entity.SecondFallResurrection());
         NeoForge.EVENT_BUS.register(new com.devaxo.templeoftheaxolotl.maze.TempleCompanionRestrictions());
         NeoForge.EVENT_BUS.register(new com.devaxo.templeoftheaxolotl.pre07.DilutedIchorAlchemy());
         NeoForge.EVENT_BUS.register(new TempleSeekerEvents());

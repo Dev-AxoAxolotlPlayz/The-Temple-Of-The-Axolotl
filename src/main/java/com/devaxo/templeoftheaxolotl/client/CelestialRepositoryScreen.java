@@ -63,8 +63,8 @@ public final class CelestialRepositoryScreen extends AbstractContainerScreen<Cel
             g.fill(x + 1, y + 1, x + 17, y + 17, 0xDB0B1129);
         }
         if (menu.hasSecondPage())
-            g.drawString(font, "PAGE " + (menu.activePage() + 1) + "/2", leftPos + 215, topPos + 7, 0xFFB5EAFB, false);
-        g.drawString(font, "L: TAKE  R: STORE", leftPos + 8, topPos + 173, 0xFFB5EAFB, false);
+            g.drawString(font, "PAGE " + (menu.activePage() + 1) + "/" + menu.pageCount(), leftPos + 215, topPos + 7, 0xFFB5EAFB, false);
+        g.drawString(font, "CLICK: TAKE  HOLD+CLICK: STORE", leftPos + 8, topPos + 173, 0xFFB5EAFB, false);
     }
     private void slotFrame(GuiGraphics g, int x, int y) {
         g.fill(leftPos + x - 1, topPos + y - 1, leftPos + x + 17, topPos + y + 17, 0xFF7286B0);

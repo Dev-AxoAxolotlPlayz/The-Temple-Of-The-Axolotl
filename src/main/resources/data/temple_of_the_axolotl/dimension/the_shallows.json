@@ -1,0 +1,14 @@
+
+{
+  "type": "temple_of_the_axolotl:temple_dimension",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "minecraft:the_void",
+      "features": false,
+      "lakes": false,
+      "layers": [],
+      "structure_overrides": []
+    }
+  }
+}

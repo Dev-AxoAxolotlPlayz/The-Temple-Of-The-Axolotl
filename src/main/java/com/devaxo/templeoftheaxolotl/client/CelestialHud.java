@@ -127,7 +127,7 @@ public final class CelestialHud {
 
         var graphics = event.getGuiGraphics();
 
-        int width = navigation.pressureGauge() ? 230 : 190; // Reserve a separate right-hand column for the dial.
+        int width = 190; // Shared backing trimmed to the repositioned pressure gauge.
 
         int height = 12
                 + (boots ? 12 : 0)
@@ -137,7 +137,7 @@ public final class CelestialHud {
                 + (navigation.compass() ? 48 : 0)
                 + (navigation.clock() ? 24 : 0);
 
-        if (navigation.pressureGauge()) height = Math.max(height, 180);
+        if (navigation.pressureGauge()) height = Math.max(height, 150);
 
         int x = right
                 ? graphics.guiWidth() - width - offsetX
@@ -277,9 +277,10 @@ public final class CelestialHud {
                     x + 5, line, 0xFFF5D797, false);
         }
         if (navigation.pressureGauge()) {
-            // Instrument centered in the free space between the text column and HUD right edge.
-            int cx = x + 188;
-            int cy = y + height - 49;
+            // Keep the dial on the shared HUD backing, closer to the navigation text.
+            // Position is relative to the HUD origin, not the bottom/right screen edges.
+            int cx = x + 135;
+            int cy = y + 94;
             boolean submerged = player.isUnderWater();
             double pressure = submerged ? com.devaxo.templeoftheaxolotl.event.TemplePressureScale.pressure(player) : 0.0;
             drawPressureDial(graphics, minecraft, cx, cy, pressure, submerged);

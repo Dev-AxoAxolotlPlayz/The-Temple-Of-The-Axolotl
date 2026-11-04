@@ -1,0 +1,6 @@
+{
+  "type": "temple_of_the_axolotl:shallows_ruin",
+  "biomes": "#temple_of_the_axolotl:has_structure/shallows_ruin",
+  "step": "surface_structures",
+  "spawn_overrides": {}
+}

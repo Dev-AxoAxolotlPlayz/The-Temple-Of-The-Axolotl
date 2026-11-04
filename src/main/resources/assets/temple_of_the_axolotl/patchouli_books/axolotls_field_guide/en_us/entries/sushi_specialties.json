@@ -1,0 +1,24 @@
+{
+  "name": "Specialty Sushi",
+  "category": "temple_of_the_axolotl:sushi",
+  "icon": "temple_of_the_axolotl:golden_tropical_fish_sushi",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Prepare specialty sushi and bentos for the trophy crafting chain."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:golden_tropical_fish_sushi"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:axolotls_oasis_sushi"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:axolotls_dream_sushi"
+    }
+  ]
+}

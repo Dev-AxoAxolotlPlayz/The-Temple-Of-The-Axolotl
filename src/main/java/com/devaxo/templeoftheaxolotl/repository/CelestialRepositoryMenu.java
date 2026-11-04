@@ -55,10 +55,8 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
     private int moduleEquipped = 0;
     public int activePage() { return activePage; }
     public boolean hasSecondPage() { return moduleEquipped != 0; }
-    private boolean equipped(ServerPlayer player) {
-        return com.devaxo.templeoftheaxolotl.compass.TempleHudModules.getSlot(player, 3)
-            .is(com.devaxo.templeoftheaxolotl.item.ModItems.CELESTIAL_REPOSITORY.get());
-    }
+    public int pageCount() { return moduleEquipped >= 2 ? 3 : moduleEquipped >= 1 ? 2 : 1; }
+    private boolean equipped(ServerPlayer player) { return CelestialRepository.tier(player) > 0; }
 
     public static final int PLAYER_X = 155;
 
@@ -152,7 +150,8 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
     }
 
     private void refresh(ServerPlayer player) {
-        moduleEquipped = equipped(player) ? 1 : 0;
+        moduleEquipped = CelestialRepository.tier(player);
+        if (moduleEquipped == 4) CelestialRepository.consolidate(player);
         logisticsEquipped = hasModule(player, 7, com.devaxo.templeoftheaxolotl.item.ModItems.LOGISTICS_MAESTRO.get()) ? 1 : 0;
         logisticsInbound = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.inbound(player) ? 1 : 0;
         logisticsOutbound = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.outbound(player) ? 1 : 0;
@@ -162,8 +161,8 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
         repairEnabled = hasModule(player, 6, com.devaxo.templeoftheaxolotl.item.ModItems.CELESTIAL_ANVIL.get()) ? 1 : 0;
         updateCraft(player);
         updateRepair(player);
-        if (moduleEquipped == 0) activePage = 0;
-        var entries = activePage == 1 ? CelestialRepository.readSecond(player) : CelestialRepository.read(player);
+        if (activePage >= pageCount()) activePage = 0;
+        var entries = CelestialRepository.readPage(player, activePage);
         for (int i = 0; i < CelestialRepository.TYPES; i++) {
             if (i < entries.size()) {
                 var entry = entries.get(i);
@@ -230,12 +229,114 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
     }
     @Override public boolean clickMenuButton(Player player, int id) {
         if (!(player instanceof ServerPlayer server)) return false;
-        if (id == 1 && equipped(server)) { activePage = 1 - activePage; refresh(server); return true; }
+        if (id == 1 && equipped(server)) { activePage = (activePage + 1) % pageCount(); refresh(server); return true; }
         if (id == 2 && logisticsEquipped != 0) { logisticsPanel = 1 - logisticsPanel; refresh(server); return true; }
         if (id == 3 && logisticsEquipped != 0) { com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.toggleInbound(server); refresh(server); return true; }
         if (id == 4 && logisticsEquipped != 0) { com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.toggleOutbound(server); refresh(server); return true; }
         if (id == 5 && logisticsEquipped != 0) { com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.cycleRadius(server); refresh(server); return true; }
         if (id == 6) { com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.cycleMagnet(server); refresh(server); return true; }
+        return false;
+    }
+
+    /**
+     * Server-authoritative recipe fill. Only the open Repository menu may call it.
+     * The recipe id is resolved on the server; clients never dictate extracted stacks.
+     * We preflight the whole recipe before modifying either inventory or bulk storage.
+     */
+    public boolean fillFromBulk(ServerPlayer player, net.minecraft.resources.ResourceLocation recipeId) {
+        if (player.containerMenu != this || !hasCrafting() || !equipped(player)) return false;
+        var holder = player.serverLevel().getRecipeManager().byKey(recipeId);
+        if (holder.isEmpty() || !(holder.get().value() instanceof CraftingRecipe recipe)) return false;
+        // Existing grid contents are left untouched; this prevents loss of remainder items.
+        for (int i = 0; i < 9; i++) if (!craft.getItem(i).isEmpty()) return false;
+        var ingredients = recipe.getIngredients();
+        if (ingredients.size() > 9) return false;
+        int width = recipe instanceof net.minecraft.world.item.crafting.ShapedRecipe shaped ? shaped.getWidth() : 3;
+        int height = recipe instanceof net.minecraft.world.item.crafting.ShapedRecipe shaped ? shaped.getHeight() : 3;
+        if (width > 3 || height > 3) return false;
+        // Reserve from a local copy of the complete supply, so duplicate ingredients
+        // cannot accidentally consume the same single stored item twice.
+        java.util.ArrayList<ItemStack> samples = new java.util.ArrayList<>();
+        java.util.ArrayList<Integer> available = new java.util.ArrayList<>();
+        java.util.ArrayList<Boolean> fromBulk = new java.util.ArrayList<>();
+        for (int page = 0; page < CelestialRepository.pages(player); page++) {
+            for (var entry : CelestialRepository.readPage(player, page)) {
+                samples.add(entry.sample().copy()); available.add(entry.quantity()); fromBulk.add(true);
+            }
+        }
+        for (int i = 0; i < 36; i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (!stack.isEmpty()) {
+                samples.add(stack.copy()); available.add(stack.getCount()); fromBulk.add(false);
+            }
+        }
+        int[] selected = new int[9];
+        java.util.Arrays.fill(selected, -1);
+        int[] targets = new int[9];
+        for (int i = 0; i < ingredients.size(); i++) {
+            int target = recipe instanceof net.minecraft.world.item.crafting.ShapedRecipe
+                    ? (i / width) * 3 + (i % width) : i;
+            if (target >= 9) return false;
+            targets[i] = target;
+        }
+        if (!reserveIngredients(ingredients, 0, samples, available, selected)) return false;
+        // Verify the chosen variants actually match the recipe in the 3x3 grid.
+        var proposed = new net.minecraft.world.item.ItemStack[9];
+        java.util.Arrays.fill(proposed, ItemStack.EMPTY);
+        for (int i = 0; i < ingredients.size(); i++) {
+            if (selected[i] >= 0) {
+                proposed[targets[i]] = samples.get(selected[i]).copyWithCount(1);
+            }
+        }
+        var input = net.minecraft.world.item.crafting.CraftingInput.of(3, 3, java.util.Arrays.asList(proposed));
+        if (!recipe.matches(input, player.serverLevel())) return false;
+        // All source checks passed. Extract exact item+component variants; if an
+        // unexpected shortage appears, refuse to populate the grid.
+        java.util.ArrayList<ItemStack> extracted = new java.util.ArrayList<>();
+        for (int i = 0; i < ingredients.size(); i++) {
+            int source = selected[i];
+            if (source < 0) { extracted.add(ItemStack.EMPTY); continue; }
+            ItemStack sample = samples.get(source);
+            if (fromBulk.get(source)) {
+                if (CelestialRepository.countAvailable(player, sample) < 1) return false;
+                if (CelestialRepository.takeMatching(player, sample, 1) != 1) return false;
+            } else {
+                boolean removed = false;
+                for (int slot = 0; slot < 36; slot++) {
+                    ItemStack stack = player.getInventory().getItem(slot);
+                    if (!stack.isEmpty() && ItemStack.isSameItemSameComponents(stack, sample)) {
+                        stack.shrink(1); removed = true; break;
+                    }
+                }
+                if (!removed) return false;
+            }
+            extracted.add(sample.copyWithCount(1));
+        }
+        for (int i = 0; i < extracted.size(); i++) {
+            if (!extracted.get(i).isEmpty()) craft.setItem(targets[i], extracted.get(i));
+        }
+        updateCraft(player);
+        refresh(player);
+        return true;
+    }
+
+    private static boolean reserveIngredients(java.util.List<net.minecraft.world.item.crafting.Ingredient> ingredients,
+                                              int index, java.util.List<ItemStack> samples,
+                                              java.util.List<Integer> counts, int[] selected) {
+        if (index == ingredients.size()) return true;
+        var ingredient = ingredients.get(index);
+        if (ingredient.isEmpty()) {
+            selected[index] = -1;
+            return reserveIngredients(ingredients, index + 1, samples, counts, selected);
+        }
+        for (int i = 0; i < samples.size(); i++) {
+            if (counts.get(i) <= 0 || !ingredient.test(samples.get(i))) continue;
+            counts.set(i, counts.get(i) - 1);
+            selected[index] = i;
+            if (reserveIngredients(ingredients, index + 1, samples, counts, selected)) return true;
+            counts.set(i, counts.get(i) + 1);
+        }
+        selected[index] = -1;
         return false;
     }
 
@@ -257,7 +358,7 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
                 Slot slot = slots.get(slotId);
                 if (slot.hasItem()) {
                     ItemStack stack = slot.getItem();
-                    int moved = (activePage == 1 ? CelestialRepository.insertSecond(server, stack) : CelestialRepository.insert(server, stack));
+                    int moved = CelestialRepository.insertPage(server, activePage, stack);
                     if (moved > 0) { stack.shrink(moved); slot.setChanged(); }
                 }
                 refresh(server);
@@ -270,14 +371,20 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
             super.clicked(slotId, button, type, player);
             return;
         }
-        if (type == ClickType.PICKUP && button == 1) {
-            // Right-click repository entry: deposit main-hand stack.
+        if (type == ClickType.PICKUP && !getCarried().isEmpty()) {
+            // A held cursor stack is deposited directly into bulk storage.
+            ItemStack carried = getCarried();
+            ItemStack offered = carried.copy();
+            if (button == 1) offered.setCount(1);
+            int moved = CelestialRepository.insertPage(server, activePage, offered);
+            if (moved > 0) { carried.shrink(moved); setCarried(carried.isEmpty() ? ItemStack.EMPTY : carried); }
+        } else if (type == ClickType.PICKUP && button == 1) {
+            // Preserve the legacy right-click main-hand deposit shortcut.
             ItemStack hand = server.getMainHandItem();
-            int moved = (activePage == 1 ? CelestialRepository.insertSecond(server, hand) : CelestialRepository.insert(server, hand));
+            int moved = CelestialRepository.insertPage(server, activePage, hand);
             if (moved > 0) hand.shrink(moved);
         } else if ((type == ClickType.PICKUP && button == 0) || type == ClickType.QUICK_MOVE) {
-            // Withdraw one native stack, or as much as inventory can hold.
-            ItemStack withdrawn = (activePage == 1 ? CelestialRepository.extractSecond(server, slotId, 64) : CelestialRepository.extract(server, slotId, 64));
+            ItemStack withdrawn = CelestialRepository.extractPage(server, activePage, slotId, 64);
             if (!withdrawn.isEmpty()) {
                 server.getInventory().add(withdrawn);
                 if (!withdrawn.isEmpty()) server.drop(withdrawn, false);

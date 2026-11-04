@@ -1,0 +1,12 @@
+{
+  "name": "Celestial Anvil",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:celestial_anvil",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The Celestial Anvil supports advanced equipment combining without the vanilla Too Expensive cap. Valid operations cost at least one level, rounded up from half the normal level cost."
+    }
+  ]
+}

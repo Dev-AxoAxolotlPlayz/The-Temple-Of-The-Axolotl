@@ -1,0 +1,12 @@
+{
+  "name": "Origin Temple",
+  "category": "temple_of_the_axolotl:advanced",
+  "icon": "temple_of_the_axolotl:celestial_key",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The Origin Temple is a later challenge, distinct from the regular Temple and the planned Mini Temple. Its entrance and progression involve the Celestial Key. This guide avoids revealing the hidden story."
+    }
+  ]
+}

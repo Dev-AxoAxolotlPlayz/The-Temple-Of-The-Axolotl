@@ -1,0 +1,16 @@
+{
+  "name": "Allfather Helmet",
+  "category": "temple_of_the_axolotl:equipment",
+  "icon": "temple_of_the_axolotl:axolotl_absolute",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "This helmet is a later equipment goal. Its crafting recipe is always visible, even before you can collect its ingredients."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:axolotl_absolute"
+    }
+  ]
+}

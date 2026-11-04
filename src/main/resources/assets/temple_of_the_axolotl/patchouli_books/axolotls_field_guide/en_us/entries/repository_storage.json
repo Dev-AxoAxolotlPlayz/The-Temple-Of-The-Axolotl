@@ -1,0 +1,12 @@
+{
+  "name": "Repository Storage",
+  "category": "temple_of_the_axolotl:repository",
+  "icon": "temple_of_the_axolotl:celestial_repository_module",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The Celestial Repository is a portable storage module. Its upgrades expand convenience: Iron adds a page, Gold increases stack capacity, and Diamond consolidates matching stored items. See the relevant recipes in your recipe viewer."
+    }
+  ]
+}

@@ -374,7 +374,7 @@ public class AxolotlAbsoluteEntity extends TamableAnimal
 
     @Override
     public boolean isControlledByLocalInstance() {
-        return this.getFirstPassenger() instanceof Player || super.isControlledByLocalInstance();
+        return super.isControlledByLocalInstance();
     }
 
     // Minecraft's riding input path needs an explicit controlling passenger.

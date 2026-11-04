@@ -49,6 +49,24 @@ public final class TemplePortalRegistry extends SavedData {
         }
         return false;
     }
+    /** Dev-only: forget a retired portal at this exact block, not its 64-block neighborhood. */
+    public boolean unconsumeExact(BlockPos pos) {
+        boolean removed = consumed.remove(pos.asLong());
+        if (removed) setDirty();
+        return removed;
+    }
+    /** Development-only reset of retirement markers affecting a reused portal. */
+    public int clearNearbyForDev(BlockPos pos) {
+        int before = consumed.size();
+        consumed.removeIf(packed -> {
+            BlockPos old = BlockPos.of(packed);
+            return Math.abs(old.getX() - pos.getX()) <= 64
+                    && Math.abs(old.getZ() - pos.getZ()) <= 64;
+        });
+        int removed = before - consumed.size();
+        if (removed > 0) setDirty();
+        return removed;
+    }
     public boolean consume(BlockPos pos) {
         boolean added = consumed.add(pos.asLong());
         if (added) setDirty();

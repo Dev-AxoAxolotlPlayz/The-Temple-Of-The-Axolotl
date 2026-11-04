@@ -1,3 +1,163 @@
+# Temple of the Axolotl — Master Development Roadmap V18
+
+**Updated:** November 3, 2026 — post-Origin stabilization, Repository/JEI and Celestial UI checkpoints; Adventurer's Field Guide planning.  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl` · **Package:** `com.devaxo.templeoftheaxolotl`
+
+> **V18 precedence and evidence rules:** This opening update supersedes older active-status labels and earlier design proposals wherever explicitly revised. The complete V17 roadmap, including all prior versions and historical appendices, is preserved below, **unchanged**. **USER-TESTED** means the developer reports successful in-game behavior; **USER-REPORTED WORKING** means a narrower success report; **PATCH DELIVERED / UNVERIFIED** means source was supplied but not fully validated; **DESIGN LOCKED** means an agreed specification, not implementation; **PLANNED** means still to be built. This roadmap does not constitute an independent code audit. Do not mistake an earlier draft, screenshot, source overlay, or successful compilation for exhaustive multiplayer certification.
+
+## 0. Executive checkpoint — November 3
+
+| Workstream | Latest V18 status | Current outcome / next boundary |
+|---|---|---|
+| Origin Temple endgame | **USER-CONFIRMED COMPLETE (V17)** | Preserve the completed 13×13 Origin, boss/endings, rescue/extraction and Ring visual fixes; do not revive V16's obsolete incomplete labels. |
+| Wrath resurrection revision | **USER-TESTED** | Above All owner-controlled Ring offering, clickable confirmation, lit soul campfire interaction and tamed Wrath summoning worked in the developer's test. See §1. |
+| Regular Temple dungeon / multiplayer simulation | **USER-TESTED SIMULATION; REAL MULTIPLAYER STILL TO VERIFY** | Six fake-entrant/armor-stand lifecycle tests passed; Essential LAN with real clients still requires testing. |
+| Dungeon balance / economy | **USER-TESTED** | Sentinel/trap changes, RNGesus teleport odds, Ring lifesteal and Supernova bedrock interaction passed tests. See §2. |
+| Repository crafting + JEI | **USER-TESTED** | Recipe placement and actual crafting work; later server-side Repository bulk-storage JEI autofill reported working. |
+| EMI transfer | **NOT CERTIFIED** | Separate EMI recipe-transfer support was not completed/verified by the JEI patch; keep separate from JEI success. |
+| Repository tier system | **LATEST DESIGN / PATCH HISTORY; VERIFY INDIVIDUAL TIERS** | Normal/Iron/Gold/Diamond progression and automatic Diamond consolidation are specified; earlier developer checkpoint includes tier upgrades, but no comprehensive tier-by-tier acceptance record here. |
+| Celestial UI quick-access toolbars | **USER-REPORTED WORKING** | Pixel icons, hover expansion and button spacing now behave; apply consistent behavior across inventory, Repository, Reward Vault and Modules/Jukebox. |
+| Title-screen music slider | **USER-TESTED** | Controls actual menu music, remembers setting across close/reopen, startup crash from premature sound registry access fixed. |
+| Celestial HUD pressure gauge | **POSITION TESTED; BACKING TRIM PATCH DELIVERED / UNVERIFIED** | Gauge moved up-left to the marked area. Shared HUD backing width/height trim supplied afterward; final visual check pending. |
+| Adventurer's Field Guide | **NEXT ACTIVE DESIGN / PLANNED** | Separate practical Patchouli guide; grant once per player per world, with shapeless Book + Tropical Fish replacement recipe. See §5. |
+| Diary of an Axolotl + lore sites | **PLANNED; PRESERVE V17 §0** | Separate narrative Patchouli diary, intact/broken lore blocks, Obelisks and iron-double-door title reveal; no claim of implementation. |
+| Abyss Phase 6.6 / Watergate / fauna / weapons | **PLANNED / DEFERRED** | Preserve detailed V15–V13 specifications and 'NO TOUCHIE BOAT' guardrail. |
+
+## 1. Origin and companions — later stabilization after V17
+
+### 1A. Above All's Ring-assisted Wrath resurrection — USER-TESTED
+
+- Only the player who owns/tamed **Above All** can initiate the ritual by dropping **any Ring of the One** near him; maximal enchantment is **no longer required** for this newer ritual. This supersedes the older V17/V16 description of a fully enchanted Ring sacrificed directly into soul fire.
+- Above All takes the Ring, sits/plays the curiosity interaction, and asks **exactly**: `Can i bowwow this pwease` with clickable **Yes** and **No** choices.
+- **No**: reply `Owkay ^u^` and return the Ring. **Yes**: require a **lit soul campfire within five blocks** of Above All; without one, safely return the Ring and do not spawn Wrath.
+- With a valid campfire, Above All approaches/boops it, consumes the Ring, breaks the campfire and summons a **redeemed, tamed Wrath** owned by Above All's owner; sitting/curiosity and heart effects are part of the presentation. User tested the Yes/No/failure/success flow and observed `Above All has brought Wrath home.`
+- Prevent repeat summons when the owner already has a tamed Wrath. **Known implementation caveat:** the observed duplicate guard scans loaded Wrath entities across dimensions; detection of an **unloaded** existing owned Wrath still needs robust persistence validation.
+- Creative-spawn-egg Wrath's normal soul-campfire-item taming is unchanged. Do not apply this ritual to hostile Boss Wrath.
+- A previous `originResolved()` / `rescueStarted()` gate silently blocked legitimate resurrection and was removed; avoid restoring that redundant gate. The test world contained two Above All entities, one Origin-rescued and one spawned for testing; that alone was not a bug.
+
+### 1B. Multiplayer and ally behavior
+
+- **Regular Temple shared-instance rule:** only **one active regular Temple dungeon instance** exists at a time. Do not add unnecessary per-instance matching when deciding same-Temple protection.
+- **Temple friendly fire:** if **both players** have the existing `in_temple` tag, prevent PvP melee and player-attributed projectile/indirect damage where attribution is available. If either lacks the tag, do not grant this immunity. Mob, trap and environmental damage continue normally. **Patch status:** reported in the recent multiplayer stabilization batch; re-test with real players.
+- **Spawn-trap loot ownership:** only the player credited with killing a spawn-trap-created mob can pick up its drops (including player-owned projectile kills). Do not lock ordinary loot or unrelated mob drops. **Real multiplayer verification remains appropriate.**
+- **Above All mounted flight visuals:** other clients should see the proper flying animation when a player rides Above All; test with two actual clients rather than relying on single-player view.
+- **Second Fall chainsaw balance:** the continuous contact/chainsaw attack was the excessive-damage source. Preferred adjustment is to **increase ticks between damage applications** rather than indiscriminately reducing every attack's damage. Preserve pounce, gravity pull, laser, pursuit and ordinary redeemed Wrath behavior. **Final cadence and multiplayer combat outcome not recorded as certified.**
+- **Portal lifecycle tests:** six simulation cases passed for simulated entry/exit, independent extraction and cleanup; simulations used fake UUIDs/armor stands, not real `ServerPlayer` clients. Real Essential LAN regression must check shared entry, independent exit/death portal return, and host departure while a guest remains.
+
+## 2. Dungeon and Ring gameplay — tested recent changes
+
+| Feature | User-tested behavior / preserved specification |
+|---|---|
+| Yang lifesteal on Ring of the One | Guaranteed qualifying proc, heals **5% of qualifying damage dealt**, increased from 1%. |
+| Spawn traps | **60% empty**, **25% one Sentinel**, **15% two Sentinels**. |
+| Sentinel scaling | Floor attack bonus reduced from **+2 to +1 per floor**. |
+| RNGesus curse | Teleport chance **5%**. Preserve curse apparition and unrelated trap logic. |
+| Supernova + bedrock | Supernova-enchanted Ring right-click transforms vanilla bedrock to **Star-Blasted Bedrock**; Ring mines it in **600 ticks / 30 seconds**, dropping **exactly one vanilla bedrock**. Ordinary tools must not bypass the special mining rule. |
+| Treasure hallways | Regular/decoy Temple: **exactly one per each of ten floors** (10 total). Origin: **1–3 per floor** (10–30 total), in reachable straight corridor nodes without replacing special rooms. |
+| `/tota_devportal` | Reuse/overwrite a nearby exhausted or retired developer portal rather than accumulating test portals. |
+
+**Preserve:** V17 Origin boss and rescue completion, V14 Ring flight/reach/enchantments, and the existing Temple 9×9 / Origin 13×13 separation. Do not interpret these narrow tests as proof of all dungeon paths.
+
+## 3. Celestial Repository, crafting and inventory integration
+
+### 3A. Repository upgrade tiers — agreed progression
+
+| Tier | Page/stack behavior | Intended improvement |
+|---|---|---|
+| **Normal** | **Two pages** (original page plus one additional page) | Baseline storage. |
+| **Iron** | **Three pages** | Adds a third page. |
+| **Gold** | Retains all previous pages | **Doubles the maximum stack capacity**. |
+| **Diamond** | Retains all preceding benefits | Treats all pages as **one logical inventory** for auto-sort and automatically consolidates identical items spread across pages. |
+
+- Upgrade path: **Normal → Iron → Gold → Diamond**, using **smithing upgrades** with the **previous-tier Repository**, the **corresponding ore/material block**, and **Cosmic Essence**. Exact smithing-slot order and item registry IDs should follow the working source/recipes; do not invent extra ingredients.
+- **Diamond consolidation** is automatic and cross-page, not merely a button that sorts the visible page. Respect stack caps, components/data matching, page persistence and inventory safety.
+- **Smoother transfer:** player selects/carries an item stack and can deposit it into the Repository without needing Shift-click; preserve intentional ordinary click-to-take and hold/click-to-store controls as implemented.
+- **Crafting station:** Repository's real 3×3 crafting grid requires the actual crafting-table/module prerequisite already used by the developer; an item placed inside Repository storage is not equivalent to installing the module. A previous 'crafting not working' test was resolved by putting the crafting table in the correct module slot.
+
+### 3B. JEI/EMI recipe transfer — precise certification boundary
+
+- **JEI:** Developer confirmed the full recipe placement/crafting integration works, including a later **server-side bulk-storage autofill** implementation. Ingredient extraction must validate across all unlocked Repository pages and player inventory, then populate the 3×3 crafting grid without duping or losing items.
+- JEI custom transfer registration requires the recipe type argument: `registration.addRecipeTransferHandler(handler, RecipeTypes.CRAFTING)` for the observed API version. The earlier single-argument overload failed compilation; developer reported the corrected patch works.
+- **EMI:** Do **not** automatically mark its separate transfer implementation complete because JEI works. Validate actual EMI recipe placement, server authorization, bulk-storage sourcing, ingredient matching, and crafting independently.
+- Preserve the actual Repository menu/storage backing; avoid dummy-slot representations that make recipe viewers see an empty inventory.
+
+## 4. Celestial UI, music and HUD — post-patch checkpoint
+
+### 4A. Shared quick-access toolbar — USER-REPORTED WORKING
+
+- Replace keybind-looking letters with recognizable **complete pixel-art icons** for **Repository**, **Lootbag**, **HUD/Modules** and a distinct **pixel-art Close (×)**. No clipped icon edges, wrong UV sampling or blurred scaling.
+- Apply one consistent toolbar implementation to **vanilla inventory**, **Celestial Repository**, **Temple Reward Vault**, and **Celestial Modules/Jukebox** screens. Hide the shortcut to the currently active screen where appropriate, while keeping other shortcuts and Close available.
+- On hover, expand to reveal **one label only** (not both an expanded label and a duplicate vanilla tooltip); the full expanded area must be clickable.
+- Expansion goes **outward away from the underlying screen**. Neighboring buttons must **move to make room** when the horizontal layout would overlap, instead of obscuring one another; preserve stable anchors and existing actions. The developer subsequently reported the toolbar buttons were behaving.
+
+### 4B. Title-screen Celestial music — USER-TESTED
+
+- Custom main-menu music slider changes the **actual music volume**, not merely its displayed number.
+- Slider setting **persists across closing and reopening the game**; developer explicitly confirmed this.
+- Resolve the deferred `celestial_menu` sound event **lazily at playback time**, not in a static field initializer before NeoForge registry binding. Earlier eager lookup caused an `ExceptionInInitializerError` startup crash; developer confirmed the lazy-lookup fix works.
+- Preserve normal menu transitions and other sound categories; test reloads/other mod audio separately if later changes touch the mixer.
+
+### 4C. Celestial Navigation / Abyss Pressure gauge — visual follow-up
+
+- The analog **Abyss Pressure** dial shares **one background backing** with the Celestial Navigation, Position and Chronometer text; it does **not** have a separate movable background panel.
+- Developer requested gauge relocation **left (negative X) and up (negative Y)** to the corner marked in screenshots. A position patch was supplied and a subsequent screenshot showed the gauge closer to the text, but the shared backing remained too wide/tall.
+- A follow-up **background trim** source overlay reduced the shared backing width **230 → 190 GUI pixels** and minimum height **180 → 150 GUI pixels**, leaving the relocated gauge and navigation text unchanged. **Final trimmed in-game visual has not yet been explicitly confirmed.**
+- Do not alter the dial's pressure calculation, animation, size, navigation data, or shared background style while completing the visual trim.
+
+## 5. NEXT ACTIVE CONTENT — Patchouli Adventurer's Field Guide
+
+**Status: DESIGN LOCKED FOR DISTRIBUTION AND RECIPE; CONTENT/IMPLEMENTATION PLANNED.** This is the next content-design activity after HUD layout stabilization, while the **Diary of an Axolotl** remains a separate lore workstream.
+
+### 5A. Purpose and distribution
+
+- The **Adventurer's Field Guide** is a **practical gameplay manual**, not the story diary. Use Patchouli on NeoForge 1.21.1 with clickable categories, item references, recipe views and beginner-friendly explanations.
+- **Automatically grant one guide on each player's first entry to a world**; maintain **persistent per-player/per-world grant tracking** so later logins, respawns and ordinary reentries do not award extra copies.
+- Multiplayer: grant each player their own copy. If the inventory is full, safely deliver/drop the item rather than silently deleting it. Do not regrant merely because a player loses or consumes their copy.
+- **Craftable replacements — FINAL CONFIRMED RECIPE:** **shapeless 1× vanilla Book + 1× vanilla Tropical Fish item → 1× Adventurer's Field Guide**. The earlier Prismarine Shard proposal is **superseded and rejected**.
+- Include the guide in the appropriate creative tab for testing. Do not make it a progression-locked rare item.
+
+### 5B. Proposed categories — content outline, not finalized pages
+
+1. **Getting Started:** first items, key mechanics, controls, first Temple access and progression map.
+2. **The Temples:** normal Temple versus Origin Temple, floors, Sentinels, traps, treasure, portals, extraction and safe multiplayer behavior.
+3. **Celestial Equipment:** modules, Repository pages/tier upgrades, JEI/EMI integration where actually supported, Ring, enchantments, Celestial Anvil and workstations.
+4. **The Abyss:** pressure gauge, water/pressure mechanics, future diving equipment and Abyss progression; clearly distinguish live systems from unreleased content.
+5. **Celestial Companions:** Above All, redeemed Wrath, ownership/taming, riding, abilities and safe ritual guidance without spoiling major story reveals prematurely.
+6. **Reference and Troubleshooting:** HUD indicators, button icons, crafting, common questions and progression tips.
+
+**Editorial rules:** document only features actually present in the release being packaged; mark future systems as forthcoming or omit them until implemented. Avoid revealing hidden lore, secret boss outcomes, creator motives or Diary chapter text in the practical manual. Determine exact page count, item art, book model/cover, in-game onboarding wording, and Patchouli advancement gating during implementation.
+
+## 6. Separate narrative docket — Diary of an Axolotl and world lore
+
+**Status: PLANNED; V17 §0 remains the authoritative detailed specification.** Do not merge the Field Guide and Diary into one book.
+
+- **Diary of an Axolotl** is Above All's first-person memory/lore book; starts with an obfuscated title, retains the same yin-yang/halo/flaming-horns cover and reveals its real title on the **actual successful Celestial Key rescue opening/breaking of the Origin prison's iron double doors**. No arbitrary iron door or mere boss defeat should reveal it.
+- Implement **Intact** and **Broken Lore Blocks**, survival-unbreakable, horizontal-facing with visible orientation preserved through transformation. Right-clicking intact blocks unlocks a random **previously undiscovered eligible chapter** for that player, then consumes/transforms the block **only on a successful new unlock**. If no eligible chapter remains, the block stays intact. A consumed block is globally depleted for all players; unlock records remain per player. Broken interaction displays exactly `The Story Seeps as the Magic Fades...`.
+- Embed lore blocks in **peaceful ponds, ruined statues and Obelisk/monolith sites**; persist block depletion and chapter flags through relog, chunk reload and server restart.
+- Each memory entry should have **at least two colorful marker-style scrapbook/sticky-note illustrations**; keep **at least 75% of each picture on the parchment**, with no more than 25% hanging beyond the edge.
+- Preserve the creator **The Axolotl Absolute** as unresolved canon where V17 says it is unresolved; avoid inventing story revelations.
+- **Implementation sequencing:** design the Field Guide now; retain the Diary, Obelisk lore pillars and lore-book integration as a separate substantial implementation patch. Merfolk, Cosmic Trident and Cosmo-Bow modeling remain deferred until the user resumes them.
+
+## 7. Remaining development and regression guardrails
+
+| Area | Outstanding follow-up |
+|---|---|
+| Real multiplayer | Test actual Essential LAN participants, Temple shared-instance entry/exit/death, ownership of trap drops, ally friendly-fire, Above All ridden flight animation and independent extraction. |
+| EMI | Implement/validate true Repository bulk-storage recipe transfer independently from JEI. |
+| Repository tiers | Verify smithing recipes, Normal/Iron/Gold/Diamond page counts, Gold stack-cap doubling, Diamond cross-page consolidation and persistence, including component-sensitive items. |
+| HUD | Confirm the **final** shared backing trim looks correct at different GUI scales and screen resolutions. |
+| Field Guide | Implement Patchouli book registration, one-time grant tracking, shapeless Book + Tropical Fish recipe, creative-tab access, chapters and item/recipe links. |
+| Diary/lore | Implement V17 §0 lore blocks, structures, player-specific chapters, diary art and true iron-double-door reveal. |
+| Abyss Phase 6.6 | Crushing Pressure, ascent-triggered Bends, blobfish status icon, milk immunity, Diluted Ichor cure, Diving Helmet and Sub-for-One; preserve V15 detailed undecided balance rules. |
+| Abyss world | Watergate/ruins, Merfolk villages, Axoleviathan/Axokraken/Axoluthu, Cosmic Trident and Cosmo-Bow remain future content; do not represent as shipped. |
+
+**Critical continuity rules:** **NO TOUCHIE BOAT**; keep Phase 6.4 approved water/boat physics; preserve pressure-death message variety and dynamic names; do not revert the working title music lazy sound lookup, JEI handler signature, Origin boss Ring transform, resurrection interaction, or Temple/Origin dungeon isolation. Use the **latest successfully compiled project source** as patch authority, not this prose roadmap. The entire V17 and earlier historical record follows unchanged.
+
+---
+
+# Preserved V17 roadmap and all earlier historical appendices (unchanged)
+
 # Temple of the Axolotl — Master Development Roadmap V17
 
 **Updated:** October 31, 2026 — Origin endgame completion checkpoint; next active docket is lore integration.  

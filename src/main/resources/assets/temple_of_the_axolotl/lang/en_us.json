@@ -107,7 +107,11 @@
   "item.temple_of_the_axolotl.abyssal_merfolk_spawn_egg": "Abyssal Merfolk Spawn Egg",
   "block.temple_of_the_axolotl.lore_block": "Lore Block",
   "block.temple_of_the_axolotl.broken_lore_block": "Broken Lore Block",
-  "item.temple_of_the_axolotl.diary_of_an_axolotl": "§k?????????????§r",
+  "item.temple_of_the_axolotl.diary_of_an_axolotl": "\u00a7k?????????????\u00a7r",
   "block.temple_of_the_axolotl.shipyard_crane": "Shipyard Crane",
-  "item.temple_of_the_axolotl.shorkolotl_100_item": "Shorkolotl-100"
+  "item.temple_of_the_axolotl.shorkolotl_100_item": "Shorkolotl-100",
+  "item.temple_of_the_axolotl.iron_repository_module": "Iron Celestial Repository Module",
+  "item.temple_of_the_axolotl.gold_repository_module": "Gold Celestial Repository Module",
+  "item.temple_of_the_axolotl.diamond_repository_module": "Diamond Celestial Repository Module",
+  "item.temple_of_the_axolotl.axolotls_field_guide": "An Axolotl's Field Guide"
 }

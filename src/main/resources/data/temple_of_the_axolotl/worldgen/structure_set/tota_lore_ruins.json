@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "temple_of_the_axolotl:tota_lore_ruins",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 20112026,
+    "spacing": 18,
+    "separation": 5,
+    "spread_type": "linear"
+  }
+}

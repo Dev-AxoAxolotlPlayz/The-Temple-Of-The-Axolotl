@@ -91,7 +91,7 @@ public final class TempleHudModules {
             case 0 -> stack.is(ModItems.TEMPLE_SEEKER.get());
             case 1 -> stack.is(Items.COMPASS);
             case 2 -> stack.is(Items.CLOCK);
-            case 3 -> stack.is(ModItems.CELESTIAL_REPOSITORY.get());
+            case 3 -> stack.is(ModItems.CELESTIAL_REPOSITORY.get()) || stack.is(ModItems.IRON_REPOSITORY.get()) || stack.is(ModItems.GOLD_REPOSITORY.get()) || stack.is(ModItems.DIAMOND_REPOSITORY.get());
             case 4 -> stack.is(ModItems.CELESTIAL_MAGNET.get());
             case 5 -> stack.is(Items.CRAFTING_TABLE);
             case 6 -> stack.is(ModItems.CELESTIAL_ANVIL.get());
@@ -187,7 +187,8 @@ public final class TempleHudModules {
                 com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.magnetMode(player) != 2) {
             for (ItemEntity entity : player.serverLevel().getEntitiesOfClass(
                     ItemEntity.class, new AABB(player.blockPosition()).inflate(10.0))) {
-                if (!entity.isAlive() || entity.hasPickUpDelay()) continue;
+                if (!entity.isAlive() || entity.hasPickUpDelay() ||
+                        !com.devaxo.templeoftheaxolotl.event.TrapLootOwnershipEvents.canCollect(player, entity)) continue;
                 ItemStack stack = entity.getItem();
                 int accepted = 0;
                 int mode = com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.magnetMode(player);

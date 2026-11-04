@@ -951,22 +951,24 @@ public final class OriginMazeCommands {
             }
             if (!touchesDecoy) n.variant = "tota_decoy";
         }
-        // Replace 1-4 existing straight corridors, no more than one per major layer.
-        // A fallback guarantees at least one placement whenever the maze has a straight.
-        List<Integer> layers = new ArrayList<>(List.of(1, 2, 3, 4));
-        Collections.shuffle(layers, rng);
-        int chosen = 0;
-        for (int layer : layers) {
+        // Guaranteed treasure corridors on every one of the ten procedural floors.
+        // Only replace already-connected straight modules: no doorways or progression
+        // topology change, and reserved elevator/dropper/sanctum cells remain untouched.
+        for (int floorY = 0; floorY >= -9; floorY--) {
             List<Node> candidates = new ArrayList<>();
             for (Node n : layout.nodes.values()) {
-                if (n.special == null && layerFor(n.cell.y()) == layer
-                        && n.exits.size() == 2 && isOpposite(n.exits)) candidates.add(n);
+                if (n.cell.y() == floorY && n.special == null
+                        && n.exits.size() == 2 && isOpposite(n.exits)
+                        && "tota_straight".equals(templateFor(n))) {
+                    candidates.add(n);
+                }
             }
-            if (candidates.isEmpty()) continue;
-            if (chosen > 0 && rng.nextDouble() >= 0.40) continue;
-            Node pick = candidates.get(rng.nextInt(candidates.size()));
-            pick.variant = "tota_treasure_hallway_straight";
-            chosen++;
+            Collections.shuffle(candidates, rng);
+            int required = 1 + rng.nextInt(3);
+            // Regenerate the layout if a floor cannot accommodate its quota.
+            if (candidates.size() < required) return null;
+            for (int i = 0; i < required; i++)
+                candidates.get(i).variant = "tota_treasure_hallway_straight";
         }
         for (Node n : layout.nodes.values()) {
             if (n.exits.isEmpty() || n.exits.size() > 4) return null;

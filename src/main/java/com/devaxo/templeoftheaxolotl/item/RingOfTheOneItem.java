@@ -69,6 +69,24 @@ public class RingOfTheOneItem extends SwordItem implements software.bernie.gecko
         super(Tiers.NETHERITE, properties);
     }
 
+    @Override
+    public net.minecraft.world.InteractionResult useOn(net.minecraft.world.item.context.UseOnContext context) {
+        Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Player player = context.getPlayer();
+        if (player == null || !level.getBlockState(pos).is(Blocks.BEDROCK)
+                || !hasSupernova(context.getItemInHand())) {
+            return super.useOn(context);
+        }
+        if (!player.mayInteract(level, pos) || !player.mayUseItemAt(pos, context.getClickedFace(), context.getItemInHand())) {
+            return net.minecraft.world.InteractionResult.FAIL;
+        }
+        if (!level.isClientSide()) {
+            level.setBlock(pos, com.devaxo.templeoftheaxolotl.registry.ModBlocks.STAR_BLASTED_BEDROCK.get().defaultBlockState(), 3);
+        }
+        return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide());
+    }
+
     // =========================================
     // BLOCK BREAKING PERMISSION
     // =========================================

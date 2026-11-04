@@ -313,34 +313,49 @@ public final class TempleTravel {
                         ctx.getSource().sendFailure(Component.literal("Create test portals in the Overworld."));
                         return 0;
                     }
-                    BlockPos pos = player.blockPosition().relative(player.getDirection(), 3).above();
                     ServerLevel level = player.serverLevel();
-                    // Full 3x3 dark-prismarine landing ring at feet-level - 1.
-                    // Never overwrite terrain, structures, or another portal.
-                    for (int dx = -1; dx <= 1; dx++) {
-                        for (int dz = -1; dz <= 1; dz++) {
-                            BlockPos floor = pos.offset(dx, -1, dz);
-                            BlockPos feet = floor.above();
-                            if (!level.getBlockState(floor).isAir()
-                                    || !level.getBlockState(feet).isAir()
-                                    || !level.getBlockState(feet.above()).isAir()) {
-                                ctx.getSource().sendFailure(Component.literal(
-                                        "Dev portal needs a clear 3x3 platform and two blocks of headroom."));
-                                return 0;
+                    // Prefer reusing an existing nearby test portal, including retired ones.
+                    // This does not reset the world-wide consumed list for natural portals.
+                    BlockPos pos = player.blockPosition().relative(player.getDirection(), 3).above();
+                    BlockPos previous = null;
+                    double nearest = Double.MAX_VALUE;
+                    for (BlockPos candidate : BlockPos.betweenClosed(
+                            player.blockPosition().offset(-12, -4, -12),
+                            player.blockPosition().offset(12, 4, 12))) {
+                        if (!level.getBlockState(candidate).is(
+                                com.devaxo.templeoftheaxolotl.registry.ModBlocks.TEMPLE_PORTAL.get())) continue;
+                        double distance = candidate.distSqr(player.blockPosition());
+                        if (distance < nearest) {
+                            nearest = distance;
+                            previous = candidate.immutable();
+                        }
+                    }
+                    if (previous != null) {
+                        pos = previous;
+                    } else {
+                        // For new test portals, require a clear platform to avoid destroying builds.
+                        for (int dx = -1; dx <= 1; dx++) {
+                            for (int dz = -1; dz <= 1; dz++) {
+                                BlockPos floor = pos.offset(dx, -1, dz);
+                                if (!level.getBlockState(floor).isAir()
+                                        || !level.getBlockState(floor.above()).isAir()
+                                        || !level.getBlockState(floor.above(2)).isAir()) {
+                                    ctx.getSource().sendFailure(Component.literal(
+                                            "No reusable portal nearby; new test portal needs clear 3x3 space."));
+                                    return 0;
+                                }
                             }
                         }
+                        for (int dx = -1; dx <= 1; dx++)
+                            for (int dz = -1; dz <= 1; dz++)
+                                level.setBlock(pos.offset(dx, -1, dz),
+                                        Blocks.DARK_PRISMARINE.defaultBlockState(), 3);
                     }
-                    if (TemplePortalRegistry.get(level).isConsumed(pos)) {
-                        ctx.getSource().sendFailure(Component.literal("This portal position is retired."));
-                        return 0;
-                    }
-                    for (int dx = -1; dx <= 1; dx++) {
-                        for (int dz = -1; dz <= 1; dz++) {
-                            level.setBlock(pos.offset(dx, -1, dz), Blocks.DARK_PRISMARINE.defaultBlockState(), 3);
-                        }
-                    }
-                    level.setBlock(pos, com.devaxo.templeoftheaxolotl.registry.ModBlocks.TEMPLE_PORTAL.get().defaultBlockState(), 3);
-                    ctx.getSource().sendSuccess(() -> Component.literal("Valid test portal created at " + pos.toShortString()), false);
+                    TemplePortalRegistry.get(level).clearNearbyForDev(pos);
+                    level.setBlock(pos,
+                            com.devaxo.templeoftheaxolotl.registry.ModBlocks.TEMPLE_PORTAL.get().defaultBlockState(), 3);
+                    final BlockPos created = pos;
+                    ctx.getSource().sendSuccess(() -> Component.literal("Reusable test portal ready at " + created.toShortString()), false);
                     return 1;
                 }));
         event.getDispatcher().register(Commands.literal("templeexit")

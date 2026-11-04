@@ -17,7 +17,7 @@ import java.util.Map;
 /** Stage 1: R/L/H/X tabs follow the active panel's left edge. */
 @EventBusSubscriber(modid = TempleOfTheAxolotl.MODID, value = Dist.CLIENT)
 public final class CelestialPanelTabs {
-    private static final Map<AbstractContainerScreen<?>, Button[]> BUTTONS = new IdentityHashMap<>();
+    private static final Map<AbstractContainerScreen<?>, CelestialQuickButton[]> BUTTONS = new IdentityHashMap<>();
     private static boolean employedInSession;
     private static double savedCursorX, savedCursorY;
     private static boolean restoreCursor;
@@ -42,15 +42,15 @@ public final class CelestialPanelTabs {
         int active = panel(screen);
         if (active < 0) return;
         if (screen instanceof CelestialModulesScreen modules && modules.getMenu().hasCluckles()) employedInSession = true;
-        String[] letters = {"R", "L", "H", "X", "C"};
-        String[] names = {"Celestial Repository", "Dungeon Lootbag", "Celestial Modules", "Vanilla Inventory", "Cluckles Controls"};
-        Button[] buttons = new Button[5];
+        
+        String[] names = {"Repository", "Lootbag", "HUD", "Inventory", "Cluckles"};
+        CelestialQuickButton[] buttons = new CelestialQuickButton[5];
         int next = 0;
         for (int i = 0; i < 5; i++) {
             if (i == active) continue;
             // Create the tab even before server menu data arrives; update visibility every frame.
             final int destination = i;
-            Button button = Button.builder(Component.literal(letters[i]), b -> {
+            CelestialQuickButton button = new CelestialQuickButton(i, names[i], b -> {
                     // Switching container screens must not teleport the pointer.
                     net.minecraft.client.Minecraft client = net.minecraft.client.Minecraft.getInstance();
                     savedCursorX = client.mouseHandler.xpos();
@@ -65,10 +65,7 @@ public final class CelestialPanelTabs {
                     } else {
                         PacketDistributor.sendToServer(new InventoryStorageOpenPayload(destination));
                     }
-                })
-                    .bounds(0, 0, 18, 18)
-                    .tooltip(Tooltip.create(Component.literal(names[i])))
-                    .build();
+                });
             buttons[next++] = button;
             event.addListener(button);
         }
@@ -89,16 +86,16 @@ public final class CelestialPanelTabs {
     }
 
     private static void position(AbstractContainerScreen<?> screen) {
-        Button[] buttons = BUTTONS.get(screen);
+        CelestialQuickButton[] buttons = BUTTONS.get(screen);
         if (buttons == null) return;
         int x = screen.getGuiLeft() - 20;
-        if (x < 0) x = screen.width - 20; // Keep tabs reachable when the module GUI fills the left edge.
+        if (x < 0) x = Math.min(screen.width - 18, screen.getGuiLeft() + screen.getXSize() + 2);
+        // When the left side is unavailable, anchor to the panel's right edge.
         int y = screen.getGuiTop() + 8;
         for (int i = 0; i < buttons.length; i++) {
             if (buttons[i] == null) continue;
-            buttons[i].setX(x);
-            buttons[i].setY(y + i * 20);
-            boolean show = x >= 0 && (buttons[i].getMessage().getString().equals("C") ? clucklesEmployed(screen) : true);
+            buttons[i].anchor(x, y + i * 20, x < screen.getGuiLeft());
+            boolean show = x >= 0 && (buttons[i].getMessage().getString().equals("Cluckles") ? clucklesEmployed(screen) : true);
             buttons[i].visible = show;
             buttons[i].active = show;
         }

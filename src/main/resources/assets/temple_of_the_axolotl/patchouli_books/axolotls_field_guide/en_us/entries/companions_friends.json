@@ -1,0 +1,12 @@
+{
+  "name": "Above All and Wrath",
+  "category": "temple_of_the_axolotl:companions",
+  "icon": "minecraft:axolotl_bucket",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Above All and Wrath have distinct companion behaviors. Learn their movement and equipment controls before taking them into dangerous environments."
+    }
+  ]
+}

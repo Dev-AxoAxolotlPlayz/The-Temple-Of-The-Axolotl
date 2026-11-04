@@ -29,7 +29,7 @@ import java.util.UUID;
 )
 public class RingCombatEvents {
 
-    private static final float LIFESTEAL = 0.01F;
+    private static final float LIFESTEAL = 0.05F;
     private static final float EXECUTION_THRESHOLD = 0.15F;
     private static final float EXECUTION_CHANCE = 0.1F;
 

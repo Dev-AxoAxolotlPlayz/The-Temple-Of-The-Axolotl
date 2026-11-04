@@ -35,9 +35,9 @@ public class TrialTrapSpawnerEntity extends BlockEntity {
   int floor=Math.max(1,Math.min(10,com.devaxo.templeoftheaxolotl.traps.TempleProgress.floor(player)));
   // Mark consumed BEFORE spawning; reloads cannot restart the encounter.
   trap.state=2;trap.setChanged();
-  // Universal one-time outcome: 50% single, 20% double, 30% blank.
+  // Universal one-time outcome: 25% single, 15% double, 60% blank.
   int outcome = level.random.nextInt(100);
-  int encounters = outcome < 50 ? 1 : outcome < 70 ? 2 : 0;
+  int encounters = outcome < 25 ? 1 : outcome < 40 ? 2 : 0;
   for (int i = 0; i < encounters; i++) spawnEncounter(level,pos,floor,trap.tier);
  }
  private static void spawnEncounter(ServerLevel level,BlockPos pos,int floor,int layer){
@@ -163,7 +163,7 @@ public class TrialTrapSpawnerEntity extends BlockEntity {
   if(hp!=null)hp.setBaseValue(floor*50.0);
   mob.setHealth(floor*50.0f);
   var attack=mob.getAttribute(Attributes.ATTACK_DAMAGE);
-  if(attack!=null)attack.setBaseValue(attack.getBaseValue()+2.0*floor);
+  if(attack!=null)attack.setBaseValue(attack.getBaseValue()+1.0*floor);
   mob.setPersistenceRequired();
   if(armor){
    EquipmentSlot[] slots={EquipmentSlot.HEAD,EquipmentSlot.CHEST,EquipmentSlot.LEGS,EquipmentSlot.FEET};

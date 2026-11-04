@@ -1,0 +1,16 @@
+{
+  "name": "Your First Steps",
+  "category": "temple_of_the_axolotl:welcome",
+  "icon": "minecraft:diamond_chestplate",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Welcome to the Field Guide! Every chapter and recipe is readable immediately. For a full Temple expedition, bring at least enchanted diamond armor and weapons, plus food, healing, and spare supplies. This is a recommendation, not an equipment lock."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Read the sushi chapter to prepare food and trophies. The Mini Temple is a planned beginner expedition; the full Temple remains the major challenge."
+    }
+  ]
+}

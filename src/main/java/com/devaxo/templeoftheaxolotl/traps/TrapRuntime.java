@@ -113,7 +113,7 @@ public final class TrapRuntime {
             s.curseReady = now + 60;
 
             // Nerf #2: 10% chance per eligible activation, not per tick.
-            if (level.random.nextFloat() < 0.10F) {
+            if (level.random.nextFloat() < 0.05F) {
                 BlockPos marker = findWarpMarkerAbove(level, nearest);
 
                 if (marker != null) {

@@ -4,6 +4,7 @@ import com.devaxo.templeoftheaxolotl.TempleOfTheAxolotl;
 import com.devaxo.templeoftheaxolotl.network.InventoryStorageOpenPayload;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
@@ -16,9 +17,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
 @EventBusSubscriber(modid = TempleOfTheAxolotl.MODID, value = Dist.CLIENT)
 public final class InventoryStorageButtons {
     private static InventoryScreen activeScreen;
-    private static Button repositoryButton;
-    private static Button lootbagButton;
-    private static Button modulesButton;
+    private static CelestialQuickButton repositoryButton;
+    private static CelestialQuickButton lootbagButton;
+    private static CelestialQuickButton modulesButton;
 
     private InventoryStorageButtons() {}
 
@@ -26,21 +27,18 @@ public final class InventoryStorageButtons {
     public static void onScreenInit(ScreenEvent.Init.Post event) {
         if (!(event.getScreen() instanceof InventoryScreen inventory)) return;
         activeScreen = inventory;
-        repositoryButton = shortcut("R", "Celestial Repository", 0);
-        lootbagButton = shortcut("L", "Dungeon Lootbag", 1);
-        modulesButton = shortcut("H", "Celestial HUD Modules", 2);
+        repositoryButton = shortcut("Repository", 0);
+        lootbagButton = shortcut("Lootbag", 1);
+        modulesButton = shortcut("HUD", 2);
         event.addListener(repositoryButton);
         event.addListener(lootbagButton);
         event.addListener(modulesButton);
         update(inventory);
     }
 
-    private static Button shortcut(String letter, String tooltip, int destination) {
-        return Button.builder(Component.literal(letter), b ->
-                PacketDistributor.sendToServer(new InventoryStorageOpenPayload(destination)))
-                .bounds(0, 0, 18, 18)
-                .tooltip(Tooltip.create(Component.literal(tooltip)))
-                .build();
+    private static CelestialQuickButton shortcut(String name, int destination) {
+        return new CelestialQuickButton(destination, name, b ->
+            PacketDistributor.sendToServer(new InventoryStorageOpenPayload(destination)));
     }
 
     @SubscribeEvent
@@ -57,12 +55,24 @@ public final class InventoryStorageButtons {
         // Otherwise preserve the field-tested vertical column beside armor slots.
         int x = recipeOpen ? inventory.getGuiLeft() + 8 : inventory.getGuiLeft() - 20;
         int y = recipeOpen ? inventory.getGuiTop() - 20 : inventory.getGuiTop() + 8;
-        Button[] buttons = {repositoryButton, lootbagButton, modulesButton};
+        CelestialQuickButton[] buttons = {repositoryButton, lootbagButton, modulesButton};
+        // In the horizontal recipe-book layout, shift neighboring buttons to
+        // accommodate an expanded label. Never allow buttons to overlap.
+        int cursorX = x;
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        double mx = mc.mouseHandler.xpos() * inventory.width / mc.getWindow().getScreenWidth();
+        double my = mc.mouseHandler.ypos() * inventory.height / mc.getWindow().getScreenHeight();
+        int hoveredIndex = -1;
+        if (recipeOpen && my >= y && my < y + 18) {
+            for (int i = 0; i < buttons.length; i++) {
+                if (mx >= x + i * 20 && mx < x + i * 20 + 18) { hoveredIndex = i; break; }
+            }
+        }
         for (int i = 0; i < buttons.length; i++) {
-            buttons[i].setX(x + (recipeOpen ? i * 20 : 0));
-            buttons[i].setY(y + (recipeOpen ? 0 : i * 20));
+            buttons[i].anchor(recipeOpen ? cursorX : x, y + (recipeOpen ? 0 : i * 20), !recipeOpen);
             buttons[i].visible = x >= 0 && y >= 0;
             buttons[i].active = buttons[i].visible;
+            if (recipeOpen) cursorX += (i == hoveredIndex ? buttons[i].expandedWidth() : 18) + 2;
         }
     }
 }

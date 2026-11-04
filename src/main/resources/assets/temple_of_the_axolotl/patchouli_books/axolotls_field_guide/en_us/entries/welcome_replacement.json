@@ -1,0 +1,16 @@
+{
+  "name": "Keeping Your Guide",
+  "category": "temple_of_the_axolotl:welcome",
+  "icon": "minecraft:book",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Each player receives one guide on their first login to a world. If you lose it, craft another with a Book and a Tropical Fish."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:axolotls_field_guide"
+    }
+  ]
+}

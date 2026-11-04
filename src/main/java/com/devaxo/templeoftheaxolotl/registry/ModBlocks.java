@@ -25,17 +25,37 @@ public final class ModBlocks {
     public static void addCreativeTab(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(TEMPLE_PORTAL_ITEM.get());
+            event.accept(SHALLOWS_PORTAL_ITEM.get());
+            event.accept(SHALLOWS_EXIT_PORTAL_ITEM.get());
             event.accept(LORE_BLOCK_ITEM.get());
             event.accept(BROKEN_LORE_BLOCK_ITEM.get());
             event.accept(DIARY_ITEM.get());
+            event.accept(FIELD_GUIDE_ITEM.get());
         }
     }
+
+    /** Supernova-treated bedrock; mined through the ring's 600-tick server-controlled ritual. */
+    public static final DeferredBlock<Block> STAR_BLASTED_BEDROCK =
+            BLOCKS.register("star_blasted_bedrock", () -> new Block(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.BEDROCK)
+                            .strength(1000000.0F, 3600000.0F).noLootTable()));
 
     public static final DeferredBlock<TemplePortalBlock> TEMPLE_PORTAL =
             BLOCKS.register("temple_portal", () -> new TemplePortalBlock(
                     BlockBehaviour.Properties.ofFullCopy(Blocks.EMERALD_BLOCK)
                             .strength(-1.0F, 3600000.0F)
                             .noLootTable()));
+
+    public static final DeferredBlock<com.devaxo.templeoftheaxolotl.block.ShallowsPortalBlock> SHALLOWS_PORTAL =
+            BLOCKS.register("shallows_portal", () -> new com.devaxo.templeoftheaxolotl.block.ShallowsPortalBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.LAPIS_BLOCK).strength(-1.0F, 3600000.0F).noLootTable(), false));
+    public static final DeferredBlock<com.devaxo.templeoftheaxolotl.block.ShallowsPortalBlock> SHALLOWS_EXIT_PORTAL =
+            BLOCKS.register("shallows_exit_portal", () -> new com.devaxo.templeoftheaxolotl.block.ShallowsPortalBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.DIAMOND_BLOCK).strength(-1.0F, 3600000.0F).noLootTable(), true));
+    public static final DeferredItem<BlockItem> SHALLOWS_PORTAL_ITEM = ITEMS.register("shallows_portal",
+            () -> new BlockItem(SHALLOWS_PORTAL.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> SHALLOWS_EXIT_PORTAL_ITEM = ITEMS.register("shallows_exit_portal",
+            () -> new BlockItem(SHALLOWS_EXIT_PORTAL.get(), new Item.Properties()));
 
     public static final DeferredBlock<Block> ABYSSAL_TORCH = BLOCKS.register("abyssal_torch",
             () -> new com.devaxo.templeoftheaxolotl.block.AbyssalTorchBlock(
@@ -68,6 +88,9 @@ public final class ModBlocks {
             () -> new com.devaxo.templeoftheaxolotl.lore.LoreBlockItem(LORE_BLOCK.get(), new Item.Properties(), false));
     public static final DeferredItem<com.devaxo.templeoftheaxolotl.lore.LoreBlockItem> BROKEN_LORE_BLOCK_ITEM = ITEMS.register("broken_lore_block",
             () -> new com.devaxo.templeoftheaxolotl.lore.LoreBlockItem(BROKEN_LORE_BLOCK.get(), new Item.Properties(), true));
+
+    public static final DeferredItem<com.devaxo.templeoftheaxolotl.guide.FieldGuideItem> FIELD_GUIDE_ITEM =
+            ITEMS.register("axolotls_field_guide", () -> new com.devaxo.templeoftheaxolotl.guide.FieldGuideItem(new Item.Properties().stacksTo(1)));
 
     public static final DeferredItem<com.devaxo.templeoftheaxolotl.lore.DiaryItem> DIARY_ITEM =
             ITEMS.register("diary_of_an_axolotl", () -> new com.devaxo.templeoftheaxolotl.lore.DiaryItem(new Item.Properties().stacksTo(1)));

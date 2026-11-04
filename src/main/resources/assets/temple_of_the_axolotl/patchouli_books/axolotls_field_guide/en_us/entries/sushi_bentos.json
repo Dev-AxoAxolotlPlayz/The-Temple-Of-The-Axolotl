@@ -1,0 +1,20 @@
+{
+  "name": "Bento Boxes",
+  "category": "temple_of_the_axolotl:sushi",
+  "icon": "temple_of_the_axolotl:oasis_bento_box",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The two bento boxes are important trophy ingredients."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:oasis_bento_box"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:dream_bento_box"
+    }
+  ]
+}

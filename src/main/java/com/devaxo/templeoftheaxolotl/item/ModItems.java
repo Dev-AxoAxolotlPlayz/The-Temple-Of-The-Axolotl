@@ -42,6 +42,9 @@ public final class ModItems {
 
     // Patch 08-D1.5.2: dedicated equipment modules.
     public static final DeferredItem<Item> CELESTIAL_REPOSITORY = basic("celestial_repository_module", 1);
+    public static final DeferredItem<Item> IRON_REPOSITORY = basic("iron_repository_module", 1);
+    public static final DeferredItem<Item> GOLD_REPOSITORY = basic("gold_repository_module", 1);
+    public static final DeferredItem<Item> DIAMOND_REPOSITORY = basic("diamond_repository_module", 1);
     public static final DeferredItem<Item> ABYSSAL_TORCH = ITEMS.register("abyssal_torch", () ->
             new net.minecraft.world.item.BlockItem(
                     com.devaxo.templeoftheaxolotl.registry.ModBlocks.ABYSSAL_TORCH.get(), new Item.Properties()));
@@ -454,6 +457,9 @@ public final class ModItems {
         output.accept(TEMPLE_SEEKER.get());
         output.accept(TEMPLE_LOOTBAG.get());
         output.accept(CELESTIAL_REPOSITORY.get());
+        output.accept(IRON_REPOSITORY.get());
+        output.accept(GOLD_REPOSITORY.get());
+        output.accept(DIAMOND_REPOSITORY.get());
         output.accept(CELESTIAL_MAGNET.get());
         output.accept(ABYSS_PRESSURE_GAUGE.get());
         output.accept(ABYSSAL_GILLS.get());

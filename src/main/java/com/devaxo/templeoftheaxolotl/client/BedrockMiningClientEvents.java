@@ -55,7 +55,7 @@ public class BedrockMiningClientEvents {
                 BlockPos pos = blockHit.getBlockPos();
 
                 if (minecraft.level.getBlockState(pos)
-                        .is(Blocks.BEDROCK)) {
+                        .is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.STAR_BLASTED_BEDROCK.get())) {
 
                     mining = true;
                     target = pos;

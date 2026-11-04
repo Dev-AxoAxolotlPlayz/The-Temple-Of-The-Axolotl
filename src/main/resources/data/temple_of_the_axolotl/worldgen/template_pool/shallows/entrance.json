@@ -1,0 +1,15 @@
+{
+  "name": "temple_of_the_axolotl:shallows/entrance",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "temple_of_the_axolotl:shallows_overworld_ruin",
+        "processors": "minecraft:empty",
+        "projection": "terrain_matching"
+      }
+    }
+  ]
+}

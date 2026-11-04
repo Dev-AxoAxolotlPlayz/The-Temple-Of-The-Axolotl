@@ -6,6 +6,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.AbstractSliderButton;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import java.util.Set;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -34,8 +36,50 @@ public final class CelestialTitleMenu {
             TempleOfTheAxolotl.MODID, "textures/gui/celestial_secondary_stage.png");
     private static final ResourceLocation MUSIC_ID = ResourceLocation.fromNamespaceAndPath(
             TempleOfTheAxolotl.MODID, "celestial_menu");
-    private static final SoundEvent MUSIC = SoundEvent.createVariableRangeEvent(MUSIC_ID);
+    private static SoundEvent menuSound() { return com.devaxo.templeoftheaxolotl.sound.CelestialMusicSounds.MENU.get(); }
     private static SimpleSoundInstance musicInstance;
+    private static final java.nio.file.Path MUSIC_SETTINGS =
+        net.neoforged.fml.loading.FMLPaths.CONFIGDIR.get().resolve("tota_title_music.properties");
+    private static double menuMusicVolume = readMusicVolume();
+    private static double readMusicVolume() {
+        java.util.Properties properties = new java.util.Properties();
+        try (var input = java.nio.file.Files.newInputStream(MUSIC_SETTINGS)) {
+            properties.load(input);
+            return Math.max(0, Math.min(1, Double.parseDouble(properties.getProperty("volume", "0.65"))));
+        } catch (Exception ignored) { return 0.65; }
+    }
+    private static void setMusicVolume(double value) {
+        menuMusicVolume = Math.max(0, Math.min(1, value));
+        java.util.Properties properties = new java.util.Properties();
+        properties.setProperty("volume", Double.toString(menuMusicVolume));
+        try {
+            java.nio.file.Files.createDirectories(MUSIC_SETTINGS.getParent());
+            try (var output = java.nio.file.Files.newOutputStream(MUSIC_SETTINGS)) {
+                properties.store(output, "Temple of the Axolotl title music volume");
+            }
+        } catch (java.io.IOException ignored) { }
+        // Restart the actual playing sound immediately with the new volume.
+        // SoundEngine snapshots source gain at playback start; changing a field alone
+        // does not change an already-playing streamed sound.
+        Minecraft mc = Minecraft.getInstance();
+        if (musicInstance != null) mc.getSoundManager().stop(musicInstance);
+        musicInstance = null;
+        if (onTitle && menuMusicVolume > 0.0) {
+            musicInstance = SimpleSoundInstance.forUI(menuSound(), 1.0F, (float) menuMusicVolume);
+            mc.getSoundManager().play(musicInstance);
+        }
+    }
+    private static final class MenuVolumeSlider extends AbstractSliderButton {
+        MenuVolumeSlider(int x, int y, int width) {
+            super(x, y, width, 20, Component.empty(), menuMusicVolume);
+            updateMessage();
+        }
+        @Override protected void updateMessage() {
+            setMessage(Component.literal("Menu Music: " + Math.round(value * 100) + "%"));
+        }
+        @Override protected void applyValue() { setMusicVolume(value); }
+    }
+
     private static long ticks;
     private static boolean onTitle;
     private CelestialTitleMenu() {}
@@ -136,6 +180,10 @@ public final class CelestialTitleMenu {
                 button.setHeight(bh);
             }
         }
+        // Dedicated persisted music control; do not move other mods' widgets.
+        int sliderWidth = 140;
+        event.addListener(new MenuVolumeSlider((w - sliderWidth) / 2,
+            Math.min(h - 26, start + stackHeight + 14), sliderWidth));
         positionEssentialButtonsLeftOfPlayer(event.getScreen());
         positionEssentialUpdateLeftOfMods(event.getScreen(), mods);
         // Language and Accessibility keep their original vanilla positions and sizes.
@@ -238,8 +286,10 @@ public final class CelestialTitleMenu {
         if (active) {
             ticks++;
             if (!onTitle || musicInstance == null || !mc.getSoundManager().isActive(musicInstance)) {
-                musicInstance = SimpleSoundInstance.forUI(MUSIC, 1.0F, 1.0F);
-                mc.getSoundManager().play(musicInstance);
+                if (menuMusicVolume > 0) {
+                    musicInstance = SimpleSoundInstance.forUI(menuSound(), 1.0F, (float) menuMusicVolume);
+                    mc.getSoundManager().play(musicInstance);
+                }
             }
         } else if (onTitle) {
             if (musicInstance != null) mc.getSoundManager().stop(musicInstance);

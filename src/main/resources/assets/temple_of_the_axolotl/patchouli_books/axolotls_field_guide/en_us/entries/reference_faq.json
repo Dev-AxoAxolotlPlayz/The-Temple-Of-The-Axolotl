@@ -1,0 +1,16 @@
+{
+  "name": "Quick Reference",
+  "category": "temple_of_the_axolotl:reference",
+  "icon": "minecraft:book",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Lost guide? Craft one with a Book and Tropical Fish. Need sushi? Open The Art of Sushi Cuisine. Preparing for the Temple? Start with enchanted diamond equipment. All chapters and recipes remain visible from day one."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:axolotls_field_guide"
+    }
+  ]
+}

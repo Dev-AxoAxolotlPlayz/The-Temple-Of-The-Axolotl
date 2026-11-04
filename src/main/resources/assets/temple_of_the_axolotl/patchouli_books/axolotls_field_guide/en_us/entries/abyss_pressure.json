@@ -1,0 +1,12 @@
+{
+  "name": "Abyss Pressure",
+  "category": "temple_of_the_axolotl:abyss",
+  "icon": "temple_of_the_axolotl:abyss_pressure_gauge",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Deep water brings pressure hazards. Use the Abyss Pressure Gauge to track risk as you descend. Plan your route and equipment before exploring extreme depths."
+    }
+  ]
+}

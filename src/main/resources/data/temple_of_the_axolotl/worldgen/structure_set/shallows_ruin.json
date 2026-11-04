@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "temple_of_the_axolotl:shallows_ruin",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 16,
+    "separation": 5,
+    "salt": 68329417
+  }
+}

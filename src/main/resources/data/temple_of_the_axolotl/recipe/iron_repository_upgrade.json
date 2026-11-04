@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "minecraft:iron_block"
+  },
+  "base": {
+    "item": "temple_of_the_axolotl:celestial_repository_module"
+  },
+  "addition": {
+    "item": "temple_of_the_axolotl:cosmic_essence"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:iron_repository_module"
+  }
+}

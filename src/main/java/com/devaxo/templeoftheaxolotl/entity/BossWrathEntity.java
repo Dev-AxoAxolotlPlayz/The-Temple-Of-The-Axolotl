@@ -74,6 +74,7 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
     private int originDifficultyTier = 0;
     private UUID originTriggeringPlayer;
     private UUID secondFallBetrayer;
+    private final java.util.Map<java.util.UUID, Integer> secondFallContactHits = new java.util.HashMap<>();
     private final java.util.Map<UUID, Integer> secondFallContactTicks = new java.util.HashMap<>();
     private boolean secondFallSkyCaptured = false;
     private long secondFallPreviousDayTime = 0L;
@@ -380,7 +381,11 @@ public class BossWrathEntity extends PathfinderMob implements GeoEntity {
                     e -> e != this && e.isAlive() && e.getBoundingBox().intersects(blades)
                             && !(e instanceof Player p && (p.isCreative() || p.isSpectator())))) {
                 int last = secondFallContactTicks.getOrDefault(victim.getUUID(), -1000);
-                if (tickCount - last < 4) continue;
+                // Three successive intervals of 5, 5, 6 ticks average 16/3 ticks.
+                // Relative to the original 4-tick interval this is exactly 25% fewer hits.
+                int interval = (secondFallContactHits.getOrDefault(victim.getUUID(), 0) % 3 == 2) ? 6 : 5;
+                if (tickCount - last < interval) continue;
+                secondFallContactHits.merge(victim.getUUID(), 1, Integer::sum);
                 secondFallContactTicks.put(victim.getUUID(), tickCount);
                 if (wrathDamage(victim, Math.max(2.0F,
                         (float)getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE) * 0.20F))) {

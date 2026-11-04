@@ -98,7 +98,7 @@ public class BedrockMiningEvents {
         }
 
         if (!(player.level() instanceof ServerLevel level)
-                || !level.getBlockState(pos).is(Blocks.BEDROCK)) {
+                || !level.getBlockState(pos).is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.STAR_BLASTED_BEDROCK.get())) {
             resetProgress(player);
             return;
         }
@@ -163,7 +163,7 @@ public class BedrockMiningEvents {
 
         BlockPos pos = progress.target;
 
-        if (!level.getBlockState(pos).is(Blocks.BEDROCK)
+        if (!level.getBlockState(pos).is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.STAR_BLASTED_BEDROCK.get())
                 || !player.mayInteract(level, pos)) {
 
             resetProgress(player);
@@ -219,22 +219,13 @@ public class BedrockMiningEvents {
         // Remove the crack overlay and excavation state.
         resetProgress(player);
 
-        // Preserve vanilla/NeoForge block break checks.
-        boolean destroyed = player.gameMode.destroyBlock(pos);
-
-        if (!destroyed) {
-            return;
-        }
-
-        // Bedrock does not normally drop itself.
-        // Award one block after successful destruction.
-        if (!player.isCreative()) {
-
-            Block.popResource(
-                    level,
-                    pos,
-                    new ItemStack(Blocks.BEDROCK)
-            );
+        // Server-owned completion. Only transform the exact verified custom block.
+        // Never attempt vanilla bedrock's unbreakable destroyBlock path.
+        if (!level.getBlockState(pos).is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.STAR_BLASTED_BEDROCK.get())
+                || !player.mayInteract(level, pos)
+                || !SupernovaEvents.hasSupernova(player)) return;
+        if (level.removeBlock(pos, false) && !player.isCreative()) {
+            Block.popResource(level, pos, new ItemStack(Blocks.BEDROCK));
         }
     }
 

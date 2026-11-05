@@ -37,7 +37,7 @@ public final class CelestialWaterMode {
         p.setProperty("celestialWater", Boolean.toString(value));
         try {
             Files.createDirectories(CONFIG.getParent());
-            try (var out = Files.newOutputStream(CONFIG)) { p.store(out, "Temple of the Axolotl client water visuals"); }
+            try (var out = Files.newOutputStream(CONFIG)) { p.store(out, "Temple of the Axolotl client celestial water"); }
         } catch (IOException ignored) {}
         // Rebuild once to replace the water-only vertex marker in cached meshes.
         Minecraft mc = Minecraft.getInstance();
@@ -47,10 +47,14 @@ public final class CelestialWaterMode {
     @SubscribeEvent
     public static void commands(RegisterClientCommandsEvent event) {
         event.getDispatcher().register(literal("tota")
-            .then(literal("water")
+            .then(literal("celestialwater")
                 .then(literal("enable").executes(ctx -> { set(true); say("Celestial water enabled"); return 1; }))
-                .then(literal("disable").executes(ctx -> { set(false); say("Vanilla water enabled"); return 1; }))
-                .then(literal("status").executes(ctx -> { say("Celestial water: " + (enabled ? "enabled" : "disabled")); return 1; }))));
+                .then(literal("disable").executes(ctx -> { set(false); say("Celestial water disabled"); return 1; }))
+                .then(literal("status").executes(ctx -> { say("Celestial water: " + (enabled ? "enabled" : "disabled")); return 1; })))
+            .then(literal("celestialskies")
+                .then(literal("enable").executes(ctx -> { CelestialAuroraMode.set(true); say("Auroras enabled"); return 1; }))
+                .then(literal("disable").executes(ctx -> { CelestialAuroraMode.set(false); say("Auroras disabled (moon, stars and clouds unchanged)"); return 1; }))
+                .then(literal("status").executes(ctx -> { say("Auroras: " + (CelestialAuroraMode.enabled() ? "enabled" : "disabled")); return 1; }))));
     }
     private static void say(String message) {
         Minecraft mc = Minecraft.getInstance();

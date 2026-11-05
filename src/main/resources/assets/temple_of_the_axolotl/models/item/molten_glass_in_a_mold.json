@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "temple_of_the_axolotl:item/molten_glass_in_a_mold"
+  }
+}

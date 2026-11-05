@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    ".WS",
+    "RWR",
+    "RRW"
+  ],
+  "key": {
+    "W": {
+      "item": "temple_of_the_axolotl:washer"
+    },
+    "S": {
+      "item": "temple_of_the_axolotl:spring"
+    },
+    "R": {
+      "item": "temple_of_the_axolotl:metal_rod"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:crane_hook",
+    "count": 1
+  }
+}

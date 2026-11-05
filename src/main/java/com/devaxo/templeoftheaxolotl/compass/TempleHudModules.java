@@ -99,6 +99,7 @@ public final class TempleHudModules {
             case 8 -> stack.is(ModItems.CELESTIAL_JUKEBOX.get());
             case 9 -> stack.is(ModItems.ABYSS_PRESSURE_GAUGE.get());
             case 10 -> stack.is(ModItems.ABYSSAL_GILLS.get());
+            case 11 -> stack.is(ModItems.ABYSSAL_LANTERN.get());
             default -> false;
         };
     }
@@ -145,6 +146,7 @@ public final class TempleHudModules {
                 "tota_helmet_night_vision_disabled",
                 "tota_helmet_conduit_disabled",
                 "tota_abyssal_gills_disabled",
+                "tota_abyssal_lantern_disabled",
                 "tota_cluckles_in",
                 "tota_cluckles_out",
                 "tota_cluckles_radius",

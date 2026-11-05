@@ -60,29 +60,8 @@ public class ShipyardMenu extends AbstractContainerMenu {
         }
     }
 
-    // TEMPORARY TEST: exactly one iron ingot in the center (index 40),
-    // all other 80 slots empty -> one diamond. Replace with recipe-manager
-    // driven shipyard_crafting recipes once the result pipeline is verified.
-    private boolean matchesTestRecipe() {
-        for (int i = 0; i < INPUT_COUNT; i++) {
-            ItemStack stack = contents.getItem(i);
-            if (i == 40) {
-                if (!stack.is(Items.IRON_INGOT) || stack.getCount() != 1) return false;
-            } else if (!stack.isEmpty()) return false;
-        }
-        return true;
-    }
-
-    private boolean matchesShorkolotlRecipe() {
-        for (int i = 0; i < INPUT_COUNT; i++) {
-            ItemStack stack = contents.getItem(i);
-            if (!stack.is(Items.NETHERITE_BLOCK) || stack.getCount() != 1) return false;
-        }
-        return true;
-    }
-
     public boolean canCraft() {
-        return cargoState.get() == 0 && (matchesTestRecipe() || matchesShorkolotlRecipe());
+        return cargoState.get() == 0 && ShipyardRecipes.match(contents) != null;
     }
 
     @Override

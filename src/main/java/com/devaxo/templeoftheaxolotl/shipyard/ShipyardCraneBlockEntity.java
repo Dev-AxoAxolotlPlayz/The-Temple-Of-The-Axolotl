@@ -26,46 +26,31 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public class ShipyardCraneBlockEntity extends BlockEntity implements GeoBlockEntity, MenuProvider {
  private final SimpleContainer inventory = new SimpleContainer(81){@Override public void setChanged(){super.setChanged();ShipyardCraneBlockEntity.this.setChanged();}};
  private boolean pendingCargo;
- private boolean pendingShorkolotl;
+ private String pendingOutputId = "";
  public boolean hasPendingCargo() { return pendingCargo; }
+ public boolean hasMiniatureSubmarineCargo() { return pendingCargo && "shorkolotl_100_item".equals(pendingOutputId); }
  private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
  public ShipyardCraneBlockEntity(BlockPos pos,BlockState state){super(ShipyardRegistries.CRANE.get(),pos,state);}
  public Container items(){return inventory;}
 
- // Temporary shipyard smoke-test recipe: exactly one iron ingot in slot 40.
- public boolean matchesTestRecipe() {
-   for (int i = 0; i < 81; i++) {
-     ItemStack stack = inventory.getItem(i);
-     if (i == 40) {
-       if (!stack.is(Items.IRON_INGOT) || stack.getCount() != 1) return false;
-     } else if (!stack.isEmpty()) return false;
-   }
-   return true;
- }
-
- // Temporary full-grid Shorkolotl-100 recipe: 81 netherite blocks, one in each slot.
- public boolean matchesShorkolotlRecipe() {
-   for (int i = 0; i < 81; i++) {
-     ItemStack stack = inventory.getItem(i);
-     if (!stack.is(Items.NETHERITE_BLOCK) || stack.getCount() != 1) return false;
-   }
-   return true;
- }
-
- // The Craft button commits one recipe and reserves the cargo at the hook.
+ // Commit a position-sensitive assembly and suspend its output on the hook.
  public boolean startCraft() {
    if (!(level instanceof ServerLevel server) || pendingCargo) return false;
-   if (matchesShorkolotlRecipe()) {
-     for (int i = 0; i < 81; i++) inventory.removeItem(i, 1);
-     pendingShorkolotl = true;
-   } else if (matchesTestRecipe()) {
-     inventory.removeItem(40, 1);
-     pendingShorkolotl = false;
-   } else return false;
+   ShipyardRecipes.Assembly recipe = ShipyardRecipes.match(inventory);
+   if (recipe == null) return false;
+   for (int i=0;i<81;i++) if (!inventory.getItem(i).isEmpty()) inventory.removeItem(i, 1);
+   pendingOutputId = recipe.id();
    pendingCargo = true;
    setChanged();
+   server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
    syncCargo(server);
    return true;
+ }
+
+ private net.minecraft.world.item.Item cargoItem() {
+   for (ShipyardRecipes.Assembly recipe : ShipyardRecipes.all())
+     if (recipe.id().equals(pendingOutputId)) return recipe.output();
+   return Items.AIR;
  }
 
  // Hook center in world coordinates. FACING points along the crane's forward axis.
@@ -114,10 +99,9 @@ public class ShipyardCraneBlockEntity extends BlockEntity implements GeoBlockEnt
      // Keep the visual item attached to the fixed hook anchor.
      Vec3 anchor = hookPosition().add(0, -0.35, 0);
      ItemEntity display = items.get(0);
-     net.minecraft.world.item.Item expected = pendingShorkolotl
-         ? com.devaxo.templeoftheaxolotl.item.ModItems.SHORKOLOTL_100_ITEM.get()
-         : Items.DIAMOND;
+     net.minecraft.world.item.Item expected = cargoItem();
      if (!display.getItem().is(expected)) display.setItem(new ItemStack(expected));
+     display.setInvisible(hasMiniatureSubmarineCargo());
      display.setNoGravity(true);
      display.setDeltaMovement(Vec3.ZERO);
      if (display.position().distanceToSqr(anchor) > 0.0001) display.setPos(anchor.x, anchor.y, anchor.z);
@@ -130,7 +114,7 @@ public class ShipyardCraneBlockEntity extends BlockEntity implements GeoBlockEnt
    Vec3 hook = hookPosition();
 
    ArmorStand target = EntityType.ARMOR_STAND.create(server);
-   ItemEntity diamond = new ItemEntity(server, hook.x, hook.y - 0.35, hook.z, pendingShorkolotl ? new ItemStack(com.devaxo.templeoftheaxolotl.item.ModItems.SHORKOLOTL_100_ITEM.get()) : new ItemStack(Items.DIAMOND));
+   ItemEntity diamond = new ItemEntity(server, hook.x, hook.y - 0.35, hook.z, new ItemStack(cargoItem()));
    if (target == null) return;
    target.moveTo(hook.x, hook.y - 0.95, hook.z, 0, 0);
    target.setInvisible(true);
@@ -138,6 +122,7 @@ public class ShipyardCraneBlockEntity extends BlockEntity implements GeoBlockEnt
    target.setInvulnerable(false); // AttackEntityEvent needs a damageable target
    target.addTag(HOOK_TAG);
    target.getPersistentData().putLong(OWNER_POS, worldPosition.asLong());
+   diamond.setInvisible(hasMiniatureSubmarineCargo());
    diamond.setNoGravity(true);
    diamond.setDeltaMovement(Vec3.ZERO); // prevent random initial item velocity
    diamond.setInvulnerable(true);
@@ -154,11 +139,13 @@ public class ShipyardCraneBlockEntity extends BlockEntity implements GeoBlockEnt
    List<ItemEntity> items = displays(server);
    if (items.isEmpty()) return;
    pendingCargo = false;
-   pendingShorkolotl = false;
+   pendingOutputId = "";
    setChanged();
+   server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
    hooks(server).forEach(e -> e.discard());
    ItemEntity diamond = items.get(0);
    diamond.removeTag(DISPLAY_TAG);
+   diamond.setInvisible(false);
    diamond.setInvulnerable(false);
    diamond.setNoGravity(false);
    diamond.setPickUpDelay(10);
@@ -173,10 +160,19 @@ public class ShipyardCraneBlockEntity extends BlockEntity implements GeoBlockEnt
    }
  }
 
+ @Override public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+   return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+ }
+ @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+   CompoundTag tag = new CompoundTag();
+   tag.putBoolean("PendingCargo", pendingCargo);
+   tag.putString("PendingOutputId", pendingOutputId);
+   return tag;
+ }
  @Override public Component getDisplayName(){return Component.translatable("container.temple_of_the_axolotl.shipyard_crane");}
  @Override public AbstractContainerMenu createMenu(int id,Inventory player,Player owner){return new ShipyardMenu(id,player,inventory,worldPosition);}
- @Override protected void saveAdditional(CompoundTag tag,HolderLookup.Provider registries){super.saveAdditional(tag,registries);tag.put("Items",inventory.createTag(registries));tag.putBoolean("PendingCargo",pendingCargo);tag.putBoolean("PendingShorkolotl",pendingShorkolotl);}
- @Override protected void loadAdditional(CompoundTag tag,HolderLookup.Provider registries){super.loadAdditional(tag,registries);inventory.fromTag(tag.getList("Items",10),registries);pendingCargo=tag.getBoolean("PendingCargo");pendingShorkolotl=tag.getBoolean("PendingShorkolotl");}
+ @Override protected void saveAdditional(CompoundTag tag,HolderLookup.Provider registries){super.saveAdditional(tag,registries);tag.put("Items",inventory.createTag(registries));tag.putBoolean("PendingCargo",pendingCargo);tag.putString("PendingOutputId",pendingOutputId);}
+ @Override protected void loadAdditional(CompoundTag tag,HolderLookup.Provider registries){super.loadAdditional(tag,registries);inventory.fromTag(tag.getList("Items",10),registries);pendingCargo=tag.getBoolean("PendingCargo");pendingOutputId=tag.getString("PendingOutputId");}
  @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers){}
  @Override public AnimatableInstanceCache getAnimatableInstanceCache(){return cache;}
 }

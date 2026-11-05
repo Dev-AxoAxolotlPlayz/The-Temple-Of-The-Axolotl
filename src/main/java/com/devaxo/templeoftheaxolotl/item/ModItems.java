@@ -23,6 +23,35 @@ public final class ModItems {
     public static final DeferredRegister.Items ITEMS =
             DeferredRegister.createItems(TempleOfTheAxolotl.MODID);
 
+
+    // Shorkolotl-100 microcrafting materials.
+    public static final DeferredItem<Item> REINFORCED_IRON_PLATING = basic("reinforced_iron_plating", 64);
+    public static final DeferredItem<Item> SCALDING_PLATE = basic("scalding_plate", 64);
+    public static final DeferredItem<Item> METAL_ROD = basic("metal_rod", 64);
+    public static final DeferredItem<Item> RIVET = basic("rivet", 64);
+    public static final DeferredItem<Item> BOLT = basic("bolt", 64);
+    public static final DeferredItem<Item> WASHER = basic("washer", 64);
+    public static final DeferredItem<Item> SPRING = basic("spring", 64);
+    public static final DeferredItem<Item> MALLEABLE_SHEETMETAL = basic("malleable_sheetmetal", 64);
+    public static final DeferredItem<Item> METAL_GEAR = basic("metal_gear", 64);
+    public static final DeferredItem<Item> MOLTEN_SAND = basic("molten_sand", 64);
+    public static final DeferredItem<Item> GLASS_MOLD = basic("glass_mold", 64);
+    public static final DeferredItem<Item> MOLTEN_GLASS_IN_A_MOLD = basic("molten_glass_in_a_mold", 64);
+    public static final DeferredItem<Item> PRESSURE_TREATED_ACRYLIC_PANEL = basic("pressure_treated_acrylic_panel", 64);
+    public static final DeferredItem<Item> GLOW_STRIP = basic("glow_strip", 64);
+
+    // Shipyard component assemblies.
+    public static final DeferredItem<Item> COCKPIT_GLASS = basic("cockpit_glass", 64);
+    public static final DeferredItem<Item> AIR_JET_THRUSTER = basic("air_jet_thruster", 64);
+    public static final DeferredItem<Item> TAIL_RUDDER = basic("tail_rudder", 64);
+    public static final DeferredItem<Item> SHORKOLOTL_COCKPIT = basic("shorkolotl_cockpit", 64);
+    public static final DeferredItem<Item> FLIPPER_STABILIZER = basic("flipper_stabilizer", 64);
+    public static final DeferredItem<Item> SHORKOLOTL_HULL = basic("shorkolotl_hull", 64);
+    public static final DeferredItem<Item> SHORKOLOTL_TAIL = basic("shorkolotl_tail", 64);
+    public static final DeferredItem<Item> MACHINING_BLOCK = basic("machining_block", 64);
+    public static final DeferredItem<Item> BOOM_TRUSS_BLOCK = basic("boom_truss_block", 64);
+    public static final DeferredItem<Item> CRANE_HOOK = basic("crane_hook", 64);
+
     // Shipyard-only craftable, boat-style water deployment item.
     public static final DeferredItem<Shorkolotl100Item> SHORKOLOTL_100_ITEM =
             ITEMS.register("shorkolotl_100_item", () -> new Shorkolotl100Item(new Item.Properties().stacksTo(1)));
@@ -50,6 +79,7 @@ public final class ModItems {
                     com.devaxo.templeoftheaxolotl.registry.ModBlocks.ABYSSAL_TORCH.get(), new Item.Properties()));
     public static final DeferredItem<Item> ABYSS_PRESSURE_GAUGE = basic("abyss_pressure_gauge", 1);
     public static final DeferredItem<Item> ABYSSAL_GILLS = basic("abyssal_gills", 1);
+    public static final DeferredItem<Item> ABYSSAL_LANTERN = basic("abyssal_lantern", 1);
     public static final DeferredItem<Item> CELESTIAL_MAGNET = basic("celestial_magnet", 1);
     public static final DeferredItem<Item> LOGISTICS_MAESTRO = basic("logistics_maestro", 1);
     public static final DeferredItem<Item> CELESTIAL_ANVIL = ITEMS.register("celestial_anvil", () ->
@@ -447,6 +477,32 @@ public final class ModItems {
         output.accept(MEAT_TENDERIZER.get());
         output.accept(FILLET_KNIFE.get());
         output.accept(HANDHELD_HYDRAULIC_PRESS.get());
+        output.accept(REINFORCED_IRON_PLATING.get());
+        output.accept(SCALDING_PLATE.get());
+        output.accept(METAL_ROD.get());
+        output.accept(RIVET.get());
+        output.accept(BOLT.get());
+        output.accept(WASHER.get());
+        output.accept(SPRING.get());
+        output.accept(MALLEABLE_SHEETMETAL.get());
+        output.accept(METAL_GEAR.get());
+        output.accept(MOLTEN_SAND.get());
+        output.accept(GLASS_MOLD.get());
+        output.accept(MOLTEN_GLASS_IN_A_MOLD.get());
+        output.accept(PRESSURE_TREATED_ACRYLIC_PANEL.get());
+        output.accept(GLOW_STRIP.get());
+        output.accept(COCKPIT_GLASS.get());
+        output.accept(AIR_JET_THRUSTER.get());
+        output.accept(TAIL_RUDDER.get());
+        output.accept(SHORKOLOTL_COCKPIT.get());
+        output.accept(FLIPPER_STABILIZER.get());
+        output.accept(SHORKOLOTL_HULL.get());
+        output.accept(SHORKOLOTL_TAIL.get());
+        output.accept(MACHINING_BLOCK.get());
+        output.accept(BOOM_TRUSS_BLOCK.get());
+        output.accept(CRANE_HOOK.get());
+
+
 
         output.accept(SHARD_OF_DIVINITY.get());
         output.accept(ORB_OF_ENVY.get());
@@ -463,6 +519,7 @@ public final class ModItems {
         output.accept(CELESTIAL_MAGNET.get());
         output.accept(ABYSS_PRESSURE_GAUGE.get());
         output.accept(ABYSSAL_GILLS.get());
+        output.accept(ABYSSAL_LANTERN.get());
         output.accept(ABYSSAL_TORCH.get());
         output.accept(LOGISTICS_MAESTRO.get());
         output.accept(CELESTIAL_ANVIL.get());

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "R R",
+    " P ",
+    "R R"
+  ],
+  "key": {
+    "R": {
+      "item": "temple_of_the_axolotl:reinforced_iron_plating"
+    },
+    "P": {
+      "item": "temple_of_the_axolotl:handheld_hydraulic_press"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:malleable_sheetmetal",
+    "count": 1
+  }
+}

@@ -34,6 +34,12 @@ public final class ModBlocks {
         }
     }
 
+    // Stage-one Annealing Kiln: placeable cyan workstation shell; inventory/processing follows in next phase.
+    public static final DeferredBlock<Block> ANNEALING_KILN = BLOCKS.register("annealing_kiln",
+            () -> new Block(BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.COLOR_CYAN).strength(3.5F).requiresCorrectToolForDrops()));
+    public static final DeferredItem<BlockItem> ANNEALING_KILN_ITEM = ITEMS.register("annealing_kiln",
+            () -> new BlockItem(ANNEALING_KILN.get(), new Item.Properties()));
+
     /** Supernova-treated bedrock; mined through the ring's 600-tick server-controlled ritual. */
     public static final DeferredBlock<Block> STAR_BLASTED_BEDROCK =
             BLOCKS.register("star_blasted_bedrock", () -> new Block(

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "T  ",
+    "HTM",
+    " MM"
+  ],
+  "key": {
+    "T": {
+      "item": "temple_of_the_axolotl:boom_truss_block"
+    },
+    "H": {
+      "item": "temple_of_the_axolotl:crane_hook"
+    },
+    "M": {
+      "item": "temple_of_the_axolotl:machining_block"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:shipyard_crane",
+    "count": 1
+  }
+}

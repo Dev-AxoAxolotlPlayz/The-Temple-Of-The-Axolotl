@@ -21,14 +21,16 @@ public final class WatergateRenderer extends GeoBlockRenderer<WatergateEntity> {
 
     @Override public void render(WatergateEntity entity, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         pose.pushPose();
-        // Frame model is authored in Blockbench block units, with its origin at the controller.
+        // GeckoLib rotates the GeoBlockRenderer model using its FACING state.
+        // Do not rotate the model twice. Apply the same facing only to the
+        // custom portal surface, which is rendered outside GeckoLib.
+        super.render(entity, partialTick, pose, buffers, light, overlay);
         float yaw = switch (entity.getBlockState().getValue(WatergateBlock.FACING)) {
             case SOUTH -> 180f; case EAST -> 90f; case WEST -> 270f; default -> 0f;
         };
         pose.translate(.5, 0, .5);
         pose.mulPose(Axis.YP.rotationDegrees(yaw));
         pose.translate(-.5, 0, -.5);
-        super.render(entity, partialTick, pose, buffers, light, overlay);
         // Restore original X center (0.5), and move the panel along Z instead (0.5).
         // Animation is a UV scroll and pulse, not a new texture dependency.
         if (entity.getLevel() != null) {

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "temple_of_the_axolotl:block/annealing_kiln_side",
+    "up": "temple_of_the_axolotl:block/annealing_kiln_top",
+    "north": "temple_of_the_axolotl:block/annealing_kiln_front",
+    "south": "temple_of_the_axolotl:block/annealing_kiln_side",
+    "east": "temple_of_the_axolotl:block/annealing_kiln_side",
+    "west": "temple_of_the_axolotl:block/annealing_kiln_side",
+    "particle": "temple_of_the_axolotl:block/annealing_kiln_side"
+  }
+}

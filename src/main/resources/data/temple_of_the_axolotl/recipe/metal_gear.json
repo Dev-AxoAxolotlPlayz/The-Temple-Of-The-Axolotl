@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "temple_of_the_axolotl:malleable_sheetmetal"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:metal_gear",
+    "count": 4
+  }
+}

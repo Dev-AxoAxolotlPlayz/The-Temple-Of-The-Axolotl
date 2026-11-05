@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "temple_of_the_axolotl:scalding_plate"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:metal_rod",
+    "count": 2
+  }
+}

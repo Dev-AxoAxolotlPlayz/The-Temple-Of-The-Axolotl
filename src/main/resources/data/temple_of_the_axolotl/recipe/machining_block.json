@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GRG",
+    "PGP",
+    "GRG"
+  ],
+  "key": {
+    "G": {
+      "item": "temple_of_the_axolotl:metal_gear"
+    },
+    "R": {
+      "item": "temple_of_the_axolotl:metal_rod"
+    },
+    "P": {
+      "item": "temple_of_the_axolotl:reinforced_iron_plating"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:machining_block",
+    "count": 1
+  }
+}

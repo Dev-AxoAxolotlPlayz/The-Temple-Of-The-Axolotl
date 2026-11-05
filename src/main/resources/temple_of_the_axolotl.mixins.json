@@ -19,7 +19,9 @@
     "TitlePanoramaOnlyMixin",
     "TitleSolidBackdropMixin",
     "TitleLogoOnlyMixin",
-    "TitleSplashOnlyMixin"
+    "TitleSplashOnlyMixin",
+    "CelestialAuroraSkyMixin",
+    "CelestialSkyPassMixin"
   ],
   "injectors": {
     "defaultRequire": 1

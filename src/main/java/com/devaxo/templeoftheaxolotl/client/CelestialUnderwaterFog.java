@@ -1,6 +1,7 @@
 package com.devaxo.templeoftheaxolotl.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FogType;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -33,6 +34,18 @@ public final class CelestialUnderwaterFog {
         event.setBlue(lerp(.56f,.048f,d));
     }
     @SubscribeEvent public static void fogDistance(ViewportEvent.RenderFog event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null && mc.level.dimension() == Level.END
+                && CelestialWaterMode.enabled()
+                && event.getCamera().getFluidInCamera() == FogType.NONE) {
+            // Disable ordinary End distance fog without touching terrain depth tests.
+            // This affects End atmosphere, not fog in other dimensions or fluids.
+            event.setNearPlaneDistance(-8.0f);
+            event.setFarPlaneDistance(Math.max(1024.0f,
+                    mc.options.renderDistance().get() * 16.0f + 128.0f));
+            event.setCanceled(true);
+            return;
+        }
         if(!applies(event))return;
         float d=depth(event.getCamera().getPosition().y);
         // Shallow-water exploration remains readable; deep water closes in progressively.

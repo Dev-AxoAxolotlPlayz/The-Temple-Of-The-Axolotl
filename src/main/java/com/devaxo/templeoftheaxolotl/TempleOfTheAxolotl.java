@@ -70,6 +70,7 @@ public class TempleOfTheAxolotl {
                                 output.accept(ModBlocks.DIARY_ITEM.get());
                                 output.accept(ModBlocks.FIELD_GUIDE_ITEM.get());
                                 output.accept(ModBlocks.SHIPYARD_CRANE_ITEM.get());
+                                output.accept(ModBlocks.ANNEALING_KILN_ITEM.get());
                                 output.accept(ModBlocks.ABYSSAL_WATERGATE_ITEM.get());
                                 output.accept(com.devaxo.templeoftheaxolotl.brewing.CosmicBrewingRegistries.STAND_ITEM.get());
 
@@ -153,6 +154,7 @@ public class TempleOfTheAxolotl {
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.compass.TempleNavigationPayload.Registration::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.eclipse.EclipseInscriptionPayload.Registration::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.InventoryStorageOpenPayload.Registration::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.ShorkolotlHeadlightPayload.Registration::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.RepositoryRecipeFillPayload::register);
 
         // Explicit mod-bus lifecycle/network registrations (no deprecated annotation bus selectors).

@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AGA",
+    "SLS",
+    "QQQ"
+  ],
+  "key": {
+    "A": {
+      "item": "temple_of_the_axolotl:pressure_treated_acrylic_panel"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "S": {
+      "item": "temple_of_the_axolotl:malleable_sheetmetal"
+    },
+    "L": {
+      "item": "minecraft:sea_lantern"
+    },
+    "Q": {
+      "item": "minecraft:quartz_block"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:glow_strip",
+    "count": 2
+  }
+}

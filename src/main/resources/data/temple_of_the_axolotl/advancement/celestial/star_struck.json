@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:celestial/enchant_supernova",
+  "display": {
+    "icon": {
+      "id": "minecraft:bedrock"
+    },
+    "title": "Star-Struck",
+    "description": "Transform bedrock using a Supernova-enchanted Ring of the One.",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

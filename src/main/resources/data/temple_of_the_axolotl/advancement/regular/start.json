@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:crafting/temple_seeker",
+  "display": {
+    "icon": {
+      "id": "minecraft:prismarine_bricks"
+    },
+    "title": "The Temple Expedition",
+    "description": "Begin this expedition.",
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "unlocked": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

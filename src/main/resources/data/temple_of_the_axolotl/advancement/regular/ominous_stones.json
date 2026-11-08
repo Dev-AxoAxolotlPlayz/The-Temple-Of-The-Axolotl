@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:regular/sentinel",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:tier_2_ominous_trap_stone"
+    },
+    "title": "Ominous Stones",
+    "description": "Discover the Ominous Trap Stones.",
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

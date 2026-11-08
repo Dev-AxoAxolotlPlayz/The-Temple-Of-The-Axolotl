@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:branch_exploration",
+  "display": {
+    "icon": {
+      "id": "minecraft:lapis_block"
+    },
+    "title": "Shallows Expedition",
+    "description": "Begin this expedition.",
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "unlocked": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

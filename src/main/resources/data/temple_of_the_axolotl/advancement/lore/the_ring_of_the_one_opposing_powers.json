@@ -3,5 +3,6 @@
     "discovered": {
       "trigger": "minecraft:impossible"
     }
-  }
+  },
+  "parent": "temple_of_the_axolotl:branch_lore"
 }

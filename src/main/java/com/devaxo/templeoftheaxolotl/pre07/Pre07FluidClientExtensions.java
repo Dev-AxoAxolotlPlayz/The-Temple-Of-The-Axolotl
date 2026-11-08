@@ -10,6 +10,7 @@ public final class Pre07FluidClientExtensions {
     private Pre07FluidClientExtensions() {}
 
     public static void register(RegisterClientExtensionsEvent event) {
+        event.registerFluidType(visuals("abyssal_thermocline_still", "abyssal_thermocline_flow"), Pre07Fluids.THERMOCLINE_TYPE.get());
         event.registerFluidType(visuals("pure_ichor_still", "pure_ichor_flow"), Pre07Fluids.PURE_TYPE.get());
         event.registerFluidType(visuals("diluted_ichor_still", "diluted_ichor_flow"), Pre07Fluids.DILUTED_TYPE.get());
     }

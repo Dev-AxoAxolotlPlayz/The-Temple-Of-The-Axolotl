@@ -13,24 +13,32 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 @EventBusSubscriber(modid = TempleOfTheAxolotl.MODID)
 public final class FieldGuideDelivery {
     private static final String KEY = "tota_field_guide_received";
+    private static final String STARTER_KEY = "tota_baby_noodle_starter_received";
     private FieldGuideDelivery() {}
     @SubscribeEvent public static void onClone(PlayerEvent.Clone event) {
         if (!event.isWasDeath()) return;
         event.getOriginal().revive();
         CompoundTag original = event.getOriginal().getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-        if (original.getBoolean(KEY)) {
+        if (original.getBoolean(KEY) || original.getBoolean(STARTER_KEY)) {
             CompoundTag next = event.getEntity().getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-            next.putBoolean(KEY, true);
+            if (original.getBoolean(KEY)) next.putBoolean(KEY, true);
+            if (original.getBoolean(STARTER_KEY)) next.putBoolean(STARTER_KEY, true);
             event.getEntity().getPersistentData().put(Player.PERSISTED_NBT_TAG, next);
         }
     }
     @SubscribeEvent public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         CompoundTag persisted = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-        if (persisted.getBoolean(KEY)) return;
-        ItemStack guide = new ItemStack(ModBlocks.FIELD_GUIDE_ITEM.get());
-        if (!player.getInventory().add(guide)) player.drop(guide, false);
-        persisted.putBoolean(KEY, true);
+        if (!persisted.getBoolean(KEY)) {
+            ItemStack guide = new ItemStack(ModBlocks.FIELD_GUIDE_ITEM.get());
+            if (!player.getInventory().add(guide)) player.drop(guide, false);
+            persisted.putBoolean(KEY, true);
+        }
+        if (!persisted.getBoolean(STARTER_KEY)) {
+            ItemStack starter = new ItemStack(com.devaxo.templeoftheaxolotl.item.ModItems.NOODLE_STARTER.get());
+            if (!player.getInventory().add(starter)) player.drop(starter, false);
+            persisted.putBoolean(STARTER_KEY, true);
+        }
         player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
     }
 }

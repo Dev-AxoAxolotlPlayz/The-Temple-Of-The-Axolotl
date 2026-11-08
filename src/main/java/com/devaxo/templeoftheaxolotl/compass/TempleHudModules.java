@@ -100,6 +100,9 @@ public final class TempleHudModules {
             case 9 -> stack.is(ModItems.ABYSS_PRESSURE_GAUGE.get());
             case 10 -> stack.is(ModItems.ABYSSAL_GILLS.get());
             case 11 -> stack.is(ModItems.ABYSSAL_LANTERN.get());
+            case 15 -> stack.is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.DIARY_ITEM.get());
+            case 16 -> stack.is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.FIELD_GUIDE_ITEM.get());
+            case 17 -> stack.is(ModItems.NOODLE_COMMAND_BOOK.get());
             default -> false;
         };
     }
@@ -132,6 +135,13 @@ public final class TempleHudModules {
 
     @SubscribeEvent
     public static void onClone(PlayerEvent.Clone event) {
+        if (event.getOriginal().getPersistentData().contains(com.devaxo.templeoftheaxolotl.entity.AbyssalCompanionRegistry.KEY))
+            event.getEntity().getPersistentData().put(com.devaxo.templeoftheaxolotl.entity.AbyssalCompanionRegistry.KEY,
+                event.getOriginal().getPersistentData().getCompound(com.devaxo.templeoftheaxolotl.entity.AbyssalCompanionRegistry.KEY).copy());
+        if (event.getOriginal().getPersistentData().contains("tota_abyssal_lore_discoveries"))
+            event.getEntity().getPersistentData().put("tota_abyssal_lore_discoveries",
+                event.getOriginal().getPersistentData().getCompound("tota_abyssal_lore_discoveries").copy());
+
         for (int slot = 0; slot < 18; slot++) {
             String storageKey = key(slot);
             if (event.getOriginal().getPersistentData().contains(storageKey)) {

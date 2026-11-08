@@ -1,0 +1,27 @@
+{
+  "parent": "temple_of_the_axolotl:celestial/first_shard",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:orb_of_envy"
+    },
+    "title": "Green With Envy",
+    "description": "Make a Orb Of Envy for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:orb_of_envy"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0"
+    ]
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "parent": "temple_of_the_axolotl:crafting/black_axolotl_trophy",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:ring_of_the_one"
+    },
+    "title": "One Ring to Rule Them All",
+    "description": "Make a Ring Of The One for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:ring_of_the_one"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0"
+    ]
+  ]
+}

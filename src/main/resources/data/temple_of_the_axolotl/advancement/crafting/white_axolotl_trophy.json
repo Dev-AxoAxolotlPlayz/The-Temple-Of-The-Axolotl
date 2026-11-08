@@ -1,0 +1,27 @@
+{
+  "parent": "temple_of_the_axolotl:crafting/yang_singularity",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:white_axolotl_trophy"
+    },
+    "title": "A Brighter Victory",
+    "description": "Make a White Axolotl Trophy for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:white_axolotl_trophy"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0"
+    ]
+  ]
+}

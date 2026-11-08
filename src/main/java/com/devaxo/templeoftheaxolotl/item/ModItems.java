@@ -24,6 +24,17 @@ public final class ModItems {
             DeferredRegister.createItems(TempleOfTheAxolotl.MODID);
 
 
+    // Baby Noodle programmable companion items.
+    public static final DeferredItem<Item> NOODLE_BUCKET = ITEMS.register("abyssal_axolotl_bucket", () ->
+            new com.devaxo.templeoftheaxolotl.entity.NoodleBucketItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<Item> NOODLE_STARTER = ITEMS.register("baby_noodle_starter_bundle", () ->
+            new com.devaxo.templeoftheaxolotl.entity.NoodleStarterItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<Item> ABYSSAL_CHARM = ITEMS.register("abyssal_charm", () ->
+            new com.devaxo.templeoftheaxolotl.entity.AbyssalCharmItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<Item> NOODLE_COMMAND_BOOK = ITEMS.register("book_of_commands", () ->
+            new com.devaxo.templeoftheaxolotl.entity.NoodleCommandBookItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<Item> NOODLE_TRAINING_MEDAL = basic("training_medal", 1);
+
     // Shorkolotl-100 microcrafting materials.
     public static final DeferredItem<Item> REINFORCED_IRON_PLATING = basic("reinforced_iron_plating", 64);
     public static final DeferredItem<Item> SCALDING_PLATE = basic("scalding_plate", 64);
@@ -413,9 +424,12 @@ public final class ModItems {
     // AXOLOTL ABOVE ALL - TEMPORARY SPAWN EGG
     // =========================================
 
-    public static final DeferredItem<DeferredSpawnEggItem> ABYSSAL_MERFOLK_SPAWN_EGG = ITEMS.register(
-            "abyssal_merfolk_spawn_egg", () -> new DeferredSpawnEggItem(
-                    ModEntities.ABYSSAL_MERFOLK, 0x153D59, 0x66E7E5, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> ABYSSAL_AXOLOTL_SPAWN_EGG = ITEMS.register(
+            "abyssal_axolotl_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ABYSSAL_AXOLOTL,
+                    0x0D062A, 0x00E9E9, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> MEROLOTL_SPAWN_EGG = ITEMS.register(
+            "merolotl_spawn_egg", () -> new DeferredSpawnEggItem(
+                    ModEntities.MEROLOTL, 0x153D59, 0x66E7E5, new Item.Properties()));
 
     public static final DeferredItem<DeferredSpawnEggItem> AXOLOTL_ABSOLUTE_SPAWN_EGG =
             ITEMS.register(
@@ -521,6 +535,11 @@ public final class ModItems {
         output.accept(ABYSSAL_GILLS.get());
         output.accept(ABYSSAL_LANTERN.get());
         output.accept(ABYSSAL_TORCH.get());
+        output.accept(NOODLE_BUCKET.get());
+        output.accept(NOODLE_STARTER.get());
+        output.accept(ABYSSAL_CHARM.get());
+        output.accept(NOODLE_COMMAND_BOOK.get());
+        output.accept(NOODLE_TRAINING_MEDAL.get());
         output.accept(LOGISTICS_MAESTRO.get());
         output.accept(CELESTIAL_ANVIL.get());
         output.accept(COSMIC_ESSENCE.get());
@@ -533,7 +552,9 @@ public final class ModItems {
         output.accept(RING_OF_THE_ONE.get());
         output.accept(AXOLOTL_ABSOLUTE.get());
         output.accept(AXOLOTL_ABSOLUTE_SPAWN_EGG.get());
-        output.accept(ABYSSAL_MERFOLK_SPAWN_EGG.get());
+        output.accept(ABYSSAL_AXOLOTL_SPAWN_EGG.get());
+        output.accept(ABYSSAL_AXOLOTL_SPAWN_EGG.get());
+        output.accept(MEROLOTL_SPAWN_EGG.get());
         output.accept(CLUCKLES_SPAWN_EGG.get());
         output.accept(TAMEABLE_WRATH_SPAWN_EGG.get());
         output.accept(BOSS_WRATH_SPAWN_EGG.get());

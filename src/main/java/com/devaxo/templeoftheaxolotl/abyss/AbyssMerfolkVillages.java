@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.server.level.ServerLevel;
 import com.devaxo.templeoftheaxolotl.entity.ModEntities;
-import com.devaxo.templeoftheaxolotl.entity.AbyssalMerfolkEntity;
+import com.devaxo.templeoftheaxolotl.entity.MerolotlEntity;
 import java.util.function.BiConsumer;
 
 /** Deterministic, chunk-local underwater merfolk archipelagos.
@@ -175,7 +175,8 @@ public final class AbyssMerfolkVillages {
         int cx=Math.floorDiv(cp.x,CELL),cz=Math.floorDiv(cp.z,CELL);
         boolean central=cp.x==anchorX(cx,cz)&&cp.z==anchorZ(cx,cz);
         placeLoot(level,x,y,z,central,cp.x,cp.z);
-        spawnResident(level,x+.5,y+2,z+.5);
+        spawnResidents(level,x+.5,y+2,z+.5,cp.x,cp.z);
+        if (central) spawnVillageGuardians(level,x+.5,z+.5,cp.x,cp.z);
     }
     private static void placeLoot(ServerLevel level,int x,int y,int z,boolean central,int sx,int sz) {
         int half=central?3:2;
@@ -196,11 +197,38 @@ public final class AbyssMerfolkVillages {
             container.setChanged();
         }
     }
+    private static void spawnResidents(ServerLevel level, double x, double y, double z, int sx, int sz) {
+        int count = 1 + (random(sx, sz, 72401) < .5 ? 1 : 0);
+        for (int i = 0; i < count; i++) spawnResident(level, x + (i == 0 ? 0 : 1.2), y, z);
+    }
+    private static void spawnVillageGuardians(ServerLevel level, double x, double z, int sx, int sz) {
+        int count = 1 + (random(sx, sz, 72402) < .5 ? 1 : 0);
+        int centerY = 119; // Open water above the Y=101..110 thermocline layer.
+        for (int i = 0; i < count; i++) {
+            var guardian = ModEntities.AXOKRAKEN.get().create(level);
+            if (guardian == null) continue;
+            double gx = x + (i == 0 ? -5 : 5), gz = z + (i == 0 ? 5 : -5);
+            guardian.moveTo(gx, centerY + i * 2, gz, 0, 0);
+            guardian.setNeighborhoodHome(new BlockPos((int)x, centerY, (int)z), 38);
+            level.addFreshEntity(guardian);
+        }
+    }
     private static void spawnResident(ServerLevel level,double x,double y,double z) {
-        AbyssalMerfolkEntity merfolk=ModEntities.ABYSSAL_MERFOLK.get().create(level);
+        MerolotlEntity merfolk=ModEntities.MEROLOTL.get().create(level);
         if(merfolk==null)return;
         merfolk.moveTo(x,y,z,0,0);
+        merfolk.setVillageHome(new BlockPos((int)Math.floor(x), (int)Math.floor(y), (int)Math.floor(z)), 38);
         level.addFreshEntity(merfolk);
+    }
+    /** Ruined variant of the existing island, preserving containers and a central landmark. */
+    public static void ruinedIsland(ServerLevel level, int x, int y, int z, boolean central, int sx, int sz) {
+        buildIsland((pos,state)->{
+            boolean fragile = state.is(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE)
+                    && !state.is(Blocks.CHEST) && !state.is(Blocks.SEA_LANTERN);
+            boolean ruin = fragile && pos.getY() > y && random(pos.getX(),pos.getZ(),pos.getY()*1009L+72089)<.33;
+            level.setBlock(pos, ruin ? Blocks.WATER.defaultBlockState() : state, 3);
+        },x,y,z,central,sx,sz);
+        placeLoot(level,x,y,z,central,sx,sz);
     }
     /** Development preview: generates the SAME island/house geometry as natural villages. */
     public static int preview(ServerLevel level, BlockPos center, long seed) {
@@ -235,8 +263,9 @@ public final class AbyssMerfolkVillages {
             int sx=rng.nextInt(),sz=rng.nextInt();
             buildIsland((pos,state)->level.setBlock(pos,state,3),x,y,z,central,sx,sz);
             placeLoot(level,x,y,z,central,sx,sz);
-            spawnResident(level,x+.5,y+2,z+.5);
+            spawnResidents(level,x+.5,y+2,z+.5,sx,sz);
         }
+        spawnVillageGuardians(level,center.getX()+.5,center.getZ()+.5,(int)seed,(int)(seed>>>32));
         return count;
     }
 

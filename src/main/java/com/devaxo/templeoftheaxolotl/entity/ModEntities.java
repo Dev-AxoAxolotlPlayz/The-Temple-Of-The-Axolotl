@@ -16,15 +16,22 @@ public class ModEntities {
                     TempleOfTheAxolotl.MODID
             );
 
+    public static final DeferredHolder<EntityType<?>, EntityType<AbyssalAxolotlEntity>> ABYSSAL_AXOLOTL =
+            ENTITY_TYPES.register("abyssal_axolotl", () -> EntityType.Builder.of(AbyssalAxolotlEntity::new, MobCategory.CREATURE)
+                    .sized(1.0f, 0.8f).clientTrackingRange(10).build("abyssal_axolotl"));
+
+    public static final DeferredHolder<EntityType<?>,EntityType<AxoleviathanEntity>> AXOLEVIATHAN=ENTITY_TYPES.register("axoleviathan",()->EntityType.Builder.of(AxoleviathanEntity::new,MobCategory.MONSTER).sized(3f,3f).clientTrackingRange(20).build("axoleviathan"));
     public static final DeferredHolder<EntityType<?>, EntityType<Shorkolotl100Entity>> SHORKOLOTL_100 =
             ENTITY_TYPES.register("shorkolotl_100", () -> EntityType.Builder
                     .of(Shorkolotl100Entity::new, MobCategory.MISC)
                     .sized(3.3F, 2.8F).clientTrackingRange(10).updateInterval(1)
                     .build("shorkolotl_100"));
 
-    public static final DeferredHolder<EntityType<?>, EntityType<AbyssalMerfolkEntity>> ABYSSAL_MERFOLK = ENTITY_TYPES.register(
-            "abyssal_merfolk", () -> EntityType.Builder.of(AbyssalMerfolkEntity::new, MobCategory.CREATURE)
-                    .sized(0.6F, 1.95F).build("abyssal_merfolk")
+    public static final DeferredHolder<EntityType<?>, EntityType<AxokrakenEntity>> AXOKRAKEN = ENTITY_TYPES.register("axokraken", () -> EntityType.Builder.of(AxokrakenEntity::new, MobCategory.MONSTER).sized(3.0F, 2.5F).clientTrackingRange(20).build("axokraken"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<MerolotlEntity>> MEROLOTL = ENTITY_TYPES.register(
+            "merolotl", () -> EntityType.Builder.of(MerolotlEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.95F).build("merolotl")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<AxolotlAbsoluteEntity>>

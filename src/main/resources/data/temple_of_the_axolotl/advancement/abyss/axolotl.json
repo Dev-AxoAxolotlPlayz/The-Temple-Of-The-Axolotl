@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:abyss/enter",
+  "display": {
+    "icon": {
+      "id": "minecraft:prismarine_shard"
+    },
+    "title": "A Noodle From the Deep",
+    "description": "Obtain your first Abyssal Axolotl companion.",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

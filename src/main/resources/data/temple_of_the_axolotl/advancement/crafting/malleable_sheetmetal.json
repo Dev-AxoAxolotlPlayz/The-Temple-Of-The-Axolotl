@@ -1,0 +1,27 @@
+{
+  "parent": "temple_of_the_axolotl:engineering/shorkolotl_metallurgy",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:malleable_sheetmetal"
+    },
+    "title": "Bend, Don't Break",
+    "description": "Make a Malleable Sheetmetal for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:malleable_sheetmetal"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0"
+    ]
+  ]
+}

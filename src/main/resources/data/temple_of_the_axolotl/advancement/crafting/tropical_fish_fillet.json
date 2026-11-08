@@ -1,0 +1,27 @@
+{
+  "parent": "temple_of_the_axolotl:crafting/fillet_knife",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:tropical_fish_fillet"
+    },
+    "title": "Something Fishy",
+    "description": "Make a Tropical Fish Fillet for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:tropical_fish_fillet"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0"
+    ]
+  ]
+}

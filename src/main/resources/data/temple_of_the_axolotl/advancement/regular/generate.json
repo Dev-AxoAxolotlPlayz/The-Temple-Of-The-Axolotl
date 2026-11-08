@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:regular/enter",
+  "display": {
+    "icon": {
+      "id": "minecraft:prismarine_shard"
+    },
+    "title": "The Real Adventure Begins",
+    "description": "Generate your first regular Temple.",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

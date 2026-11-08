@@ -1,1 +1,3 @@
-{"parent":"minecraft:item/generated","textures":{"layer0":"temple_of_the_axolotl:block/shipyard_crane"}}
+{
+  "parent": "builtin/entity"
+}

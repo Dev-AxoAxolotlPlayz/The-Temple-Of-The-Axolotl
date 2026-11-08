@@ -67,6 +67,8 @@ public class TempleOfTheAxolotl {
                                 output.accept(ModBlocks.SHALLOWS_EXIT_PORTAL_ITEM.get());
                 output.accept(ModBlocks.LORE_BLOCK_ITEM.get());
                 output.accept(ModBlocks.BROKEN_LORE_BLOCK_ITEM.get());
+                output.accept(ModBlocks.ABYSSAL_LORE_BLOCK_ITEM.get());
+                output.accept(ModBlocks.BROKEN_ABYSSAL_LORE_BLOCK_ITEM.get());
                                 output.accept(ModBlocks.DIARY_ITEM.get());
                                 output.accept(ModBlocks.FIELD_GUIDE_ITEM.get());
                                 output.accept(ModBlocks.SHIPYARD_CRANE_ITEM.get());
@@ -100,6 +102,11 @@ public class TempleOfTheAxolotl {
             ModContainer modContainer
     ) {
 
+        // Explicit MOD-bus registration avoids deprecated EventBusSubscriber.bus() usage.
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
+            modEventBus.addListener(com.devaxo.templeoftheaxolotl.client.ShorkolotlPilotInput.Registration::register);
+            modEventBus.addListener(com.devaxo.templeoftheaxolotl.client.CelestialRadialWheel.Registration::register);
+        }
         // Register custom spawn-relative temple structure placement.
         com.devaxo.templeoftheaxolotl.abyss.WatergateEntities.TYPES.register(modEventBus);
         TempleWorldgenPlacements.PLACEMENTS.register(modEventBus);
@@ -115,6 +122,8 @@ public class TempleOfTheAxolotl {
         com.devaxo.templeoftheaxolotl.compass.CelestialModulesMenuTypes.MENUS.register(modEventBus);
         com.devaxo.templeoftheaxolotl.repository.CelestialRepositoryMenuTypes.MENUS.register(modEventBus);
 
+        com.devaxo.templeoftheaxolotl.kiln.KilnRegistries.ENTITIES.register(modEventBus);
+        com.devaxo.templeoftheaxolotl.kiln.KilnRegistries.MENUS.register(modEventBus);
         // Entity registration
         ModEntities.ENTITY_TYPES.register(modEventBus);
 
@@ -128,6 +137,7 @@ public class TempleOfTheAxolotl {
 
         // Item registration
         ModItems.ITEMS.register(modEventBus);
+        com.devaxo.templeoftheaxolotl.abyss.AbyssExtractionAnchorEntity.TYPES.register(modEventBus);
         com.devaxo.templeoftheaxolotl.sound.CelestialMusicSounds.SOUNDS.register(modEventBus);
 
         // Floor trap block and item registration
@@ -155,6 +165,13 @@ public class TempleOfTheAxolotl {
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.eclipse.EclipseInscriptionPayload.Registration::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.InventoryStorageOpenPayload.Registration::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.ShorkolotlHeadlightPayload.Registration::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.AbyssalRosterPayload::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.AbyssalRosterRequestPayload::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.AbyssalCompanionActionPayload::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.CelestialRadialActionPayload::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.CelestialRadialStatePayload::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.CelestialRadialOpenBookPayload::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.AbyssalLorePayload::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.RepositoryRecipeFillPayload::register);
 
         // Explicit mod-bus lifecycle/network registrations (no deprecated annotation bus selectors).

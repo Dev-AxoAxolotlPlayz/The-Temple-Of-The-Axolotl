@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:regular/generate",
+  "display": {
+    "icon": {
+      "id": "minecraft:prismarine_shard"
+    },
+    "title": "Point of No Return",
+    "description": "Activate the regular Temple emerald checkpoint.",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

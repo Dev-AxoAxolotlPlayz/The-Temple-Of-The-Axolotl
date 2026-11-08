@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:crafting/iron_repository_module",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:gold_repository_module"
+    },
+    "title": "The Golden Upgrade",
+    "description": "Make a Gold Repository Module for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "made": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

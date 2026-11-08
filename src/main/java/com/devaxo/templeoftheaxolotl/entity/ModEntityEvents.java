@@ -11,7 +11,12 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 public class ModEntityEvents {
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
-        event.put(ModEntities.ABYSSAL_MERFOLK.get(), net.minecraft.world.entity.monster.Drowned.createAttributes().build());
+        event.put(ModEntities.ABYSSAL_AXOLOTL.get(), Mob.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 24).add(Attributes.MOVEMENT_SPEED, 0.28)
+                .add(Attributes.FOLLOW_RANGE, 24).add(Attributes.STEP_HEIGHT, 1.0).build());
+        event.put(ModEntities.AXOLEVIATHAN.get(),AxoleviathanEntity.attributes().build());
+        event.put(ModEntities.AXOKRAKEN.get(), net.minecraft.world.entity.Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 180).add(Attributes.ATTACK_DAMAGE, 8).add(Attributes.FOLLOW_RANGE, 32).add(Attributes.MOVEMENT_SPEED, .34).build());
+        event.put(ModEntities.MEROLOTL.get(), net.minecraft.world.entity.Mob.createMobAttributes().build());
         event.put(
                 ModEntities.AXOLOTL_ABSOLUTE.get(),
                 Mob.createMobAttributes()

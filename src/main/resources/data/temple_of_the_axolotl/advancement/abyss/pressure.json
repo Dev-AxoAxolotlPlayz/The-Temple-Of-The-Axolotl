@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:abyss/enter",
+  "display": {
+    "icon": {
+      "id": "minecraft:prismarine_shard"
+    },
+    "title": "Under Pressure",
+    "description": "Survive a dangerous Abyss pressure zone.",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

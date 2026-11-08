@@ -42,3 +42,11 @@ repo/
 
 ### Checkpoint Backups ###
 *Checkpoint*.zip
+
+/run/
+
+/run/
+/build/
+/.gradle/
+/.idea/
+/*.zip

@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:brotherly_love",
+  "display": {
+    "icon": {
+      "id": "minecraft:heart_of_the_sea"
+    },
+    "title": "Redemption is Possible",
+    "description": "Tame Wrath.",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

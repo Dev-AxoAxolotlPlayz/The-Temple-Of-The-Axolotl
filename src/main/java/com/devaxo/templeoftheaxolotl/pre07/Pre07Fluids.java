@@ -23,6 +23,14 @@ public final class Pre07Fluids {
  public static final DeferredRegister<Fluid> FLUIDS=DeferredRegister.create(Registries.FLUID,TempleOfTheAxolotl.MODID);
  public static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TempleOfTheAxolotl.MODID);
  public static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TempleOfTheAxolotl.MODID);
+ // Suspended, source-only Abyss thermocline. A high tick delay and source-only
+ // worldgen keep the generated layer stationary; this is an experimental fluid.
+ public static final DeferredHolder<FluidType,FluidType> THERMOCLINE_TYPE=TYPES.register("abyssal_thermocline_type",()->new FluidType(FluidType.Properties.create().density(1000).viscosity(1000).canSwim(true).canDrown(true)) {});
+ public static final DeferredHolder<Fluid,BaseFlowingFluid.Source> THERMOCLINE=FLUIDS.register("abyssal_thermocline",()->new BaseFlowingFluid.Source(thermoclineProps()));
+ public static final DeferredHolder<Fluid,BaseFlowingFluid.Flowing> THERMOCLINE_FLOWING=FLUIDS.register("flowing_abyssal_thermocline",()->new BaseFlowingFluid.Flowing(thermoclineProps()));
+ public static final DeferredBlock<SubthermalThermoclineBlock> THERMOCLINE_BLOCK=BLOCKS.register("abyssal_thermocline",()->new SubthermalThermoclineBlock(THERMOCLINE.get(),BlockBehaviour.Properties.ofFullCopy(Blocks.WATER).noLootTable()));
+ public static final DeferredItem<Item> THERMOCLINE_BUCKET=ITEMS.register("abyssal_thermocline_bucket",()->new BucketItem(THERMOCLINE.get(),new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
+ private static BaseFlowingFluid.Properties thermoclineProps(){return new BaseFlowingFluid.Properties(THERMOCLINE_TYPE,THERMOCLINE,THERMOCLINE_FLOWING).block(THERMOCLINE_BLOCK).bucket(THERMOCLINE_BUCKET).slopeFindDistance(1).levelDecreasePerBlock(8).tickRate(1000000);}
  public static final DeferredHolder<FluidType,FluidType> PURE_TYPE=TYPES.register("pure_ichor_type",()->new IchorFluidType(FluidType.Properties.create().density(3000).viscosity(6000).lightLevel(12).canSwim(true).canDrown(false), 0xFFFFC936));
  public static final DeferredHolder<FluidType,FluidType> DILUTED_TYPE=TYPES.register("diluted_ichor_type",()->new IchorFluidType(FluidType.Properties.create().density(3000).viscosity(6000).lightLevel(8).canSwim(true).canDrown(false), 0xFFF3E2A6));
  public static final DeferredHolder<Fluid,BaseFlowingFluid.Source> PURE=FLUIDS.register("pure_ichor",()->new BaseFlowingFluid.Source(pureProps()));

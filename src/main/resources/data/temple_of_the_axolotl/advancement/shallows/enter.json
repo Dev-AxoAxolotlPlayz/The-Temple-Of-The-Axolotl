@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:shallows/discover",
+  "display": {
+    "icon": {
+      "id": "minecraft:prismarine_shard"
+    },
+    "title": "Just a Little Dip",
+    "description": "Enter a Shallows portal for the first time.",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

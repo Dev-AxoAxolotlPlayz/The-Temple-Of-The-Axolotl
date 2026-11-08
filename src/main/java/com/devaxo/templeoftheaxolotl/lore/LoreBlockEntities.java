@@ -12,5 +12,6 @@ public final class LoreBlockEntities {
             DeferredRegister.create(net.minecraft.core.registries.Registries.BLOCK_ENTITY_TYPE, TempleOfTheAxolotl.MODID);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LoreBlockEntity>> LORE =
             TYPES.register("lore_block", () -> BlockEntityType.Builder.of(LoreBlockEntity::new,
-                    ModBlocks.LORE_BLOCK.get(), ModBlocks.BROKEN_LORE_BLOCK.get()).build(null));
+                    ModBlocks.LORE_BLOCK.get(), ModBlocks.BROKEN_LORE_BLOCK.get(),
+                    ModBlocks.ABYSSAL_LORE_BLOCK.get(), ModBlocks.BROKEN_ABYSSAL_LORE_BLOCK.get()).build(null));
 }

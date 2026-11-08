@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:engineering/shorkolotl_metallurgy",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:molten_sand"
+    },
+    "title": "Things Are Heating Up",
+    "description": "Make a Molten Sand for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "made": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

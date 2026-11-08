@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:branch_abyss",
+  "display": {
+    "icon": {
+      "id": "minecraft:heart_of_the_sea"
+    },
+    "title": "Abyss Expedition",
+    "description": "Begin this expedition.",
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "unlocked": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

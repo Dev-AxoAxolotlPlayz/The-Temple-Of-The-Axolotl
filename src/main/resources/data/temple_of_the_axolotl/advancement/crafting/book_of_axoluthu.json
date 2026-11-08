@@ -1,0 +1,22 @@
+{
+  "parent": "temple_of_the_axolotl:branch_lore",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:book_of_axoluthu"
+    },
+    "title": "Knowledge From the Deep",
+    "description": "Make a Book of Axoluthu for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:book_of_axoluthu"
+      }
+    }
+  }
+}

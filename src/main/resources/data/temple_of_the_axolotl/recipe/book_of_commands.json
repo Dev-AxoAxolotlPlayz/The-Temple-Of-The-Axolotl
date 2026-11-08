@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:writable_book"
+    },
+    {
+      "item": "minecraft:heart_of_the_sea"
+    },
+    {
+      "item": "minecraft:heart_of_the_sea"
+    }
+  ],
+  "result": {
+    "id": "temple_of_the_axolotl:book_of_commands",
+    "count": 1
+  }
+}

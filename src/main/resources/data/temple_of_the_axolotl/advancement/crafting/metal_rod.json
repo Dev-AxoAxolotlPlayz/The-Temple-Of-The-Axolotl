@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:engineering/shorkolotl_metallurgy",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:metal_rod"
+    },
+    "title": "Rod of Steel",
+    "description": "Make a Metal Rod for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "made": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

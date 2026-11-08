@@ -11,13 +11,40 @@ import net.minecraft.util.Mth;
 import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.world.phys.AABB;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
 public class Shorkolotl100Renderer extends GeoEntityRenderer<Shorkolotl100Entity> {
     public static final float MODEL_SCALE = 1.8F;
+    private float smoothedPitch;
+
+    private float movementPitch(Shorkolotl100Entity entity, float partialTick) {
+        var velocity = entity.getDeltaMovement();
+        double horizontal = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+        float target = (float) Math.toDegrees(Math.atan2(velocity.y, Math.max(0.05D, horizontal)));
+        if (velocity.lengthSqr() < 0.0004D) target = 0.0F;
+        // Player input controls tilt, not leftover vertical inertia.
+        Minecraft client = Minecraft.getInstance();
+        if (client.player != null && client.player.getVehicle() == entity
+                && !com.devaxo.templeoftheaxolotl.client.ShorkolotlPilotInput.ASCEND.isDown()
+                && !com.devaxo.templeoftheaxolotl.client.ShorkolotlPilotInput.DESCEND.isDown()) {
+            target = 0.0F;
+        }
+        target = Mth.clamp(target, -45.0F, 45.0F);
+        smoothedPitch = Mth.lerp(0.12F, smoothedPitch, target);
+        return smoothedPitch;
+    }
 
     public Shorkolotl100Renderer(EntityRendererProvider.Context context) {
         super(context, new Shorkolotl100Model());
+    }
+
+    @Override
+    public boolean shouldRender(Shorkolotl100Entity entity, Frustum frustum,
+                                double camX, double camY, double camZ) {
+        AABB bounds = entity.getBoundingBox().inflate(75.0, 75.0, 75.0);
+        return frustum.isVisible(bounds);
     }
 
     @Override
@@ -38,6 +65,8 @@ public class Shorkolotl100Renderer extends GeoEntityRenderer<Shorkolotl100Entity
             float heading = net.minecraft.util.Mth.rotLerp(partialTick,
                     animatable.yRotO, animatable.getYRot());
             poseStack.mulPose(Axis.YP.rotationDegrees(-heading));
+            // Render-only submarine nose tilt: positive vertical velocity raises nose.
+            poseStack.mulPose(Axis.XP.rotationDegrees(-movementPitch(animatable, partialTick)));
         }
         super.preRender(poseStack, animatable, model, bufferSource, buffer,
                 isReRender, partialTick, packedLight, packedOverlay, colour);
@@ -59,6 +88,7 @@ public class Shorkolotl100Renderer extends GeoEntityRenderer<Shorkolotl100Entity
         poseStack.pushPose();
         float yaw = Mth.rotLerp(partialTick, submarine.yRotO, submarine.getYRot());
         poseStack.mulPose(Axis.YP.rotationDegrees(-yaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-smoothedPitch));
         // The vanilla beacon texture provides a continuous shaft appearance,
         // without spawning any particles or requiring a beacon block.
         VertexConsumer vertices = buffers.getBuffer(RenderType.entityTranslucent(

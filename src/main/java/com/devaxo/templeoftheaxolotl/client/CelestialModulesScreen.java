@@ -52,7 +52,8 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
         g.blit(ABYSS, leftPos, topPos, 0, 0, imageWidth, imageHeight, 326, 189);
 
         g.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0x700C1725);
-        g.fill(leftPos + 37, topPos + 3, leftPos + 91, topPos + 184, 0xB0253A55);
+        g.fill(leftPos + 37, topPos + 3, leftPos + 96, topPos + 184, 0xC0253A55);
+        g.renderOutline(leftPos + 37, topPos + 3, 59, 181, 0xFF6CACC4);
         for (int i = 0; i < 9; i++) {
             int y = topPos + 16 + i * 18;
             g.fill(leftPos + 44, y, leftPos + 62, y + 18, 0xFF7796B5);
@@ -71,7 +72,17 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
                 g.fill(leftPos + 19, y + 1, leftPos + 35, y + 17, 0xFF14243A);
             }
         }
-        g.fill(leftPos + 99, topPos + 3, leftPos + 267, topPos + 93, 0xD00B1528);
+        g.fill(leftPos + 99, topPos + 3, leftPos + 267, topPos + 93, 0xE00B1528);
+        g.renderOutline(leftPos + 99, topPos + 3, 168, 90, 0xFF6CACC4);
+        // Three rightmost module slots are dedicated to the book shortcuts.
+        g.drawString(font, "BOOK MODULES", leftPos + 103, topPos + 84, 0xFFB6F6FF, false);
+        // The last three module slots are book shortcuts; mark their actual
+        // slot positions instead of placing a long label over the controls.
+        for (int i = 0; i < 3; i++) {
+            int sy = topPos + 16 + (6 + i) * 18;
+            g.renderOutline(leftPos + 63, sy, 18, 18, 0xFF70E7D6);
+            g.drawString(font, new String[]{"D", "F", "A"}[i], leftPos + 84, sy + 5, 0xFF8EF1E1, false);
+        }
         // Draw controls as icon-only, with illuminated state indicated by a colored outline.
         if (menu.jukeboxInstalled()) {
             g.drawString(font, "JUKEBOX", leftPos + 108, topPos + 8, 0xFFB6F6FF, false);

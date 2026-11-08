@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:root",
+  "display": {
+    "icon": {
+      "id": "minecraft:heart_of_the_sea"
+    },
+    "title": "The Abyss",
+    "description": "Discover the The Abyss trail.",
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "unlocked": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

@@ -1,10 +1,19 @@
 {
   "parent": "temple_of_the_axolotl:gainfully_employed",
   "display": {
-    "icon": {"id": "minecraft:feather"},
+    "icon": {
+      "id": "minecraft:feather"
+    },
     "title": "I BAWKIN DID SO MUCH. HOW COULD YOU",
-    "description": "Lose Cluckles.",
-    "frame": "challenge", "hidden": true, "show_toast": true, "announce_to_chat": true
+    "description": "Lose a Cluckles who faithfully served you.",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
   },
-  "criteria": {"completed": {"trigger": "minecraft:impossible"}}
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
 }

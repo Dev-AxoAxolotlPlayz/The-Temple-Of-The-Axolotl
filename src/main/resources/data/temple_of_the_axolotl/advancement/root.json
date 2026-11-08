@@ -1,0 +1,18 @@
+{
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:axolotl_tab_icon"
+    },
+    "title": "T.O.T.A.",
+    "description": "The Temple of the Axolotl awaits.",
+    "background": "minecraft:block/stone",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "enter_world": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

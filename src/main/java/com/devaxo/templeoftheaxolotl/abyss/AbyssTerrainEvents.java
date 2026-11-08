@@ -26,16 +26,20 @@ import java.io.IOException;
 import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 
 /** Experimental, deterministic post-load Abyss geology. Existing painted chunks require /tota abyss reset. */
 public final class AbyssTerrainEvents {
     private static final String[] BIOMES = {"abyssal_seafloor", "abyssal_sandbars", "abyssal_ravines", "abyssal_plateaus", "abyssal_coral_shelves", "abyssal_kelp_seas"};
     private static final int MARKER_Y = -63, SEA = 200;
+    private static AbyssTerrainEvents activePainter;
     private final Queue<ChunkPos> pending = new ArrayDeque<>();
     private final Set<Long> queued = new HashSet<>();
     private final Map<BlockPos, Long> vents = new HashMap<>();
     private final Map<BlockPos, Long> activePlumes = new HashMap<>();
     private long lastVentScan;
+    // Chunk section writes bypass Level#setBlock; resend completed terrain to nearby clients.
+    private final Map<Long, Long> pendingClientResync = new HashMap<>();
 
     private static double hash(int x, int z, long salt) {
         long h = ((long)x * 341873128712L) ^ ((long)z * 132897987541L) ^ salt;
@@ -76,6 +80,20 @@ public final class AbyssTerrainEvents {
         double h = hash(x*13+y, z*7-y, 19013);
         return h < .70 ? Blocks.STONE.defaultBlockState() : h < .90 ? Blocks.ANDESITE.defaultBlockState() : Blocks.COBBLESTONE.defaultBlockState();
     }
+    /** Explicit server-thread arrival painting: does not depend on ChunkEvent.Load firing. */
+    public static boolean ensureArrivalChunk(ServerLevel level, int chunkX, int chunkZ) {
+        if (activePainter == null) return false;
+        LevelChunk chunk = level.getChunk(chunkX, chunkZ);
+        ChunkPos cp = new ChunkPos(chunkX, chunkZ);
+        BlockPos marker = new BlockPos(cp.getMinBlockX(), MARKER_Y, cp.getMinBlockZ());
+        if (!chunk.getBlockState(marker).is(Blocks.OBSIDIAN)) {
+            activePainter.paint(level, chunk, cp);
+            activePainter.queued.remove(cp.toLong());
+            activePainter.pending.remove(cp);
+        }
+        return chunk.getBlockState(marker).is(Blocks.OBSIDIAN);
+    }
+
     private void queue(ChunkPos cp) { if (queued.add(cp.toLong())) pending.add(cp); }
     @SubscribeEvent public void onChunk(ChunkEvent.Load event) {
         if (event.getLevel() instanceof ServerLevel level && level.dimension().equals(AbyssTrialEvents.ABYSS)) {
@@ -83,6 +101,7 @@ public final class AbyssTerrainEvents {
         }
     }
     @SubscribeEvent public void onTick(ServerTickEvent.Post event) {
+        activePainter = this;
         ServerLevel level = event.getServer().getLevel(AbyssTrialEvents.ABYSS);
         if (level == null) return;
         int budget=1;
@@ -93,7 +112,32 @@ public final class AbyssTerrainEvents {
             if(chunk.getBlockState(new BlockPos(cp.getMinBlockX(),MARKER_Y,cp.getMinBlockZ())).is(Blocks.OBSIDIAN)) continue;
             paint(level,chunk,cp);
         }
+        flushClientResync(level);
         tickVents(level);
+    }
+
+    private void flushClientResync(ServerLevel level) {
+        if (pendingClientResync.isEmpty()) return;
+        long now = level.getGameTime();
+        int view = level.getServer().getPlayerList().getViewDistance();
+        Iterator<Map.Entry<Long, Long>> it = pendingClientResync.entrySet().iterator();
+        while (it.hasNext()) {
+            var entry = it.next();
+            if (entry.getValue() > now) continue;
+            it.remove();
+            ChunkPos cp = new ChunkPos(entry.getKey());
+            if (!level.getChunkSource().hasChunk(cp.x, cp.z)) continue;
+            LevelChunk chunk = level.getChunk(cp.x, cp.z);
+            ClientboundLevelChunkWithLightPacket packet = null;
+            for (ServerPlayer player : level.players()) {
+                int dx = Math.abs(player.chunkPosition().x - cp.x);
+                int dz = Math.abs(player.chunkPosition().z - cp.z);
+                if (dx > view || dz > view) continue;
+                if (packet == null) packet = new ClientboundLevelChunkWithLightPacket(
+                    chunk, level.getLightEngine(), null, null);
+                player.connection.send(packet);
+            }
+        }
     }
     private void paint(ServerLevel level,LevelChunk chunk,ChunkPos cp) {
         var registry=level.registryAccess().registryOrThrow(Registries.BIOME);
@@ -104,11 +148,8 @@ public final class AbyssTerrainEvents {
             int x=cp.getMinBlockX()+lx,z=cp.getMinBlockZ()+lz, f=floor(x,z), biome=biomeIndex(x,z);
             for(int y=-62;y<=SEA;y++) {
                 BlockState block = y<=f-4 ? (y<0?Blocks.DEEPSLATE:Blocks.STONE).defaultBlockState()
-                        : y<=f ? (biome==2?Blocks.GRAVEL:Blocks.SAND).defaultBlockState() : Blocks.WATER.defaultBlockState();
-                // The central island is a placed structure. Keep its upper
-                // blocks intact while still painting the seabed beneath it.
-                // This also eliminates the old 3x3-chunk rectangular hole.
-                if (Math.abs(x) <= 15 && Math.abs(z) <= 15 && y >= 190) continue;
+                        : y<=f ? (biome==2?Blocks.GRAVEL:Blocks.SAND).defaultBlockState()
+                        : (y>=101 && y<=110 ? com.devaxo.templeoftheaxolotl.pre07.Pre07Fluids.THERMOCLINE_BLOCK.get().defaultBlockState() : Blocks.WATER.defaultBlockState());
                 chunk.setBlockState(new BlockPos(x,y,z),block,false);
             }
             // Plateaus are independent eroded masses; sparse mesas extend to the seafloor.
@@ -162,8 +203,22 @@ public final class AbyssTerrainEvents {
         // Place naturally generated merfolk archipelagos after geological painting.
         AbyssMerfolkVillages.paint(chunk, cp);
         AbyssMerfolkVillages.populate(level, cp);
+        // Independent collectible Abyssal lore; generated once per new painted chunk.
+        if (hash(cp.x, cp.z, 779031) < .065 && (Math.abs(cp.x)>3 || Math.abs(cp.z)>3)) {
+            int x=cp.getMinBlockX()+4+(int)(hash(cp.x,cp.z,779032)*8);
+            int z=cp.getMinBlockZ()+4+(int)(hash(cp.x,cp.z,779033)*8);
+            int y=floor(x,z)+1;
+            if (y < SEA-2 && y > -59) {
+                var direction=net.minecraft.core.Direction.from2DDataValue((int)(hash(cp.x,cp.z,779034)*4));
+                chunk.setBlockState(new BlockPos(x,y,z),
+                    com.devaxo.templeoftheaxolotl.registry.ModBlocks.ABYSSAL_LORE_BLOCK.get().defaultBlockState()
+                        .setValue(com.devaxo.templeoftheaxolotl.lore.AbyssalLoreBlock.FACING,direction),false);
+            }
+        }
         chunk.setBlockState(new BlockPos(cp.getMinBlockX(),MARKER_Y,cp.getMinBlockZ()),Blocks.OBSIDIAN.defaultBlockState(),false);
         chunk.setUnsaved(true);
+        // Allow the bulk chunk edits to settle before sending full terrain/biome/light data.
+        pendingClientResync.put(cp.toLong(), level.getGameTime() + 10L);
     }
     private static void boulder(LevelChunk chunk,ChunkPos cp,int cx,int floor,int cz,int radius,long seed) {
         if(biomeIndex(cx,cz)==3) return;
@@ -254,16 +309,37 @@ public final class AbyssTerrainEvents {
                     }
                     ServerLevel overworld = server.overworld();
                     if (overworld == null) return 0;
+                    // The exact shared-spawn column is not guaranteed to be an empty
+                    // two-block landing space. Search nearby instead of rejecting a reset.
                     BlockPos spawn = overworld.getSharedSpawnPos();
-                    overworld.getChunkAt(spawn);
-                    BlockPos landing = overworld.getHeightmapPos(
-                            net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawn);
-                    if (!overworld.getBlockState(landing).isAir() || !overworld.getBlockState(landing.above()).isAir()) {
-                        ctx.getSource().sendFailure(Component.literal("Abyss reset cancelled: overworld spawn is obstructed."));
+                    BlockPos landing = null;
+                    for (int radius = 0; radius <= 16 && landing == null; radius++) {
+                        for (int dx = -radius; dx <= radius && landing == null; dx++) {
+                            for (int dz = -radius; dz <= radius; dz++) {
+                                if (Math.max(Math.abs(dx), Math.abs(dz)) != radius) continue;
+                                BlockPos probe = overworld.getHeightmapPos(
+                                        net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                                        spawn.offset(dx, 0, dz));
+                                if (probe.getY() <= overworld.getMinBuildHeight() + 1) continue;
+                                BlockPos floor = probe.below();
+                                if (overworld.getBlockState(floor).getCollisionShape(overworld, floor).isEmpty()) continue;
+                                if (!overworld.getBlockState(probe).getCollisionShape(overworld, probe).isEmpty()) continue;
+                                if (!overworld.getBlockState(probe.above()).getCollisionShape(overworld, probe.above()).isEmpty()) continue;
+                                if (!overworld.getFluidState(probe).isEmpty()
+                                        || !overworld.getFluidState(probe.above()).isEmpty()) continue;
+                                landing = probe;
+                                break;
+                            }
+                        }
+                    }
+                    if (landing == null) {
+                        ctx.getSource().sendFailure(Component.literal(
+                                "Abyss reset cancelled: no safe Overworld landing within 16 blocks of world spawn."));
                         return 0;
                     }
+                    final BlockPos safeLanding = landing;
                     for (ServerPlayer player : List.copyOf(abyss.players())) {
-                        if (!player.teleportTo(overworld, landing.getX()+.5, landing.getY(), landing.getZ()+.5,
+                        if (!player.teleportTo(overworld, safeLanding.getX()+.5, safeLanding.getY(), safeLanding.getZ()+.5,
                                 Set.of(), player.getYRot(), player.getXRot())) {
                             ctx.getSource().sendFailure(Component.literal("Abyss reset cancelled: evacuation failed."));
                             return 0;

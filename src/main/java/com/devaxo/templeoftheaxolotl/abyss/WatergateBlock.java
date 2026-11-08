@@ -10,6 +10,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.BlockGetter;
@@ -28,10 +33,18 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
  * The exported 5-block visual mesh is retained as an asset
  * for the future GeckoLib rendering pass.
  */
-public class WatergateBlock extends HorizontalDirectionalBlock implements EntityBlock {
+public class WatergateBlock extends HorizontalDirectionalBlock implements EntityBlock, SimpleWaterloggedBlock {
 
     public static final MapCodec<WatergateBlock> CODEC =
             simpleCodec(WatergateBlock::new);
+
+    public static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
+
+    public static final net.minecraft.world.level.block.state.properties.BooleanProperty READY = net.minecraft.world.level.block.state.properties.BooleanProperty.create("ready");
+
+    public static final net.minecraft.world.level.block.state.properties.IntegerProperty AWAKENING = net.minecraft.world.level.block.state.properties.IntegerProperty.create("awakening", 0, 14);
+
+    public static final net.minecraft.world.level.block.state.properties.IntegerProperty CHUNK_PROGRESS = net.minecraft.world.level.block.state.properties.IntegerProperty.create("chunk_progress", 0, 255);
 
     public static final DirectionProperty FACING =
             HorizontalDirectionalBlock.FACING;
@@ -40,7 +53,7 @@ public class WatergateBlock extends HorizontalDirectionalBlock implements Entity
         super(properties);
 
         registerDefaultState(
-                stateDefinition.any().setValue(FACING, Direction.NORTH)
+                stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false).setValue(READY, false).setValue(AWAKENING, 0).setValue(CHUNK_PROGRESS, 0)
         );
     }
 
@@ -58,7 +71,7 @@ public class WatergateBlock extends HorizontalDirectionalBlock implements Entity
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING);
+        builder.add(FACING, WATERLOGGED, READY, AWAKENING, CHUNK_PROGRESS);
     }
 
     /** Two 1-block-wide pillars at +/-2, and a top lintel at Y+4.
@@ -75,10 +88,13 @@ public class WatergateBlock extends HorizontalDirectionalBlock implements Entity
                 BlockState current = level.getBlockState(target);
                 if (place) {
                     if (current.isAir() || current.canBeReplaced()) {
-                        level.setBlock(target, ModBlocks.ABYSSAL_WATERGATE_FRAME.get().defaultBlockState(), 3);
+                        level.setBlock(target, ModBlocks.ABYSSAL_WATERGATE_FRAME.get().defaultBlockState()
+                                .setValue(WatergateFrameBlock.WATERLOGGED, current.getFluidState().is(FluidTags.WATER)), 3);
                     }
                 } else if (current.is(ModBlocks.ABYSSAL_WATERGATE_FRAME.get())) {
-                    level.removeBlock(target, false);
+                    level.setBlock(target, current.getValue(WatergateFrameBlock.WATERLOGGED)
+                            ? net.minecraft.world.level.block.Blocks.WATER.defaultBlockState()
+                            : net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
                 }
             }
         }
@@ -105,6 +121,20 @@ public class WatergateBlock extends HorizontalDirectionalBlock implements Entity
         return defaultBlockState().setValue(
                 FACING,
                 context.getHorizontalDirection().getOpposite()
-        );
+        ).setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).is(FluidTags.WATER));
     }
+    @Override
+    public FluidState getFluidState(BlockState state) {
+        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+    }
+
+    @Override
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
+            LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+        if (state.getValue(WATERLOGGED)) {
+            level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+        }
+        return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
+    }
+
 }

@@ -1,0 +1,27 @@
+{
+  "parent": "temple_of_the_axolotl:celestial/obtaining_the_unobtainable",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:axolotl_leggings"
+    },
+    "title": "Fancy Pants",
+    "description": "Make a Axolotl Leggings for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:axolotl_leggings"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0"
+    ]
+  ]
+}

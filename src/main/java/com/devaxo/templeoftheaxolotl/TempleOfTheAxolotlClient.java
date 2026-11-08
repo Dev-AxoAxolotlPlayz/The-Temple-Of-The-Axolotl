@@ -12,6 +12,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
@@ -39,6 +40,14 @@ public class TempleOfTheAxolotlClient {
         );
     }
 
+    @SubscribeEvent
+    public static void registerMenuScreens(RegisterMenuScreensEvent event) {
+        event.register(
+                com.devaxo.templeoftheaxolotl.kiln.KilnRegistries.MENU.get(),
+                com.devaxo.templeoftheaxolotl.kiln.AnnealingKilnScreen::new
+        );
+    }
+
     // Register Axo's GeckoLib renderer!
     @SubscribeEvent
     public static void registerRenderers(
@@ -48,7 +57,11 @@ public class TempleOfTheAxolotlClient {
         event.registerBlockEntityRenderer(com.devaxo.templeoftheaxolotl.abyss.WatergateEntities.WATERGATE.get(), com.devaxo.templeoftheaxolotl.client.renderer.WatergateRenderer::new);
         event.registerBlockEntityRenderer(com.devaxo.templeoftheaxolotl.brewing.CosmicBrewingRegistries.ENTITY.get(), com.devaxo.templeoftheaxolotl.client.renderer.CosmicBrewingRenderer::new);
         event.registerBlockEntityRenderer(com.devaxo.templeoftheaxolotl.eclipse.EclipseBlockEntities.ALTAR.get(), com.devaxo.templeoftheaxolotl.client.renderer.CelestialAnvilRenderer::new);
-        event.registerEntityRenderer(ModEntities.ABYSSAL_MERFOLK.get(), net.minecraft.client.renderer.entity.DrownedRenderer::new);
+        event.registerEntityRenderer(ModEntities.ABYSSAL_AXOLOTL.get(),
+                com.devaxo.templeoftheaxolotl.client.renderer.AbyssalAxolotlRenderer::new);
+        event.registerEntityRenderer(ModEntities.AXOKRAKEN.get(), com.devaxo.templeoftheaxolotl.client.renderer.AxokrakenRenderer::new);
+        event.registerEntityRenderer(ModEntities.MEROLOTL.get(), com.devaxo.templeoftheaxolotl.client.renderer.MerolotlRenderer::new);
+        event.registerEntityRenderer(ModEntities.AXOLEVIATHAN.get(),com.devaxo.templeoftheaxolotl.client.renderer.AxoleviathanRenderer::new);
         event.registerEntityRenderer(ModEntities.SHORKOLOTL_100.get(),
                 com.devaxo.templeoftheaxolotl.client.renderer.Shorkolotl100Renderer::new);
         event.registerEntityRenderer(ModEntities.CLUCKLES.get(),

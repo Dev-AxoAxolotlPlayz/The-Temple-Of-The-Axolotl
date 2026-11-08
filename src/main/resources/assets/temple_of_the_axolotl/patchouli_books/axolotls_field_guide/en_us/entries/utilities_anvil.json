@@ -7,6 +7,21 @@
     {
       "type": "patchouli:text",
       "text": "The Celestial Anvil supports advanced equipment combining without the vanilla Too Expensive cap. Valid operations cost at least one level, rounded up from half the normal level cost."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Inscription Ingredients",
+      "text": "The Inscription tab names one item using a Feather. Place the item in ITEM, a Feather in FEATHER, and optionally a Dye in DYE and one style ingredient in STYLE. Choose Default or Uniform with the Font button. Uniform changes the Minecraft font, not the style ingredient."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Style Ingredient Chart",
+      "text": "STYLE slot recipes: $(br)- Glow Ink Sac = Bold$(br)- Blue Orchid = Italic$(br)- String = Underlined$(br)- Iron Sword = Strikethrough$(br)- Skeleton Skull = Obfuscated$(br)- Wither Skeleton Skull = Obfuscated$(br)- Zombie, Creeper, Dragon, Piglin or Player Head = Obfuscated"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Color and Cost",
+      "text": "Any vanilla dye in DYE colors the inscription. A style ingredient is optional; leave STYLE empty for ordinary text. The Feather is required and consumed. Naming costs XP, with an additional cost for each optional dye/style offering. The inscription tab applies one style ingredient at a time; it does not combine several STYLE items."
     }
   ]
 }

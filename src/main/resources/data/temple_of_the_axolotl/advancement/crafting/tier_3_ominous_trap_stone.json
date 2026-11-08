@@ -1,0 +1,27 @@
+{
+  "parent": "temple_of_the_axolotl:crafting/tier_2_ominous_trap_stone",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:tier_3_ominous_trap_stone"
+    },
+    "title": "Triple Threat",
+    "description": "Make a Tier 3 Ominous Trap Stone for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:upgrade_tier_2_to_3_ominous_stone"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0"
+    ]
+  ]
+}

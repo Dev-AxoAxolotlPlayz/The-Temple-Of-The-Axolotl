@@ -10,7 +10,7 @@ public final class LoreBlockModel extends GeoModel<LoreBlockEntity> {
         return ResourceLocation.fromNamespaceAndPath("temple_of_the_axolotl", path);
     }
     private static boolean broken(LoreBlockEntity entity) {
-        return entity.getBlockState().is(ModBlocks.BROKEN_LORE_BLOCK.get());
+        return entity.getBlockState().is(ModBlocks.BROKEN_LORE_BLOCK.get()) || entity.getBlockState().is(ModBlocks.BROKEN_ABYSSAL_LORE_BLOCK.get());
     }
     @Override public ResourceLocation getModelResource(LoreBlockEntity entity) {
         return id(broken(entity) ? "geo/broken_lore_block.geo.json" : "geo/lore_block.geo.json");

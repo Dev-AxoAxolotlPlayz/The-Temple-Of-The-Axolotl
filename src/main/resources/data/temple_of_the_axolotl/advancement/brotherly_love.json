@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:origin/above_all",
+  "display": {
+    "icon": {
+      "id": "minecraft:heart_of_the_sea"
+    },
+    "title": "Brotherly Love",
+    "description": "Have Above All resurrect his brother.",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": true
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

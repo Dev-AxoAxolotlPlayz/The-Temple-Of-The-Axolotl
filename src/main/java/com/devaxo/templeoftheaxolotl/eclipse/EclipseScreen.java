@@ -81,6 +81,23 @@ public final class EclipseScreen extends AbstractContainerScreen<EclipseMenu> {
             }).bounds(leftPos - 65, topPos + 171, 104, 20).build());
         }
     }
+    // While the inscription box is focused, no screen/gameplay shortcuts may
+    // process its keystrokes. ESC is intentionally left to the vanilla screen.
+    @Override public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (menu.isInscription() && nameBox != null && nameBox.isFocused()
+                && keyCode != org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) {
+            nameBox.keyPressed(keyCode, scanCode, modifiers);
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+    @Override public boolean charTyped(char character, int modifiers) {
+        if (menu.isInscription() && nameBox != null && nameBox.isFocused()) {
+            nameBox.charTyped(character, modifiers);
+            return true;
+        }
+        return super.charTyped(character, modifiers);
+    }
     private void slotFrame(GuiGraphics g, int x, int y, int border) {
         int a = leftPos + x, b = topPos + y;
         g.fill(a - 2, b - 2, a + 18, b + 18, border);

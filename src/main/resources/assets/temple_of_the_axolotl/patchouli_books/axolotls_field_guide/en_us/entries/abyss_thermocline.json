@@ -1,0 +1,20 @@
+{
+  "name": "The Thermocline Layer",
+  "category": "temple_of_the_axolotl:abyss",
+  "icon": "minecraft:cyan_stained_glass",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Far beneath the upper waters of the Ethereal Abyss lies the Thermocline Layer: a ten-block sea of milky, drifting clouds spanning depths Y=101 through Y=110. Though it resembles water, most travelers encounter it as an impassable floor. It can be approached safely; touching it does not crush or freeze you."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Native Abyssal creatures bear a remarkable adaptation called the Subthermal Trait. Their multiple pairs of eyes are thought to have evolved to sense the unusual temperature gradients and light within this boundary. Abyssal Axolotls, Merolotls, Axokrakens, and Axoleviathans cross it as naturally as they swim through water."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The Shorkolotl-100 submarine reproduces this capability through engineering, allowing the vessel and its passengers to cross together. A traveler outside the submarine cannot follow. The thermocline conceals the deep hunting waters below; what looks like a cloud floor may have enormous life moving on its other side."
+    }
+  ]
+}

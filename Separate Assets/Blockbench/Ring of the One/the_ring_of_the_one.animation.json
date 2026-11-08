@@ -1,0 +1,175 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"Outer_Ring_Stars": {
+			"loop": true,
+			"animation_length": 2,
+			"bones": {
+				"LOB": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [0, 360, 0],
+							"easing": "linear"
+						}
+					}
+				},
+				"UOB": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [0, -360, 0],
+							"easing": "linear"
+						}
+					}
+				}
+			}
+		},
+		"Orbs": {
+			"loop": true,
+			"animation_length": 2,
+			"bones": {
+				"Orb 1": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [-720, 0, 0]
+						}
+					}
+				},
+				"Orb 2": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [-720, 0, 0]
+						}
+					}
+				},
+				"Upper Orbs": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [0, 720, 0]
+						}
+					}
+				},
+				"Orb 3": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [720, 0, 0]
+						}
+					}
+				},
+				"Orb 4": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [720, 0, 0]
+						}
+					}
+				},
+				"Lower Orbs": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [0, -720, 0]
+						}
+					}
+				}
+			}
+		},
+		"Central_Star": {
+			"loop": true,
+			"animation_length": 2,
+			"bones": {
+				"B2": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [0, 0, 360]
+						}
+					}
+				},
+				"B": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [360, 0, 0]
+						}
+					}
+				},
+				"A": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [-360, 0, 0]
+						}
+					}
+				},
+				"B3": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [0, -360, 0]
+						}
+					}
+				},
+				"B4": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [0, 360, 0]
+						}
+					}
+				},
+				"C2": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [360, 0, 360]
+						}
+					}
+				},
+				"C1": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [-360, 0, -360]
+						}
+					}
+				}
+			}
+		}
+	}
+}

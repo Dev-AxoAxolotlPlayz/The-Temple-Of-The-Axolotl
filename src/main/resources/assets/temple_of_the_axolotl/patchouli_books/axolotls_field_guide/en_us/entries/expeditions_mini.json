@@ -1,16 +1,16 @@
 {
-  "name": "The Mini Temple (Planned)",
+  "name": "The Shallows Temple",
   "category": "temple_of_the_axolotl:expeditions",
   "icon": "minecraft:mossy_stone_bricks",
   "sortnum": 0,
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "PLANNED FEATURE \u2014 not implemented in this patch. Discover a small entrance ruin on Overworld land, with entrances targeting roughly 250 blocks apart. The proposed separate Mini Temple dimension has three floors of 5 by 5 modules, using regular Temple room templates."
+      "text": "The Shallows Temple is a smaller introductory expedition, separate from the regular and Origin Temples. Find its entrance among land-based Overworld ruins. The expedition contains three floors, each arranged as a 5 by 5 maze of familiar Temple modules."
     },
     {
       "type": "patchouli:text",
-      "text": "Mini Temple treasure will be capped at Tier 2. Sentinel Ominous Stones are planned to have a very rare chance of yielding a Shard of Divinity. The exact chance and entry behavior are not finalized."
+      "text": "Shallows rewards are limited to Tiers 1 and 2. Explore its rooms carefully, gather food, and watch for Sentinels. Their Ominous Stones may rarely yield a Shard of Divinity."
     }
   ]
 }

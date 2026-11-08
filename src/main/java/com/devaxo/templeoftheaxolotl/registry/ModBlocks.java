@@ -29,6 +29,8 @@ public final class ModBlocks {
             event.accept(SHALLOWS_EXIT_PORTAL_ITEM.get());
             event.accept(LORE_BLOCK_ITEM.get());
             event.accept(BROKEN_LORE_BLOCK_ITEM.get());
+            event.accept(ABYSSAL_LORE_BLOCK_ITEM.get());
+            event.accept(BROKEN_ABYSSAL_LORE_BLOCK_ITEM.get());
             event.accept(DIARY_ITEM.get());
             event.accept(FIELD_GUIDE_ITEM.get());
         }
@@ -36,7 +38,7 @@ public final class ModBlocks {
 
     // Stage-one Annealing Kiln: placeable cyan workstation shell; inventory/processing follows in next phase.
     public static final DeferredBlock<Block> ANNEALING_KILN = BLOCKS.register("annealing_kiln",
-            () -> new Block(BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.COLOR_CYAN).strength(3.5F).requiresCorrectToolForDrops()));
+            () -> new com.devaxo.templeoftheaxolotl.kiln.AnnealingKilnBlock(BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.COLOR_CYAN).strength(3.5F).requiresCorrectToolForDrops()));
     public static final DeferredItem<BlockItem> ANNEALING_KILN_ITEM = ITEMS.register("annealing_kiln",
             () -> new BlockItem(ANNEALING_KILN.get(), new Item.Properties()));
 
@@ -70,13 +72,20 @@ public final class ModBlocks {
     public static final DeferredBlock<com.devaxo.templeoftheaxolotl.abyss.WatergateBlock> ABYSSAL_WATERGATE =
             BLOCKS.register("abyssal_watergate", () -> new com.devaxo.templeoftheaxolotl.abyss.WatergateBlock(
                     BlockBehaviour.Properties.ofFullCopy(Blocks.PRISMARINE).noOcclusion().strength(-1.0F, 3600000.0F).noLootTable()));
+    /** Single-use personal return anchor, placed only in the Ethereal Abyss. */
+    public static final DeferredBlock<com.devaxo.templeoftheaxolotl.abyss.AbyssExtractionAnchorBlock> ABYSS_EXTRACTION_ANCHOR =
+            BLOCKS.register("abyss_extraction_anchor", () -> new com.devaxo.templeoftheaxolotl.abyss.AbyssExtractionAnchorBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.SEA_LANTERN).strength(2.0F).noLootTable()));
+    public static final DeferredItem<BlockItem> ABYSS_EXTRACTION_ANCHOR_ITEM = ITEMS.register("abyss_extraction_anchor",
+            () -> new BlockItem(ABYSS_EXTRACTION_ANCHOR.get(), new Item.Properties().stacksTo(1)));
+
     // Invisible solid blocks for the Watergate's two pillars and top lintel.
     public static final DeferredBlock<com.devaxo.templeoftheaxolotl.abyss.WatergateFrameBlock> ABYSSAL_WATERGATE_FRAME =
             BLOCKS.register("abyssal_watergate_frame", () -> new com.devaxo.templeoftheaxolotl.abyss.WatergateFrameBlock(
                     BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.NONE).strength(-1.0F, 3600000.0F).noOcclusion().noLootTable()));
 
     public static final DeferredItem<BlockItem> ABYSSAL_WATERGATE_ITEM = ITEMS.register("abyssal_watergate",
-            () -> new BlockItem(ABYSSAL_WATERGATE.get(), new Item.Properties()));
+            () -> new com.devaxo.templeoftheaxolotl.item.StructureGeoBlockItem(ABYSSAL_WATERGATE.get(), new Item.Properties(), "abyssal_watergate"));
 
     /** Placeable dark Celestial Anvil; vanilla anvil interaction and geometry. */
     public static final DeferredBlock<Block> CELESTIAL_ANVIL_BLOCK =
@@ -90,6 +99,18 @@ public final class ModBlocks {
     public static final DeferredBlock<com.devaxo.templeoftheaxolotl.lore.BrokenLoreBlock> BROKEN_LORE_BLOCK =
             BLOCKS.register("broken_lore_block", () -> new com.devaxo.templeoftheaxolotl.lore.BrokenLoreBlock(
                     BlockBehaviour.Properties.ofFullCopy(Blocks.OBSIDIAN).noOcclusion().strength(-1.0F, 3600000.0F).noLootTable()));
+    // Abyss discoveries use their own block IDs and persistence, but the Diary's art assets.
+    public static final DeferredBlock<com.devaxo.templeoftheaxolotl.lore.AbyssalLoreBlock> ABYSSAL_LORE_BLOCK =
+            BLOCKS.register("abyssal_lore_block", () -> new com.devaxo.templeoftheaxolotl.lore.AbyssalLoreBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.OBSIDIAN).noOcclusion().strength(-1.0F, 3600000.0F).noLootTable(), false));
+    public static final DeferredBlock<com.devaxo.templeoftheaxolotl.lore.AbyssalLoreBlock> BROKEN_ABYSSAL_LORE_BLOCK =
+            BLOCKS.register("broken_abyssal_lore_block", () -> new com.devaxo.templeoftheaxolotl.lore.AbyssalLoreBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.OBSIDIAN).noOcclusion().strength(-1.0F, 3600000.0F).noLootTable(), true));
+    public static final DeferredItem<com.devaxo.templeoftheaxolotl.lore.LoreBlockItem> ABYSSAL_LORE_BLOCK_ITEM = ITEMS.register("abyssal_lore_block",
+            () -> new com.devaxo.templeoftheaxolotl.lore.LoreBlockItem(ABYSSAL_LORE_BLOCK.get(), new Item.Properties(), false));
+    public static final DeferredItem<com.devaxo.templeoftheaxolotl.lore.LoreBlockItem> BROKEN_ABYSSAL_LORE_BLOCK_ITEM = ITEMS.register("broken_abyssal_lore_block",
+            () -> new com.devaxo.templeoftheaxolotl.lore.LoreBlockItem(BROKEN_ABYSSAL_LORE_BLOCK.get(), new Item.Properties(), true));
+
     public static final DeferredItem<com.devaxo.templeoftheaxolotl.lore.LoreBlockItem> LORE_BLOCK_ITEM = ITEMS.register("lore_block",
             () -> new com.devaxo.templeoftheaxolotl.lore.LoreBlockItem(LORE_BLOCK.get(), new Item.Properties(), false));
     public static final DeferredItem<com.devaxo.templeoftheaxolotl.lore.LoreBlockItem> BROKEN_LORE_BLOCK_ITEM = ITEMS.register("broken_lore_block",
@@ -110,7 +131,7 @@ public final class ModBlocks {
             BLOCKS.register("shipyard_crane", () -> new com.devaxo.templeoftheaxolotl.shipyard.ShipyardCraneBlock(
                     BlockBehaviour.Properties.ofFullCopy(Blocks.WARPED_HYPHAE).strength(4.0F).noOcclusion()));
     public static final DeferredItem<BlockItem> SHIPYARD_CRANE_ITEM = ITEMS.register("shipyard_crane",
-            () -> new BlockItem(SHIPYARD_CRANE.get(), new Item.Properties()));
+            () -> new com.devaxo.templeoftheaxolotl.item.StructureGeoBlockItem(SHIPYARD_CRANE.get(), new Item.Properties(), "shipyard_crane"));
 
     public static void register(IEventBus modBus) {
         BLOCKS.register(modBus);

@@ -42,6 +42,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public class Shorkolotl100Entity extends Entity implements GeoEntity {
     private static final EntityDataAccessor<Boolean> HEADLIGHTS =
             SynchedEntityData.defineId(Shorkolotl100Entity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> HULL_INTEGRITY =
+            SynchedEntityData.defineId(Shorkolotl100Entity.class, EntityDataSerializers.INT);
     private final Map<BlockPos, BlockState> temporaryLightStates = new HashMap<>();
     public boolean headlightsOn() { return entityData.get(HEADLIGHTS); }
     public void toggleHeadlights() { if (!level().isClientSide) {
@@ -61,6 +63,18 @@ public class Shorkolotl100Entity extends Entity implements GeoEntity {
     // Pilot seat inside the hull, rather than above the roof.
     private static final double PILOT_VERTICAL_OFFSET = 1.15D;
     private boolean recollected;
+    public int hullIntegrity(){return entityData.get(HULL_INTEGRITY);}
+    public void leviathanHullHit(){
+        if(level().isClientSide||isRemoved()||recollected)return;
+        int remaining = Math.max(0, hullIntegrity() - 50);
+        entityData.set(HULL_INTEGRITY, remaining);
+        if(remaining==0){
+            clearTemporaryLights();
+            ejectPassengers();
+            recollected=true;
+            discard(); // Leviathan consumes the submarine; no item drop.
+        }
+    }
 
     public Shorkolotl100Entity(EntityType<? extends Shorkolotl100Entity> type, Level level) {
         super(type, level);
@@ -69,12 +83,15 @@ public class Shorkolotl100Entity extends Entity implements GeoEntity {
 
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(HEADLIGHTS, false);
+        builder.define(HULL_INTEGRITY, 100);
     }
     @Override protected void readAdditionalSaveData(CompoundTag tag) {
         entityData.set(HEADLIGHTS, tag.getBoolean("ShorkolotlHeadlights"));
+        entityData.set(HULL_INTEGRITY, tag.contains("HullIntegrity") ? tag.getInt("HullIntegrity") : 100);
     }
     @Override protected void addAdditionalSaveData(CompoundTag tag) {
         tag.putBoolean("ShorkolotlHeadlights", headlightsOn());
+        tag.putInt("HullIntegrity",hullIntegrity());
         // Never serialize our temporary vanilla light blocks into a world save.
         clearTemporaryLights();
     }
@@ -156,6 +173,25 @@ public class Shorkolotl100Entity extends Entity implements GeoEntity {
         return true;
     }
 
+    private boolean inThermocline() {
+        // Sample the hull and the layer immediately above/below its center.
+        // This prevents a brief loss of propulsion at the custom-fluid seam.
+        for (int offset = -2; offset <= 2; offset++) {
+            var pos = blockPosition().offset(0, offset, 0);
+            if (level().getFluidState(pos).is(com.devaxo.templeoftheaxolotl.pre07.Pre07Fluids.THERMOCLINE.get())
+                    || level().getFluidState(pos).is(com.devaxo.templeoftheaxolotl.pre07.Pre07Fluids.THERMOCLINE_FLOWING.get()))
+                return true;
+        }
+        return false;
+    }
+
+    private boolean pilotAscending;
+    private boolean pilotDescending;
+    public void setPilotControls(boolean ascending, boolean descending) {
+        this.pilotAscending = ascending;
+        this.pilotDescending = descending && !ascending;
+    }
+
     @Override public void tick() {
         super.tick();
         if (!level().isClientSide && tickCount % 4 == 0) updateHeadlights();
@@ -165,28 +201,80 @@ public class Shorkolotl100Entity extends Entity implements GeoEntity {
             float steer = pilot.xxa;
             if (Math.abs(steer) > 0.05F) setYRot(getYRot() - steer * 2.5F);
             double heading = Math.toRadians(getYRot());
-            boolean inWater = isInWater();
+            // The thermocline is a custom fluid, not vanilla water. Treat it as
+            // navigable water for this authorized sub, including ascent.
+            boolean inWater = isInWater() || inThermocline();
             double throttle = Math.max(0.0F, pilot.zza);
-            double power = inWater ? 0.12D : 0.03D;
-            // Mouse pitch steers the thrust vector vertically: look up to climb,
-            // look down to dive. W supplies thrust; S and Space do not dive/climb.
-            double pitch = Math.toRadians(pilot.getXRot());
+            double power = inWater ? 0.055D : 0.03D;
+            // Forward motion remains horizontal when looking up; looking down
+            // dives with W. Space ascends independently and overrides descent.
+            // Depth is controlled by Space and V, independently of camera pitch.
             Vec3 forward = new Vec3(
-                    -Math.sin(heading) * Math.cos(pitch),
-                    inWater ? -Math.sin(pitch) : 0.0D,
-                    Math.cos(heading) * Math.cos(pitch)).scale(throttle * power);
-            double vertical = 0.0D;
-            Vec3 velocity = getDeltaMovement().multiply(inWater ? 0.84D : 0.70D,
-                    inWater ? 0.65D : 0.70D, inWater ? 0.84D : 0.70D)
+                    -Math.sin(heading),
+                    0.0D,
+                    Math.cos(heading)).scale(throttle * power);
+            double vertical = inWater
+                    ? (pilotAscending ? 0.055D : pilotDescending ? -0.055D : 0.0D)
+                    : 0.0D;
+            Vec3 velocity = getDeltaMovement().multiply(inWater ? 0.94D : 0.70D,
+                    inWater ? 0.94D : 0.70D, inWater ? 0.94D : 0.70D)
                     .add(forward).add(0, vertical, 0);
             if (!inWater) velocity = velocity.add(0, -0.08D, 0);
+            // Exploration-friendly sustained cap; Axoleviathan burst is 5/4 of this.
+            // Cap combined horizontal + vertical motion to avoid diagonal speed boosts.
+            if (inWater && velocity.lengthSqr() > 0.65D * 0.65D)
+                velocity = velocity.normalize().scale(0.65D);
             setDeltaMovement(velocity);
             move(MoverType.SELF, velocity);
             pilot.setAirSupply(pilot.getMaxAirSupply());
+            // Only warn for an actual Axoleviathan target lock, not mere proximity.
+            // Action bar updates every 10 ticks while piloting, in any camera mode.
+            if (!level().isClientSide && tickCount % 10 == 0
+                    && pilot instanceof net.minecraft.server.level.ServerPlayer serverPilot) {
+                double nearest = Double.POSITIVE_INFINITY;
+                for (AxoleviathanEntity leviathan : level().getEntitiesOfClass(
+                        AxoleviathanEntity.class, getBoundingBox().inflate(128))) {
+                    if (!leviathan.isHunting(this)) continue;
+                    double distance = Math.max(0.0D,
+                            Math.sqrt(leviathan.distanceToSqr(this))
+                            - Math.max(getBbWidth(), getBbHeight()) * 0.5D
+                            - leviathan.getBbWidth() * 0.5D);
+                    nearest = Math.min(nearest, distance);
+                }
+                if (Double.isFinite(nearest)) {
+                    serverPilot.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                            "Unidentified Entity Approaching " + (int)Math.ceil(nearest) + "m"), true);
+                }
+            }
         } else {
-            if (isInWater()) setDeltaMovement(getDeltaMovement().scale(0.88D));
+            pilotAscending = false;
+            pilotDescending = false;
+            if (isInWater() || inThermocline()) setDeltaMovement(getDeltaMovement().scale(0.88D));
             else setDeltaMovement(getDeltaMovement().add(0, -0.08D, 0));
             move(MoverType.SELF, getDeltaMovement());
+        }
+        if (!level().isClientSide && tickCount % 2 == 0) emitThrusterBubbles();
+    }
+
+    /** Bubble exhaust at the rear air-jet thrusters, not at the headlamps. */
+    private void emitThrusterBubbles() {
+        if (!(level() instanceof ServerLevel server) || !isInWater()) return;
+        double speed = getDeltaMovement().length();
+        if (speed < 0.08D) return;
+        double yaw = Math.toRadians(getYRot());
+        Vec3 velocity = getDeltaMovement();
+        double horizontal = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+        double pitch = Math.atan2(velocity.y, Math.max(0.05D, horizontal));
+        pitch = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, pitch));
+        Vec3 forward = new Vec3(-Math.sin(yaw) * Math.cos(pitch),
+                Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
+        Vec3 right = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
+        int count = Math.min(7, Math.max(1, (int) Math.ceil(speed * 2.5D)));
+        for (int side : new int[]{-1, 1}) {
+            Vec3 outlet = position().add(0, 0.95D, 0)
+                    .subtract(forward.scale(2.0D)).add(right.scale(side * 0.85D));
+            server.sendParticles(ParticleTypes.BUBBLE, outlet.x, outlet.y, outlet.z,
+                    count, 0.12D, 0.12D, 0.12D, 0.035D + speed * 0.02D);
         }
     }
 
@@ -225,8 +313,6 @@ public class Shorkolotl100Entity extends Entity implements GeoEntity {
                         server.setBlock(pos, light, 3);
                     }
                 }
-                server.sendParticles(ParticleTypes.END_ROD, point.x, point.y, point.z,
-                        1, 0.025, 0.025, 0.025, 0.0);
             }
         }
         for (BlockPos old : new HashSet<>(temporaryLightStates.keySet())) {

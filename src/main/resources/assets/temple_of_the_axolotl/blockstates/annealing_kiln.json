@@ -1,7 +1,1 @@
-{
-  "variants": {
-    "": {
-      "model": "temple_of_the_axolotl:block/annealing_kiln"
-    }
-  }
-}
+{"variants":{"facing=north":{"model":"temple_of_the_axolotl:block/annealing_kiln"},"facing=east":{"model":"temple_of_the_axolotl:block/annealing_kiln","y":90},"facing=south":{"model":"temple_of_the_axolotl:block/annealing_kiln","y":180},"facing=west":{"model":"temple_of_the_axolotl:block/annealing_kiln","y":270}}}

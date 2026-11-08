@@ -1,0 +1,27 @@
+{
+  "parent": "temple_of_the_axolotl:crafting/tropical_fish_fillet",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:tropical_fish_sushi"
+    },
+    "title": "Roll With It",
+    "description": "Make a Tropical Fish Sushi for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:tropical_fish_sushi"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0"
+    ]
+  ]
+}

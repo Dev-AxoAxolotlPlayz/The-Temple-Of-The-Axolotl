@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:abyss/start",
+  "display": {
+    "icon": {
+      "id": "minecraft:prismarine_shard"
+    },
+    "title": "Into the Deep Blue",
+    "description": "Enter the Abyss for the first time.",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

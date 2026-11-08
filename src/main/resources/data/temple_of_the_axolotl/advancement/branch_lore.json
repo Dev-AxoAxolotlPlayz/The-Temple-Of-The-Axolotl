@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:root",
+  "display": {
+    "icon": {
+      "id": "minecraft:written_book"
+    },
+    "title": "Lore & Discovery",
+    "description": "Discover the Lore & Discovery trail.",
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "unlocked": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

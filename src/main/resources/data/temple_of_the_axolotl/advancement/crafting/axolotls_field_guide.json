@@ -1,0 +1,27 @@
+{
+  "parent": "temple_of_the_axolotl:branch_lore",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:axolotls_field_guide"
+    },
+    "title": "You Gonna Need a Spyglass",
+    "description": "Make a Axolotls Field Guide for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:axolotls_field_guide"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0"
+    ]
+  ]
+}

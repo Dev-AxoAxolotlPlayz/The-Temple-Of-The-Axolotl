@@ -1,0 +1,27 @@
+{
+  "parent": "temple_of_the_axolotl:branch_engineering",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:boom_truss_block"
+    },
+    "title": "Structural Integrity Optional",
+    "description": "Make a Boom Truss Block for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:boom_truss_block"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0"
+    ]
+  ]
+}

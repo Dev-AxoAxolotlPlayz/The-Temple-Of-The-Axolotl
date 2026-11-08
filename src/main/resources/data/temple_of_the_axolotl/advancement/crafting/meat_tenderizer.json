@@ -1,0 +1,27 @@
+{
+  "parent": "temple_of_the_axolotl:cuisine/grass_rice_grain",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:meat_tenderizer"
+    },
+    "title": "Tender Loving Care",
+    "description": "Make a Meat Tenderizer for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:meat_tenderizer"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0"
+    ]
+  ]
+}

@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 public class TameableWrathRenderer extends GeoEntityRenderer<TameableWrathEntity> {
     public TameableWrathRenderer(EntityRendererProvider.Context context) {
         super(context, new TameableWrathModel());
+        // Let the named tamed companion show its nameplate at normal viewing distance.
         addRenderLayer(new BlockAndItemGeoLayer<TameableWrathEntity>(this) {
             @Override
             protected ItemStack getStackForBone(GeoBone bone, TameableWrathEntity animatable) {
@@ -25,5 +26,10 @@ public class TameableWrathRenderer extends GeoEntityRenderer<TameableWrathEntity
                 return ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
             }
         });
+    }
+
+    @Override
+    public boolean shouldShowName(TameableWrathEntity entity) {
+        return entity.hasCustomName() || super.shouldShowName(entity);
     }
 }

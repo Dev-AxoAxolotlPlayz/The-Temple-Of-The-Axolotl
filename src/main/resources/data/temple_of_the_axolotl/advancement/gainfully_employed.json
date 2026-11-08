@@ -1,9 +1,19 @@
 {
   "display": {
-    "icon": {"id": "minecraft:feather"},
-    "title": "Gainfully Employed",
-    "description": "Recruit Cluckles with an uncooked grain of rice.",
-    "frame": "challenge", "hidden": true, "show_toast": true, "announce_to_chat": true
+    "icon": {
+      "id": "minecraft:feather"
+    },
+    "title": "A New Employee",
+    "description": "Recruit your first Cluckles by offering uncooked rice to a chicken.",
+    "frame": "challenge",
+    "hidden": true,
+    "show_toast": true,
+    "announce_to_chat": true
   },
-  "criteria": {"completed": {"trigger": "minecraft:impossible"}}
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "temple_of_the_axolotl:crafting/uncooked_rice"
 }

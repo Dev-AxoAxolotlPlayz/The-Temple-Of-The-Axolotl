@@ -1,0 +1,28 @@
+{
+  "parent": "temple_of_the_axolotl:regular/exit",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:shard_of_divinity"
+    },
+    "title": "A Shard of Divinity",
+    "description": "Obtain your first Shard of Divinity.",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "temple_of_the_axolotl:shard_of_divinity"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

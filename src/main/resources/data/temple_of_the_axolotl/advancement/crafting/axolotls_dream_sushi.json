@@ -1,0 +1,34 @@
+{
+  "parent": "temple_of_the_axolotl:branch_cuisine",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:axolotls_dream_sushi"
+    },
+    "title": "Sweet Dreams Are Made of Fish",
+    "description": "Make a Axolotls Dream Sushi for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:axolotls_dream_sushi"
+      }
+    },
+    "crafted_1": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:unpack_dream_bento_box"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0",
+      "crafted_1"
+    ]
+  ]
+}

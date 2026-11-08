@@ -1,0 +1,19 @@
+{
+  "parent": "temple_of_the_axolotl:regular/checkpoint",
+  "display": {
+    "icon": {
+      "id": "minecraft:prismarine_shard"
+    },
+    "title": "Treasure Hunter",
+    "description": "Discover a treasure hallway in the Temple maze.",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

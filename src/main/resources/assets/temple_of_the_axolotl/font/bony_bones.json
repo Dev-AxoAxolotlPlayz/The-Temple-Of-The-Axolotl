@@ -1,0 +1,24 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        " ": 5
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "temple_of_the_axolotl:font/bony_bones_atlas.png",
+      "height": 16,
+      "ascent": 12,
+      "chars": [
+        " !\"#$%&'()*+,-./",
+        "0123456789:;<=>?",
+        "@ABCDEFGHIJKLMNO",
+        "PQRSTUVWXYZ[\\]^_",
+        "`abcdefghijklmno",
+        "pqrstuvwxyz{|}~\u0000"
+      ]
+    }
+  ]
+}

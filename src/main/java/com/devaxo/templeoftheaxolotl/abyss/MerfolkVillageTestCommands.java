@@ -14,6 +14,20 @@ public final class MerfolkVillageTestCommands {
     public static void register(RegisterCommandsEvent event) {
         CommandDispatcher<CommandSourceStack> dispatcher=event.getDispatcher();
         dispatcher.register(Commands.literal("tota")
+            .then(Commands.literal("spawn")
+                .then(Commands.literal("merolotl_ruins")
+                    .requires(source -> source.hasPermission(2))
+                    .executes(context -> {
+                        CommandSourceStack source=context.getSource();
+                        int count=MerolotlRuins.preview(source.getLevel(),BlockPos.containing(source.getPosition()));
+                        if(count==0) {
+                            source.sendFailure(Component.literal("No suitable fully submerged ocean neighborhood at this location."));
+                            return 0;
+                        }
+                        source.sendSuccess(() -> Component.literal("Generated "+count+" Merolotl ruin structures."),true);
+                        return count;
+                    }))));
+        dispatcher.register(Commands.literal("tota")
             .then(Commands.literal("merfolk")
                 .then(Commands.literal("village")
                     .then(Commands.literal("test")

@@ -2,6 +2,12 @@ package com.devaxo.templeoftheaxolotl.abyss;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
@@ -11,11 +17,13 @@ import net.minecraft.world.level.Level;
 import com.devaxo.templeoftheaxolotl.registry.ModBlocks;
 
 /** Invisible solid helper occupying only the stone arch's structural blocks. */
-public final class WatergateFrameBlock extends Block {
+public final class WatergateFrameBlock extends Block implements SimpleWaterloggedBlock {
+    public static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     public static final MapCodec<WatergateFrameBlock> CODEC = simpleCodec(WatergateFrameBlock::new);
 
     public WatergateFrameBlock(Properties properties) {
         super(properties);
+        registerDefaultState(stateDefinition.any().setValue(WATERLOGGED, false));
     }
 
     /** A Creative hit on any collision segment dismantles its owning Watergate. */
@@ -53,4 +61,23 @@ public final class WatergateFrameBlock extends Block {
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;
     }
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(WATERLOGGED);
+    }
+
+    @Override
+    public FluidState getFluidState(BlockState state) {
+        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+    }
+
+    @Override
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
+            LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+        if (state.getValue(WATERLOGGED)) {
+            level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+        }
+        return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
+    }
+
 }

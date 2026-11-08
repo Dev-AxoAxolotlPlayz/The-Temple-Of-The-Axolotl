@@ -17,7 +17,7 @@ public final class LoreBlockItemRenderer extends GeoItemRenderer<LoreBlockItem> 
                              MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         poseStack.pushPose();
         if (context == ItemDisplayContext.GUI) {
-            poseStack.translate(0.5F, 0.43F, 0.5F);
+            poseStack.translate(0.5F, 0.20F, 0.5F);
             poseStack.mulPose(Axis.YP.rotationDegrees(145F));
             poseStack.mulPose(Axis.XP.rotationDegrees(25F));
             poseStack.scale(0.52F, 0.52F, 0.52F);

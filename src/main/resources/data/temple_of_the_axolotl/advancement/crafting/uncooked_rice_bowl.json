@@ -1,0 +1,27 @@
+{
+  "parent": "temple_of_the_axolotl:crafting/uncooked_rice",
+  "display": {
+    "icon": {
+      "id": "temple_of_the_axolotl:uncooked_rice_bowl"
+    },
+    "title": "Half-Baked Plans",
+    "description": "Make a Uncooked Rice Bowl for the first time",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "crafted_0": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "temple_of_the_axolotl:uncooked_rice_bowl"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_0"
+    ]
+  ]
+}

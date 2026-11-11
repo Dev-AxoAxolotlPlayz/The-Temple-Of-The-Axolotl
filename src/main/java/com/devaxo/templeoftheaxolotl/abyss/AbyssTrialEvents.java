@@ -38,6 +38,7 @@ public final class AbyssTrialEvents {
     private long shutdownStart = -1;
     // Independent per-chunk statuses: 0=not requested, 1=attempting, 2=verified.
     private final int[] chunkStatuses = new int[4];
+    // Per-quadrant progress; the Watergate still renders four diagnostic beam pairs.
     private long chunkAttemptTick = -1;
     private int reportedProgress = -1;
     private int encodedProgress() {
@@ -46,7 +47,12 @@ public final class AbyssTrialEvents {
         return result;
     }
     private static final BlockPos ARRIVAL = new BlockPos(0, 201, 0);
-    private static final int[][] ARRIVAL_CHUNKS = {{-1,-1},{-1,0},{0,-1},{0,0}};
+    private static final int[][] ARRIVAL_CHUNKS = {
+        {-2,-2},{-2,-1},{-1,-2},{-1,-1}, // NW
+        {0,-2},{0,-1},{1,-2},{1,-1},     // NE
+        {-2,0},{-2,1},{-1,0},{-1,1},     // SW
+        {0,0},{0,1},{1,0},{1,1}          // SE
+    };
 
     @SubscribeEvent public void tick(ServerTickEvent.Post event) {
         if (++ticks % 5 != 0) return;
@@ -74,12 +80,11 @@ public final class AbyssTrialEvents {
                         && jb.getTheItem().is(ModItems.DISC_COSMIC_SEAS.get());
                 boolean portalActive = ready && awakeningStage == 14 && keyPlaying;
                 int progress = encodedProgress();
-                if (state.getValue(WatergateBlock.AWAKENING) != awakeningStage
-                        || state.getValue(WatergateBlock.CHUNK_PROGRESS) != progress
-                        || state.getValue(WatergateBlock.READY) != portalActive) {
-                    player.serverLevel().setBlock(pos, state.setValue(WatergateBlock.AWAKENING, awakeningStage)
-                            .setValue(WatergateBlock.CHUNK_PROGRESS, progress)
-                            .setValue(WatergateBlock.READY, portalActive), 3);
+                if (player.serverLevel().getBlockEntity(pos) instanceof WatergateEntity gate) {
+                    gate.setProgress(awakeningStage, progress);
+                }
+                if (state.getValue(WatergateBlock.READY) != portalActive) {
+                    player.serverLevel().setBlock(pos, state.setValue(WatergateBlock.READY, portalActive), 3);
                 }
                 if (!keyPlaying && !ready) continue;
                 if (!ready && keyPlaying) {
@@ -120,25 +125,26 @@ public final class AbyssTrialEvents {
         if (preparing && !ready && shutdownStart < 0) {
             if (preparationStep < ARRIVAL_CHUNKS.length) {
                 int index = preparationStep;
+                int quadrant = index / 4;
                 int[] cp = ARRIVAL_CHUNKS[index];
                 // Send a distinct violet state before attempting synchronous terrain painting.
                 // This also makes the state visible for at least one server-tick batch.
-                if (chunkStatuses[index] == 0) {
-                    chunkStatuses[index] = 1;
+                if (chunkStatuses[quadrant] == 0) {
+                    chunkStatuses[quadrant] = 1;
                     chunkAttemptTick = ticks;
-                    TempleOfTheAxolotl.LOGGER.info("Abyss arrival: START chunk {},{} (pair {} violet)", cp[0], cp[1], index + 1);
+                    TempleOfTheAxolotl.LOGGER.info("Abyss arrival: START chunk {},{} (pair {} violet)", cp[0], cp[1], quadrant + 1);
                 } else if (ticks > chunkAttemptTick) {
                     try {
                         boolean painted = AbyssTerrainEvents.ensureArrivalChunk(abyss, cp[0], cp[1]);
                         boolean verified = painted && abyss.getBlockState(
                                 new BlockPos(cp[0] * 16, -63, cp[1] * 16)).is(Blocks.OBSIDIAN);
                         if (verified) {
-                            chunkStatuses[index] = 2;
                             preparationStep++;
+                            if (preparationStep % 4 == 0) chunkStatuses[quadrant] = 2;
                             chunkAttemptTick = -1;
                             failedPreparationTicks = 0;
                             TempleOfTheAxolotl.LOGGER.info("Abyss arrival: VERIFIED chunk {},{} (pair {} cyan)",
-                                    cp[0], cp[1], index + 1);
+                                    cp[0], cp[1], quadrant + 1);
                         } else if (++failedPreparationTicks % 20 == 1) {
                             TempleOfTheAxolotl.LOGGER.warn("Abyss arrival: WAIT chunk {},{}; painter={}, marker={}",
                                     cp[0], cp[1], painted, abyss.getBlockState(
@@ -174,7 +180,7 @@ public final class AbyssTrialEvents {
                         int[] cp = ARRIVAL_CHUNKS[i];
                         if (!abyss.getBlockState(new BlockPos(cp[0]*16,-63,cp[1]*16)).is(Blocks.OBSIDIAN)) {
                             preparationStep = i;
-                            chunkStatuses[i] = 1;
+                            chunkStatuses[i / 4] = 1;
                             chunkAttemptTick = ticks - 1;
                             break;
                         }

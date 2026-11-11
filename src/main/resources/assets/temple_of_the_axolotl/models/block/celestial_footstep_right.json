@@ -1,0 +1,1 @@
+{ "parent":"minecraft:block/carpet", "render_type":"minecraft:cutout", "textures": {"wool":"temple_of_the_axolotl:block/celestial_footstep_right", "particle":"temple_of_the_axolotl:block/celestial_footstep_right"}}

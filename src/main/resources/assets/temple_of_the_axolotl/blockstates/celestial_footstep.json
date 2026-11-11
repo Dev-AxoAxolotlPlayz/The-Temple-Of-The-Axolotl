@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "heading=0,left=false": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_right",
+      "y": 0
+    },
+    "heading=0,left=true": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_left",
+      "y": 0
+    },
+    "heading=1,left=false": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_right_diagonal",
+      "y": 0
+    },
+    "heading=1,left=true": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_left_diagonal",
+      "y": 0
+    },
+    "heading=2,left=false": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_right",
+      "y": 90
+    },
+    "heading=2,left=true": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_left",
+      "y": 90
+    },
+    "heading=3,left=false": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_right_diagonal",
+      "y": 90
+    },
+    "heading=3,left=true": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_left_diagonal",
+      "y": 90
+    },
+    "heading=4,left=false": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_right",
+      "y": 180
+    },
+    "heading=4,left=true": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_left",
+      "y": 180
+    },
+    "heading=5,left=false": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_right_diagonal",
+      "y": 180
+    },
+    "heading=5,left=true": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_left_diagonal",
+      "y": 180
+    },
+    "heading=6,left=false": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_right",
+      "y": 270
+    },
+    "heading=6,left=true": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_left",
+      "y": 270
+    },
+    "heading=7,left=false": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_right_diagonal",
+      "y": 270
+    },
+    "heading=7,left=true": {
+      "model": "temple_of_the_axolotl:block/celestial_footstep_left_diagonal",
+      "y": 270
+    }
+  }
+}

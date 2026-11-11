@@ -42,10 +42,6 @@ public class WatergateBlock extends HorizontalDirectionalBlock implements Entity
 
     public static final net.minecraft.world.level.block.state.properties.BooleanProperty READY = net.minecraft.world.level.block.state.properties.BooleanProperty.create("ready");
 
-    public static final net.minecraft.world.level.block.state.properties.IntegerProperty AWAKENING = net.minecraft.world.level.block.state.properties.IntegerProperty.create("awakening", 0, 14);
-
-    public static final net.minecraft.world.level.block.state.properties.IntegerProperty CHUNK_PROGRESS = net.minecraft.world.level.block.state.properties.IntegerProperty.create("chunk_progress", 0, 255);
-
     public static final DirectionProperty FACING =
             HorizontalDirectionalBlock.FACING;
 
@@ -53,7 +49,7 @@ public class WatergateBlock extends HorizontalDirectionalBlock implements Entity
         super(properties);
 
         registerDefaultState(
-                stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false).setValue(READY, false).setValue(AWAKENING, 0).setValue(CHUNK_PROGRESS, 0)
+                stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false).setValue(READY, false)
         );
     }
 
@@ -71,7 +67,7 @@ public class WatergateBlock extends HorizontalDirectionalBlock implements Entity
     protected void createBlockStateDefinition(
             StateDefinition.Builder<Block, BlockState> builder
     ) {
-        builder.add(FACING, WATERLOGGED, READY, AWAKENING, CHUNK_PROGRESS);
+        builder.add(FACING, WATERLOGGED, READY);
     }
 
     /** Two 1-block-wide pillars at +/-2, and a top lintel at Y+4.

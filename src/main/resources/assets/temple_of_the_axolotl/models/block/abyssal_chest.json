@@ -1,0 +1,144 @@
+{
+  "credit": "Abyssal Chest \u2014 animated cosmic-oceanic voxel model",
+  "ambientocclusion": false,
+  "textures": {
+    "front": "temple_of_the_axolotl:block/abyssal_chest_front",
+    "back": "temple_of_the_axolotl:block/abyssal_chest_back",
+    "left": "temple_of_the_axolotl:block/abyssal_chest_left",
+    "right": "temple_of_the_axolotl:block/abyssal_chest_right",
+    "top": "temple_of_the_axolotl:block/abyssal_chest_top",
+    "bottom": "temple_of_the_axolotl:block/abyssal_chest_bottom",
+    "particle": "temple_of_the_axolotl:block/abyssal_chest_front"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        1,
+        1
+      ],
+      "to": [
+        15,
+        10,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front"
+        },
+        "south": {
+          "texture": "#back"
+        },
+        "west": {
+          "texture": "#left"
+        },
+        "east": {
+          "texture": "#right"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "down": {
+          "texture": "#bottom"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        10,
+        1
+      ],
+      "to": [
+        15,
+        15,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front"
+        },
+        "south": {
+          "texture": "#back"
+        },
+        "west": {
+          "texture": "#left"
+        },
+        "east": {
+          "texture": "#right"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "down": {
+          "texture": "#bottom"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        7,
+        0.4
+      ],
+      "to": [
+        9,
+        11,
+        1.1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front"
+        },
+        "south": {
+          "texture": "#front"
+        },
+        "west": {
+          "texture": "#front"
+        },
+        "east": {
+          "texture": "#front"
+        },
+        "up": {
+          "texture": "#front"
+        },
+        "down": {
+          "texture": "#front"
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.82,
+        0.82,
+        0.82
+      ]
+    },
+    "ground": {
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "fixed": {
+      "scale": [
+        0.7,
+        0.7,
+        0.7
+      ]
+    }
+  }
+}

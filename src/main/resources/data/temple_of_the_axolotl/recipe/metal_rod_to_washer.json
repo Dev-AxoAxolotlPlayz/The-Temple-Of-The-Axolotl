@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "temple_of_the_axolotl:metal_rod"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:washer",
+    "count": 4
+  }
+}

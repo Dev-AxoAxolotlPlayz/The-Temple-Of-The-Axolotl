@@ -109,6 +109,17 @@ public final class MerolotlRuins {
                     i == 0, random.nextInt(), random.nextInt());
         }
 
+        // A ruin may preserve one intact Abyssal lore block in a surviving house.
+        // This roll is per ruin, not per island or random ocean chunk.
+        if (!islands.isEmpty() && random.nextDouble() < .35) {
+            int selected = random.nextInt(islands.size());
+            BlockPos house = islands.get(selected);
+            BlockPos lore = house.offset(0, 1, 0);
+            level.setBlock(lore, ModBlocks.ABYSSAL_LORE_BLOCK.get().defaultBlockState()
+                    .setValue(com.devaxo.templeoftheaxolotl.lore.AbyssalLoreBlock.FACING,
+                            Direction.NORTH), 3);
+        }
+
         // Protected central Watergate island and jukebox; do this after ruin damage.
         for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) {
             if (dx * dx + dz * dz <= 20) {

@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "temple_of_the_axolotl:axolite"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "temple_of_the_axolotl:axolite"
+      }
+    ]
+  }
+}

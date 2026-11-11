@@ -23,6 +23,12 @@ import java.util.*;
 
 /** Phase 1 companion. Commands and item rewards are authoritative on the server. */
 public class AbyssalAxolotlEntity extends TamableAnimal implements GeoEntity {
+    // Abyss inhabitants persist across player-distance despawn checks.
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
+        return false;
+    }
+
     private static final EntityDataAccessor<Boolean> SITTING = SynchedEntityData.defineId(AbyssalAxolotlEntity.class, EntityDataSerializers.BOOLEAN);
     
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -47,21 +53,12 @@ public class AbyssalAxolotlEntity extends TamableAnimal implements GeoEntity {
         super.defineSynchedData(builder); builder.define(SITTING, false);
     }
     @Override public void setOrderedToSit(boolean sit) { super.setOrderedToSit(sit); entityData.set(SITTING, sit); }
-    // Dynamic movement cap: 103% of the owner's current velocity (including vehicles).
-    private static final double OWNER_SPEED_MULTIPLIER = 1.03D;
-    private double ownerSpeedCap() {
-        if (!(getOwner() instanceof LivingEntity owner)) return 0.0D;
-        net.minecraft.world.entity.Entity moving = owner.getVehicle() != null
-                ? owner.getRootVehicle() : owner;
-        return Math.max(0.12D, moving.getDeltaMovement().length() * OWNER_SPEED_MULTIPLIER);
-    }
-    private void limitMovementToOwnerSpeed() {
-        if (!activelyFollowingOwner) return;
-        double cap = ownerSpeedCap();
-        net.minecraft.world.phys.Vec3 velocity = getDeltaMovement();
-        if (velocity.lengthSqr() > cap * cap && velocity.lengthSqr() > 0)
-            setDeltaMovement(velocity.normalize().scale(cap));
-    }
+    // Target speeds in blocks/tick: normal/follow 9.6 b/s, guard 13 b/s.
+    private static final double SWIM_SPEED = 0.48D;
+    private static final double GUARD_SPEED = 0.65D;
+    private static final double FETCH_LAND_SPEED = 0.32D;
+    private static final double GUARD_RADIUS_SQR = 25.0D;
+    private void limitMovementToOwnerSpeed() { /* Fixed mode speeds replace the old owner-velocity cap. */ }
     private static final double OWNER_DEFENSE_RADIUS = 24.0D;
     private static final double BENDS_CURE_RADIUS = 8.0D;
 
@@ -169,6 +166,13 @@ public class AbyssalAxolotlEntity extends TamableAnimal implements GeoEntity {
                 getNavigation().stop();
             }
         });
+        // Creeper-sense: proactively intercept creepers near the owner.
+        // Guard mode never extends beyond the five-block owner perimeter.
+        targetSelector.addGoal(0, new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(
+                this, net.minecraft.world.entity.monster.Creeper.class, 10, true, false,
+                candidate -> isTame() && !isOrderedToSit() && !busy() && getOwner() != null
+                        && candidate.isAlive()
+                        && candidate.distanceToSqr(getOwner()) <= (guarding ? GUARD_RADIUS_SQR : 256.0D)));
         // Defend the owner from Axoleviathans even when ordinary guarding is disabled.
         targetSelector.addGoal(0, new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(
                 this, AxoleviathanEntity.class, 10, true, false,
@@ -177,7 +181,7 @@ public class AbyssalAxolotlEntity extends TamableAnimal implements GeoEntity {
         targetSelector.addGoal(1, new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(
                 this, net.minecraft.world.entity.LivingEntity.class, 10, true, false,
                 candidate -> guarding && getOwner() != null && candidate != getOwner()
-                        && candidate.distanceToSqr(getOwner()) <= 144
+                        && candidate.distanceToSqr(getOwner()) <= GUARD_RADIUS_SQR
                         && (candidate instanceof net.minecraft.world.entity.monster.Monster
                             || (candidate instanceof net.minecraft.world.entity.NeutralMob neutral
                                 && neutral.isAngryAt(getOwner())))));
@@ -234,10 +238,7 @@ public class AbyssalAxolotlEntity extends TamableAnimal implements GeoEntity {
                     wantedX - noodle.getX(), wantedY - noodle.getY(), wantedZ - noodle.getZ());
             if (delta.lengthSqr() < 0.04D) { noodle.setSpeed(0); return; }
             net.minecraft.world.phys.Vec3 direction = delta.normalize();
-            double desiredSpeed = Math.max(0.1D, speedModifier * 0.75D);
-            if (noodle.activelyFollowingOwner) {
-                desiredSpeed = Math.min(noodle.ownerSpeedCap(), desiredSpeed);
-            }
+            double desiredSpeed = noodle.guarding ? GUARD_SPEED : SWIM_SPEED;
             // Don't chase a target above the waterline with a vertical leap.
             if (direction.y > 0 && noodle.level().getFluidState(noodle.blockPosition().above()).isEmpty()) {
                 direction = new net.minecraft.world.phys.Vec3(direction.x, 0, direction.z).normalize();
@@ -386,10 +387,16 @@ public class AbyssalAxolotlEntity extends TamableAnimal implements GeoEntity {
                 getNavigation().stop();
             } else if (isOrderedToSit()) setOrderedToSit(false);
         }
+        if (guarding && getOwner() != null && distanceToSqr(getOwner()) > GUARD_RADIUS_SQR) {
+            setTarget(null);
+            getNavigation().stop();
+            if (isInWater()) getMoveControl().setWantedPosition(getOwner().getX(), getOwner().getY(), getOwner().getZ(), 1.0D);
+            else getNavigation().moveTo(getOwner(), 1.0D);
+        }
         if (guarding && getOwner() != null && (getTarget() == null || !getTarget().isAlive())) {
             setTarget(null);
         }
-        if (guarding && getTarget() != null && !(getTarget() instanceof AxoleviathanEntity) && getOwner() != null && getTarget().distanceToSqr(getOwner()) > 196) {
+        if (guarding && getTarget() != null && !(getTarget() instanceof AxoleviathanEntity) && getOwner() != null && getTarget().distanceToSqr(getOwner()) > GUARD_RADIUS_SQR) {
             setTarget(null); getNavigation().stop();
         }
 

@@ -25,6 +25,7 @@ public final class ModBlocks {
     public static void addCreativeTab(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(TEMPLE_PORTAL_ITEM.get());
+            event.accept(ABYSSAL_CHEST_ITEM.get());
             event.accept(SHALLOWS_PORTAL_ITEM.get());
             event.accept(SHALLOWS_EXIT_PORTAL_ITEM.get());
             event.accept(LORE_BLOCK_ITEM.get());
@@ -35,6 +36,29 @@ public final class ModBlocks {
             event.accept(FIELD_GUIDE_ITEM.get());
         }
     }
+
+    public static final DeferredBlock<com.devaxo.templeoftheaxolotl.block.AbyssalChestBlock> ABYSSAL_CHEST =
+            BLOCKS.register("abyssal_chest", () -> new com.devaxo.templeoftheaxolotl.block.AbyssalChestBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.ENDER_CHEST).strength(2.5f)));
+    public static final DeferredItem<BlockItem> ABYSSAL_CHEST_ITEM = ITEMS.register("abyssal_chest",
+            () -> new BlockItem(ABYSSAL_CHEST.get(), new Item.Properties()));
+
+    // Temporary, light-emitting celestial ground residue left by the companion.
+    public static final DeferredBlock<Block> CELESTIAL_FOOTSTEP = BLOCKS.register("celestial_footstep",
+            () -> new com.devaxo.templeoftheaxolotl.block.CelestialFootstepBlock(
+                    BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.COLOR_CYAN)
+                            .noCollission().noOcclusion().instabreak().noLootTable()
+                            .lightLevel(state -> 4)));
+
+    // Axolite: two variants with a shared Gold Pickaxe/Ring harvesting restriction.
+    public static final DeferredBlock<Block> AXOLITE_ORE = BLOCKS.register("axolite_ore", () ->
+            new com.devaxo.templeoftheaxolotl.axolite.AxoliteOreBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_ORE).lightLevel(state -> 3)));
+    public static final DeferredBlock<Block> DEEPSLATE_AXOLITE_ORE = BLOCKS.register("deepslate_axolite_ore", () ->
+            new com.devaxo.templeoftheaxolotl.axolite.AxoliteOreBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE_REDSTONE_ORE).lightLevel(state -> 3)));
+    public static final DeferredItem<BlockItem> AXOLITE_ORE_ITEM = ITEMS.register("axolite_ore", () -> new BlockItem(AXOLITE_ORE.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> DEEPSLATE_AXOLITE_ORE_ITEM = ITEMS.register("deepslate_axolite_ore", () -> new BlockItem(DEEPSLATE_AXOLITE_ORE.get(), new Item.Properties()));
 
     // Stage-one Annealing Kiln: placeable cyan workstation shell; inventory/processing follows in next phase.
     public static final DeferredBlock<Block> ANNEALING_KILN = BLOCKS.register("annealing_kiln",

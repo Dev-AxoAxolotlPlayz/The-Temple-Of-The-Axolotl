@@ -1,3 +1,664 @@
+# Temple of the Axolotl — Master Development Roadmap V24
+
+**Updated:** November 10–11, 2026 — nightly Cheese-Shroom Incident checkpoint  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl` · **Package:** `com.devaxo.templeoftheaxolotl`
+
+> **V24 precedence:** This new section supersedes older *current-status* statements only for the companion construction work observed or inspected tonight. V23 and its full preserved V22–V1 history follow unchanged. **FIELD-CONFIRMED** = user screenshot/log or explicit report; **SOURCE-OBSERVED** = found in supplied checkpoint, not necessarily working; **PATCH DELIVERED** = previously supplied overlay, not a successful compilation claim; **DESIGN AGREED** = future target. Keep **Waifu Axoluthu** (companion) separate from **Axoluthu** (Abyss boss).
+
+## 0. Authoritative nightly source checkpoint
+
+**NEW LATEST SOURCE BASELINE:** `Checkpoint - The Cheese-Shroom Incident.zip` (user-uploaded full project, 3,723 ZIP entries, approximately 341 MiB compressed). This supersedes `Checkpoint - Yay We Got Some Brains.zip` as the starting point for future changes. It includes current `WaifuAxoluthuEntity.java`, `WaifuAxoluthuStage5Build.java`, `WaifuAxoluthuRecipeBrain.java`, and `WaifuAxoluthuTaskPlanner.java`. Keep the complete checkpoint as-is for recovery; future ZIPs should be minimal overlays against this exact baseline. This roadmap update **does not modify Java source, compile Gradle, or certify new runtime tests**.
+
+## 1. What was accomplished — the first autonomous house build
+
+| Workstream | Status | Evidence / boundary |
+|---|---|---|
+| Autonomous house project scheduling | **FIELD-CONFIRMED: construction resumed and ran** | Earlier diagnostics showed `goal=EXPLORE`, `constructionPhase=IDLE` despite an approved unfinished house; a scheduler-reconnection patch was delivered, and subsequent screenshots show the companion building and announcing completion. Do not infer all save/reload recovery edge cases are fixed. |
+| First full house build | **FIELD-CONFIRMED: completed a run** | Player screenshot shows `<Axoluthu> My house is finished! Come see! :D` and the constructed house. **Completion of the existing blueprint is not architectural acceptance.** |
+| Building reach | **SOURCE-OBSERVED / FIELD-OBSERVED** | Stage 5 currently permits blueprint placement up to 32 blocks; screenshot showed her building from the beach, far from the structure. |
+| Construction animation | **SOURCE-OBSERVED; VISUAL QUALITY UNVERIFIED** | Current Stage 5 calls `ACTION_CONSTRUCTION_POKE` with 21-tick keyframe and 23-tick total; earlier 2× poke patch was delivered. Confirm animation synchronization at normal 20 TPS. |
+| Crafting-memory compile repair | **PATCH DELIVERED; later gameplay ran** | Previous missing `hasCraftedBefore(Item)` and `rememberCrafted(Item)` errors were addressed by a replacement entity patch; check preservation in the checkpoint and compile the complete project before new modifications. |
+| Site logistics / workstations | **SOURCE-OBSERVED; REAL PROXIMITY NOT FULLY FIELD-VERIFIED** | Construction code includes site preparation, Abyssal Chest owner linking and some chest-approach handling. Prior workstation-proximity patch was delivered, but actual behavior across all RecipeBrain, site crafting and Repository transfers needs testing. |
+| House design / roof | **FIELD-CONFIRMED: visually incorrect** | Screenshots show an oversized overhanging gable/cheese-grater roof with apparent gaps and upside-down or wrong-facing stairs. Final house looked like a giant wooden mushroom with windows. |
+| Accelerated AI test | **FIELD-CONFIRMED** | `/tick sprint` output: 183 ticks/second, 5.44 ms/tick, approximately 9.15× normal 20 TPS. Useful for rapid construction testing; normal-rate movement/animation still needs separate validation. |
+
+### 1A. Source-confirmed roof bugs to investigate first
+
+The checkpoint's `WaifuAxoluthuStage5Build.java` constructs stair states from `block.defaultBlockState()` and sets only `StairBlock.FACING` based on X position relative to the footprint midpoint. It does **not explicitly set `StairBlock.HALF`** or a validated roof-axis/edge direction. Also, the placement loop currently skips an existing block if `existing.is(state.getBlock())`, **even when stair orientation or other block-state properties differ**. That means incorrect stairs may be accepted as complete and never corrected. The current build phases are `BUILDING_FLOOR`, `BUILDING_WALLS`, `BUILDING_ROOF`, `BUILDING_WINDOWS`, and `BUILDING_INTERIOR`; verify actual blueprint coordinate generation and phase ordering before changing the house layout. This is a targeted source observation, not a claim that every roof issue has a single cause.
+
+## 2. Agreed starter-house target — next implementation
+
+**DESIGN AGREED; NOT YET BUILT OR VERIFIED.** Waifu Axoluthu's first reliable house should be a **one-story, three-room cottage** with **one bedroom, one kitchen, one living room**, and **a small storage loft**, not a full second floor. Use a conventional two-sided gable roof, correct stair orientation and continuous slopes. The loft should have a usable platform and ladder access; reserve the opening and headroom. The player may enlarge/raise the loft manually later. Do not silently expand scope to a complex mansion or multi-style procedural architecture engine.
+
+**Construction expectations:** floor and outer walls; interior partitions and doorways; basic windows and entrance; simple three-room arrangement; loft platform/ladder; correctly oriented stair roof with ridge and gable ends; sensible overhang relative to footprint; final structure verification. A 'finished' message must require the actual target geometry and required rooms to pass checks, not merely exhausting the blueprint cursor.
+
+**Repair policy:** Preserve the original Cheese-Shroom as a test artifact unless the player explicitly opts into rebuilding. For future unfinished builds, reconcile the blueprint against the world, including **full block-state equality**, and change only blocks provably placed by her own project. Never delete or overwrite player-made/protected blocks just because the desired blueprint differs. Preserve saved inventory, approvals, home, crafting memory and progress.
+
+## 3. Construction-site behavior and storage
+
+- **Preferred work position:** stand at a safe, reachable site position roughly **4–8 blocks** from the active work area; don't remain on the beach just because 32-block placement is permitted. Reposition by section rather than for every block.
+- **Magical placement:** retain the **32-block upper limit** as a fallback for roof/high blocks; it is not a substitute for approaching the construction site.
+- **Workstation use:** approach the site's crafting table and Abyssal Chest before relevant crafting and storage operations; approximately **3-block interaction range** is the intended test target. Check actual pathing and successful transfer, not just distance checks.
+- **Abyssal Chest semantics:** preserve the owner's Repository-linked access where implemented, rather than treating the linked chest as an unrelated ordinary inventory. Validate owner authorization, deposits, withdrawals, material accounting and no dupes/loss. The checkpoint also contains site double-chest storage logic; **audit both paths and document which inventory each construction operation uses** before refactoring.
+- **Animation:** retain the 21-tick, double-speed angry poke as currently intended; confirm its action lifecycle at normal TPS and during tick sprint.
+
+## 4. Next-session acceptance checklist
+
+- [x] First autonomous construction run reached the companion's 'house finished' announcement; visually inspected result.
+- [x] Confirmed 183 TPS tick-sprint stress test (5.44 ms/tick).
+- [x] Inspected current source and identified stair block-state comparison weakness.
+- [ ] Compile the exact Cheese-Shroom checkpoint, record any errors and fix minimally without replacing unrelated source.
+- [ ] Trace roof blueprint generation, footprint dimensions, X/Z ridge orientation, stair facing/half/shape, and how gable ends/overhang are computed.
+- [ ] Implement a correct, continuous two-sided gable roof with correct outward-facing, bottom-half stairs; verify with all four house rotations.
+- [ ] Compare full block states during construction/reconciliation so wrong-facing or upside-down stairs cannot silently pass.
+- [ ] Implement a functional one-story layout: bedroom, kitchen, living room, partition doorways, windows and entrance.
+- [ ] Implement small accessible loft with platform, ladder and reserved headroom; no requirement for a full second story.
+- [ ] Add structural completion checks before celebratory dialogue; no 'finished' for missing roof segments, wrong stairs or inaccessible rooms.
+- [ ] Make her approach and stay near active construction sections while retaining 32-block magical placement fallback.
+- [ ] Confirm site crafting table use and Abyssal Chest/Repository access require nearby positioning and owner authorization.
+- [ ] Verify the crafting-memory methods and learned state persist after reload; preserve house approval, blueprint, cursor, materials and home.
+- [ ] Test normal 20 TPS animation/navigation; use `/tick sprint` only as a complementary accelerated stress test.
+- [ ] Validate reload during walls/roof, full storage, missing materials, chunk unload, and multiplayer ownership; no duplicated or lost items.
+- [ ] Preserve the Cheese-Shroom house unless the player explicitly requests cleanup/reconstruction.
+
+## 5. Carry-forward backlog — not silently changed
+
+The V23 autonomous piston proof-of-concept, RecipeManager/cycle-guard work, delivery/permissions, architecture scanning, home commands, and missing-workstation bootstrap still retain their previous verification boundaries. The V21 **21/22 original regression scoreboard remains unchanged**: EMI Repository recipe transfer is still the single unchecked original test. Preserve separate shipyard/Annealing Kiln and JEI recipes, Axolite progression, Celestial Anvil XP-point repair, Remembered Never Forgotten, and **Axoluthu endgame boss/Cosmic Trident** dockets. Maintain Watergate state optimization, Leviathan culling and **NO TOUCHIE BOAT**. New construction bugs do not retroactively invalidate completed Temple/Origin/Abyss systems.
+
+**Nightly milestone:** *Waifu Axoluthu finally remembered her house and finished her first autonomous build. The Cheese-Shroom proved the construction pipeline runs; next she learns the difference between a cottage roof and a floating wooden cheese grater.* 🏠🧀💜
+
+---
+
+# Preserved V23 roadmap and all earlier historical appendices (unchanged)
+
+# Temple of the Axolotl — Master Development Roadmap V23
+
+**Updated:** November 9, 2026 (night checkpoint; local test logs extend into November 10)  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl` · **Package:** `com.devaxo.templeoftheaxolotl`
+
+> **V23 precedence:** This section supersedes older current-status statements only for work specifically discussed or evidenced on November 9. The entire V22 document, including its preserved V21–V1 history, follows unchanged. **FIELD-CONFIRMED** means user observation/log evidence; **PATCH DELIVERED / UNVERIFIED** means a ZIP was supplied but Java build and gameplay tests have not been confirmed; **DESIGN AGREED** means future intended behavior. Do not conflate **Waifu Axoluthu** (autonomous companion) with **Axoluthu** (Ethereal Abyss endgame boss). Do not mark a feature complete just because a source file or patch exists.
+
+## 0. Authoritative nightly checkpoint and achievements
+
+**Latest user-supplied full source checkpoint:** `Checkpoint - Yay We Got Some Brains.zip` (nightly upload, November 9). Use this checkpoint rather than the older `Checkpoint - The Final Quarter.zip` when continuing development. It contains 18 Java files with `WaifuAxoluthu` in their names, including entity, task planner, recipe brain, dependency brain, storage manager, architecture scanner, resource scanner, workshop/furnace actions, forestry, piston project, renderer and model. File presence confirms a source baseline, not that every behavior passed a test. Preserve this full ZIP as the recovery point; future patch ZIPs are overlays, not replacements for the checkpoint.
+
+### November 9–10 status snapshot
+
+| Workstream | Latest status | Evidence / remaining boundary |
+|---|---|---|
+| **Waifu Axoluthu autonomous piston project** | **FIELD-CONFIRMED: SUCCESSFUL CRAFT** | Runtime log at 22:59:10: `RECIPE_MANAGER_CRAFT minecraft:piston count=1`; later `pistonIdea=false`, `pistonStatus=CRAFTED_PISTON`, `constructionPhase=IDLE`. Player observed visits to grindstone, crafting table and chest. |
+| RecipeManager-driven crafting and prerequisite sourcing | **PARTIALLY FIELD-CONFIRMED** | Piston successfully crafted using ingredient sourcing. Do not infer every modded recipe or workstation chain works. |
+| Magic grindstone mining / 'boring wheel' | **OBSERVED IN PISTON RUN** | Cobblestone gathered via magic mining and redstone sourced; grindstone is the intended mining workstation, not stonecutter. |
+| Recursive workstation dependency crash | **CRASH DIAGNOSED; GUARD PATCH DELIVERED** | Earlier `StackOverflowError` recursed between `WaifuAxoluthuRecipeBrain.ensure` and `WaifuAxoluthuDependencyBrain.ensure`; cycle-guard patch prevents this specific recursion path but does not prove full bootstrap solvability. No post-patch crash in the successful piston run. |
+| Completion celebration and delivery of all carried items | **PATCH DELIVERED / GAMEPLAY UNVERIFIED** | New delivery workflow intended to store crafted output and remaining supplies in owner-authorized storage, with persistent pending delivery. Verify actual chest contents and recovery behavior. |
+| Automatic architecture discovery | **PATCH DELIVERED / GAMEPLAY UNVERIFIED** | Scheduled key-block scans while FREE; not full building/room segmentation. |
+| `/tota axoluthu home set/status/clear` | **MINIPATCH DELIVERED / GAMEPLAY UNVERIFIED** | Owner proximity/authorization, persistent home, and cross-dimension safeguards need compile and in-game checks. |
+| Waifu Axoluthu general-purpose autonomous intelligence | **ACTIVE PROTOTYPE / DESIGN EXPANDING** | Piston proof of concept succeeds; generalized projects, survival resource bootstrap, world-edit safety, and robust task state remain work in progress. |
+| Axoluthu endgame boss / Cosmic Trident | **STILL UNCONFIRMED / PLANNED** | Separate from companion work; preserve V22 boss docket. |
+| Existing V21 22-test regression matrix | **UNCHANGED: 21/22 PASSED** | EMI Repository recipe transfer remains its sole unchecked original item; newly added companion/shipyard tests are separate. |
+
+## 1. Waifu Axoluthu — autonomous companion architecture
+
+**Goal:** A self-directed cosmic companion that can learn projects, gather legitimate materials, use real crafting/smelting workstations, recognize structures, and maintain a home base. The Anomalous Coffee Machine discussion served as creative inspiration for this companion's autonomous crafting and building behavior; it is not a request to copy or add an SCP entity. Preserve existing visual identity and ownership mechanics.
+
+### 1A. Established prototype and current workflow
+
+- Companion supports **STAY / FOLLOW / FREE**, bonded-owner interactions, persistent carried materials (nine-slot inventory), storage access subject to owner authorization, workshop navigation, task planning and resource acquisition.
+- Current source includes dedicated `WaifuAxoluthuTaskPlanner`, `WaifuAxoluthuPistonProject`, `WaifuAxoluthuRecipeBrain`, `WaifuAxoluthuDependencyBrain`, `WaifuAxoluthuMagicGathering`, `WaifuAxoluthuForestry`, `WaifuAxoluthuFurnaceActions`, `WaifuAxoluthuStorageManager`, `WaifuAxoluthuArchitecture`, and related components.
+- **Proof of concept:** `/tota axoluthu dev idea piston` starts the piston idea/project. The observed successful test sourced cobblestone, obtained redstone, used the crafting table and produced **one real piston**. She then released workshop navigation and resumed normal activity. The silent transition originally looked like giving up; the log disproved that interpretation.
+- **Recipe rule:** Prefer server-authoritative RecipeManager crafting, including appropriate vanilla/modded recipes; actually acquire and consume ingredients. Never conjure project resources, reverse-craft dust from a storage block as a false source, duplicate output, or count a logged craft as verified storage delivery.
+- **Workstations:** Find, approach and use existing authorized/reachable workstations; build/place prerequisites if needed. Magic mining uses a **grindstone** (the 'boring wheel'); foraging uses a cartography table; smelting uses a furnace with appropriate input/fuel. The successful piston test does not certify all other recipes.
+- **Forestry:** Harvest natural trees and replant saplings when required. Maintain resource provenance and avoid damaging player builds.
+
+### 1B. Crash investigation and fixes from tonight
+
+1. **Recipe redstone resolution:** An earlier piston attempt produced `UNRESOLVED_INGREDIENT_minecraft:redstone_block` while trying to acquire redstone dust. Hotfix directs raw redstone and other natural resources to their proper sourcing paths rather than trying to reverse-craft storage blocks. **PATCH DELIVERED; later piston craft succeeded.**
+2. **Infinite recursion:** A workstation dependency could request an ingredient that required the same workstation (e.g., grindstone → stone/slab → grindstone mining), and cross-calls reset the recipe brain's local recursion guard. The crash report identified `StackOverflowError` repeating between `RecipeBrain.ensure` and `DependencyBrain.ensure`. A workstation reentry guard was delivered; **do not treat cycle detection as a solution for obtaining the first required materials**.
+3. **Outstanding bootstrap design:** Implement a legitimate, finite **base-case resource path** (such as eligible natural world materials) when a workstation needed to gather materials does not yet exist. Ensure an unreachable or cyclic recipe returns an intelligible blocked/waiting state instead of crashing or looping. Avoid arbitrary material creation.
+4. **State and observability:** Explicitly distinguish `CRAFTED`, `DELIVERING`, `DELIVERED`, `WAITING_FOR_MATERIALS`, `BLOCKED_CYCLE`, `NO_AUTHORIZED_STORAGE`, and navigation failures; retain task state across save/reload and avoid silently discarding goals.
+
+### 1C. Project completion, inventory cleanup, and chest permissions
+
+**PATCH DELIVERED / NOT YET FIELD-VERIFIED.** After completing a project, she should celebrate, then take **all items in her nine-slot acquired-material inventory**—including the crafted output and leftover inputs—to a previously **owner-authorized** chest or approved storage target. The deposit should be server-authoritative, not delete items, respect full inventories, and retain a pending delivery task across world reload. No unauthorized chest access just because a chest is discovered or near home. After successful delivery, she may return to FREE-mode exploration. Example dialogue: 'Yippee! I made my piston! Time to put everything away! :D' followed by 'Tadaaa! I put my piston and all my leftover supplies in our chest! :D'.
+
+**Acceptance:** Verify piston really appears in approved chest, remaining materials are deposited, carried inventory is cleared only for successfully transferred items, partial/full chest leaves remainder safe, permission changes and chunk unload are handled, no dupe/loss, and multiplayer ownership is respected.
+
+### 1D. Automatic architecture scanning and home assignment
+
+**Architecture scan patch delivered:** While in FREE mode, periodically scan loaded nearby blocks (current patch targets approximately **30-second intervals**) around assigned home, or current position if home is unset. Detect building/workstation clues via key blocks such as crafting tables, smithing tables, furnaces, grindstones, composters, cartography tables and storage. The approach is inspired by Minecraft Comes Alive's key-block-based building identification, without adding MCA as a hard dependency. **Current scanning is key-block recognition, not completed building footprint, rooms, ownership or functional category classification.**
+
+**Home command minipatch delivered:**
+
+| Command | Intended behavior |
+|---|---|
+| `/tota axoluthu home set` | Owner sets companion home to the executing player's current position and dimension. |
+| `/tota axoluthu home status` | Reports stored coordinates and dimension. |
+| `/tota axoluthu home clear` | Clears manual assignment, reverting to automatic home behavior. |
+
+The supplied minipatch uses a **32-block bonded-owner proximity requirement**, persistence and cross-dimension navigation safeguards. Test the actual command registration, authorization, save/reload and behavior after switching dimensions. Home assignment is **not** automatic authorization for nearby chests. Integrate the home anchor into architecture scans, workshop searches, storage routing and return-to-base behavior without accidentally scanning wrong-dimension coordinates.
+
+### 1E. Planned intelligent construction and natural-terrain rules
+
+**DESIGN DIRECTION / NOT FULLY IMPLEMENTED OR CERTIFIED:** Allow Axoluthu to plan and construct useful structures by acquiring ingredients, crafting intermediate components, locating/using required workstations and navigating a multi-step dependency chain. She should be able to build a crafting table, realize a smithing table is needed, obtain/smelt iron legitimately, and continue toward the original goal. Building classification should use **key functional blocks** and eventually support meaningful architectural categories and room/structure recognition.
+
+**Terrain safety proposal from developer:** Distinguish originally generated terrain from player changes by comparing the **world seed and coordinates** to the original generated terrain; only terraform blocks/fluids established as natural, and protect player-placed/modified structures. **This is a design proposal, not a proven detection algorithm.** Worldgen changes, retrogen, structures, player excavation and block updates make seed-only inference unsafe; implement a reliable provenance/permission strategy and conservative fallback before granting destructive editing. Do not destroy unverified blocks or unauthorized chests. Preserve existing Temple/Origin/Abyss structures and protected progression blocks.
+
+**Longer-term goals:** Multi-step project memory, meaningful retries, construction footprints, inventory and chest planning, resource sustainability, failure recovery, owner-configurable protected zones, and automated structure recognition without requiring explicit scan commands.
+
+## 2. Companion test matrix — NEW, independent of V21's 21/22
+
+- [x] **Observed:** autonomous piston crafted once using RecipeManager (`RECIPE_MANAGER_CRAFT minecraft:piston count=1`); project marked `CRAFTED_PISTON` and idle afterward.
+- [x] **Observed:** grindstone/crafting-table/chest route during successful piston run; log confirms cobblestone and redstone sourcing.
+- [ ] Confirm full source checkpoint compiles after merging latest auto-delivery/architecture/home overlays; verify which overlay revisions are actually in the checkpoint.
+- [ ] Confirm no `StackOverflowError` or runaway recursion for missing grindstone, stone slabs, furnace, iron, and multi-workstation chains.
+- [ ] Confirm survival bootstrap when required workstation is absent, without cheating materials or modifying player-made terrain.
+- [ ] Confirm piston and all leftover materials reach an **authorized** chest, including full/partial chest and no chest scenarios.
+- [ ] Confirm pending delivery, ownership and inventory persist across world save/reload, chunk unload and server restart.
+- [ ] Confirm automatic architecture scans occur in FREE mode, record relevant key blocks, respect loaded chunks and do not cause TPS spikes.
+- [ ] Confirm `/tota axoluthu home set/status/clear` register, enforce owner/proximity, persist position/dimension and prevent wrong-dimension routing.
+- [ ] Confirm FREE/FOLLOW/STAY changes and interrupted tasks do not erase a successful project or duplicate output.
+- [ ] Confirm owner-approved storage withdrawal and deposit are distinct from mere architecture discovery; no unauthorized access.
+- [ ] Validate vanilla and modded RecipeManager recipes, ingredient alternatives, furnace fuel, crafting-table requirement, and missing-recipe error messages.
+- [ ] Add readable completion/blocked/waiting announcements and optional diagnostic state inspection.
+- [ ] Define and test reliable natural-vs-player-modified terrain detection before enabling broad autonomous terraforming.
+- [ ] Test two-player/Essential/LAN ownership, concurrent tasks, save compatibility and server-authoritative item transactions.
+
+## 3. Existing project backlog carried forward from V22
+
+**Do not erase or silently mark complete any of the following:**
+
+1. **Shipyard manufacturing and JEI:** Annealing Kiln shaped recipe (brick/brick/brick; brick/furnace/brick; blue ice/blue ice/blue ice); Crane Hook new pattern with Boom Truss, Metal Rod, Spring, Rivet and Washer; Metal Rod stonecutting outputs Rivet ×1, Spring ×2, Washer ×4, Bolt ×1. Verify kiln **90 seconds / 1,800 ticks**, Blue Ice coolant, 1–9 Molten Glass in a Mold inputs and **Pressure-Treated Acrylic Panel** outputs rather than currently observed Glass Mold output. Show kiln and Cosmic Brewing Stand processes in JEI; audit registry IDs and downstream Glow Strip/Cockpit Glass recipes. Abyssal Lantern and Abyssal Moai crafting recipes remain **OPEN**.
+2. **Axolite progression:** Gold Pickaxe/Ring-only Axolite Ore mining, Fortune-compatible Raw Axolite Dust, smelt to refined dust; shapeless Axolite Ingot from 4 dust + 2 iron + 2 copper; Axolite Ingot + iron base + diamond smithing arrangement; Netherite-like performance/Diamond-like durability; shapeless Axolite equipment + Netherite Scrap conversion to fully repaired vanilla Netherite item preserving compatible components. **DESIGN AGREED / UNVERIFIED.**
+3. **Celestial Anvil module:** Verify **2 durability per XP point with Mending**, **1 durability per XP point without Mending**. Distinguish repair XP **points** from previously tested ordinary anvil XP **levels**.
+4. **Remembered, Never Forgotten:** Experimental patch reported to load; separately test friendly-fire override, loss records, midnight hauntings, renamed name tags, apology/permanent forgiveness, sleep effects and multiplayer/persistence.
+5. **EMI Repository recipe transfer:** **Sole unchecked item in the pre-existing V21 22-test regression matrix.** Verify independently from working JEI.
+6. **Axoluthu endgame boss and Cosmic Trident:** Still not confirmed implemented. Preserve Leviathan Heart progression, four Tridents + four Orbs of Envy + Heart recipe, creature waves, tentacle stun, briefly exposed weak point, Cosmic Trident-only valid boss damage and **five hunting Axoleviathans** on actual boss death. This is **separate from Waifu Axoluthu companion intelligence**; current companion progress does not certify boss work.
+7. **Regression guardrails:** Preserve all V21 developer-confirmed Temple, Origin, Repository, Watergate, Abyss ecosystem, pressure, companions, Patchouli, HUD and visual systems. Preserve Watergate 61,440→16 BlockState memory optimization, Leviathan culling X/Z 460 and Y 450, and **NO TOUCHIE BOAT**.
+
+## 4. Next-session order of operations
+
+1. **Start from `Checkpoint - Yay We Got Some Brains.zip`.** Confirm it includes the latest delivered home-command and auto-delivery patches, rather than assuming from filename alone; compile in NeoForge 1.21.1.
+2. **Quick smoke test:** set home; check status; clear/set; enable FREE mode; inspect automatic architecture scan and authorized chest association.
+3. **Repeat piston project:** verify completion announcement, delivery of piston and leftover materials, and clean transition back to FREE; test full chest and reload while delivery pending.
+4. **Stress missing prerequisites:** remove access to grindstone/stone/iron in a controlled test world; ensure no recursion crash and a meaningful recovery path.
+5. **Then extend generalized autonomous building**, using a conservative player-build protection strategy and reliable planning; avoid introducing arbitrary world edits before the above tests pass.
+6. **Continue separate shipyard, Axolite, Remembered, EMI and endgame boss dockets** without downgrading previously completed features.
+
+**Nightly milestone:** *The cosmic noodle's first verified autonomous piston is real. Her next challenge is to put it away, remember where home is, and understand the buildings around her.* 💜
+
+---
+
+# Preserved V22 roadmap and all earlier historical appendices (unchanged)
+
+# Temple of the Axolotl — Master Development Roadmap V22
+
+**Updated:** November 8–9, 2026 — latest source checkpoint and shipyard recipe addendum; earlier design discussion: Axolite Overworld equipment progression, Celestial Anvil XP-point repair ratios, and Remembered, Never Forgotten verification docket.  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl` · **Package:** `com.devaxo.templeoftheaxolotl`
+
+> **V22 precedence:** This checkpoint adds the November 8 discussion without overwriting V21's developer-confirmed completion reports. **DESIGN AGREED / NOT YET IMPLEMENTATION-VERIFIED** means the user has specified intended mechanics, not that source or gameplay has been checked. **EXPERIMENTAL PATCH / LOAD CONFIRMED** does not imply individual feature tests passed. V21 and its complete V20–V1 history are preserved verbatim below.
+
+## 0A. November 8–9 night checkpoint — Shipyard recipes, kiln, and JEI (LATEST ADDENDUM)
+
+**Authoritative project source baseline:** user-uploaded **`Checkpoint - The Final Quarter.zip`** (November 9 upload). Preserve it as the latest supplied source checkpoint for subsequent work; do not overwrite it with older Peekaboo Abyss ZIPs. **This roadmap update does not patch or compile the project.** Evidence below is from targeted inspection of the ZIP's source and recipe JSON plus the developer's current design decisions. Source presence is not an in-game PASS.
+
+### Newly agreed crafting recipes
+
+| Recipe | Type | Ingredients / exact layout | Status |
+|---|---|---|---|
+| **Annealing Kiln** | Shaped 3×3 | **Brick / Brick / Brick**; **Brick / Furnace / Brick**; **Blue Ice / Blue Ice / Blue Ice**. Output **1 Annealing Kiln**. "Brick" means the vanilla brick item unless the developer later specifies brick blocks. | **DESIGN LOCKED; recipe JSON absent in inspected source** |
+| **Crane Hook** | Shaped 3×3 | **Empty / Empty / Boom Truss**; **Metal Rod / Empty / Spring**; **Empty / Rivet / Washer**. Output **1 Crane Hook**. | **NEW DESIGN LOCKED; source contains an older/different crane_hook.json and must be updated** |
+| **Metal Rod → Rivet** | Stonecutting | 1 Metal Rod → **1 Rivet** | **DESIGN LOCKED; recipe absent in inspected source** |
+| **Metal Rod → Spring** | Stonecutting | 1 Metal Rod → **2 Springs** | **DESIGN LOCKED; recipe absent in inspected source** |
+| **Metal Rod → Washer** | Stonecutting | 1 Metal Rod → **4 Washers** | **DESIGN LOCKED; recipe absent in inspected source** |
+| **Metal Rod → Bolt** | Stonecutting | 1 Metal Rod → **1 Bolt** | **DESIGN LOCKED; recipe absent in inspected source** |
+| **Abyssal Lantern** | Crafting TBD | Ingredient selection and recipe shape **OPEN**; preserve already completed held/module lighting. | **RECIPE DESIGN OPEN** |
+| **Abyssal Moai** | Crafting TBD | Ingredient selection and recipe shape **OPEN**; preserve existing Moai behavior and registry compatibility. | **RECIPE DESIGN OPEN** |
+
+**Crane Hook source discrepancy:** `src/main/resources/data/temple_of_the_axolotl/recipe/crane_hook.json` already exists, but currently defines pattern `.WS / RWR / RRW` using washers, spring and rods. **Do not claim the hook lacks a recipe**; replace/reconcile that older recipe with the new developer-supplied screenshot pattern above, verifying the Boom Truss registry ID and all component IDs.
+
+### Annealing Kiln — actual source and intended manufacturing chain
+
+- Existing `AnnealingKilnEntity.java` **does** implement Blue Ice coolant, manual batch start, up to **9 Molten Glass in a Mold** inputs, 24 coolant units per Blue Ice, cost `n × (n + 7)` units for batch size `n`, save/load of process state, and interruption refund. **Preserve these mechanisms** unless separately changed.
+- **Current source discrepancy:** `COOL_TICKS=200` (10 seconds) and the kiln currently checks/inserts **Glass Mold** in its output slot, not Pressure-Treated Acrylic Panel. Developer's earlier agreed design is **90 seconds (1,800 ticks)** and **1 Pressure-Treated Acrylic Panel per consumed Molten Glass in a Mold**, with Blue Ice cooling. Confirm source-level intent and output registration before changing; no code patch made in this checkpoint.
+- **Pressure-Treated Acrylic Panel** is the named intended product used downstream for **Glow Strips** and **Cockpit Glass**. Its item model/texture assets exist in the uploaded ZIP; verify actual item registration and recipe chain rather than claiming the item is definitely unregistered. The panel is a machine-processed component, **not** an extra ordinary crafting-table recipe.
+- **Glass Mold crafting**: historical design **five vanilla Brick items in boat pattern** (`B.B / BBB / ...` orientation should be checked against the actual existing JSON). Do not conflate the mold with the processed acrylic panel.
+- **Annealing Kiln JEI**: register/show the cooling process, Molten Glass in a Mold input, Blue Ice coolant, Pressure-Treated Acrylic Panel output, and meaningful batch/coolant information. JEI display must reflect the server's real recipe logic.
+- **Cosmic Brewing Stand JEI**: display existing cosmic brewing recipes in JEI without changing machine behavior. Inspect existing recipe representation/registration to decide integration method.
+- **Recipe viewer integration**: verify normal crafting and stonecutting recipes appear in JEI; do not confuse this new JEI docket with the independently outstanding **EMI Repository transfer** from V21.
+
+### Current source observations and remaining work
+
+- **Source confirmed:** `crane_hook.json` exists but uses the older arrangement; `AnnealingKilnEntity.java` implements cooling/batch persistence but currently produces Glass Molds; kiln crafting JSON and the four specified metal-rod stonecutting JSONs were not found under the project source recipe directory in the targeted ZIP inspection.
+- **To verify:** the actual registration of Pressure-Treated Acrylic Panel and Boom Truss; whether Cosmic Brewing's JEI category exists; whether some recipes are generated elsewhere at build time; and the correct Glow Strip/Cockpit Glass downstream recipes. Do not mark any of these as absent solely from the recipe-directory scan.
+- **Not yet designed:** Abyssal Lantern crafting, Abyssal Moai crafting; any other unconfirmed machine/item recipes should be audited against source, not guessed.
+- **Implementation acceptance:** correct shaped kiln/hook layouts; stonecutter yields 1/2/4/1; Blue Ice coolant and 90-second batch, panel output, no dupes/lost items, 1–9 input cases, full output-slot handling, break/reload persistence; JEI displays kiln and Cosmic Brewing recipes; preserve existing shipyard, Watergate, Temple/Origin, Abyss and companion systems. **NO TOUCHIE BOAT.**
+
+**Status summary:** All above are **PLANNED / TO VERIFY / SOURCE-OBSERVED**; the source ZIP is retained as a baseline only. No new patch or field tests were performed tonight. The V21 **21/22 regression score remains unchanged**; these are new work items.
+
+---
+
+## 0. Latest checkpoint — what changed since V21
+
+| Workstream | V22 status | Scope |
+|---|---|---|
+| **Axolite ore, refinement, equipment and Netherite conversion** | **NEW DESIGN AGREED; IMPLEMENTATION NOT CONFIRMED** | Gold-pickaxe/Ring-only mining, Fortune dust drops, smelting, 8-ingredient ingot, iron equipment upgrade, diamond addition, Netherite scrap conversion. |
+| **Celestial Anvil module repair ratio** | **DESIGN CLARIFICATION; EXACT CODE BEHAVIOR NOT RECHECKED** | With Mending: 2 durability per XP point; without Mending: 1 durability per XP point. Repairability does not require Mending. |
+| **Remembered, Never Forgotten** | **EXPERIMENTAL PATCH REPORTED TO LOAD; GAMEPLAY UNVERIFIED** | Companion protection, intentional override, loss records, hauntings, naming, apology/forgiveness, sleep effects; field-test individually. |
+| **V21 regression scoreboard** | **UNCHANGED: 21/22 PASSED** | EMI Repository transfer remains the sole unchecked item of the original 22-test matrix; new work adds separate checks, not retroactive failures. |
+| **Axoluthu / Cosmic Trident** | **STILL NOT CONFIRMED IMPLEMENTED** | Preserve V21 boss and weapon docket. |
+
+## 1. Axolite — Overworld equipment progression (NEW)
+
+**Status: DESIGN AGREED / NOT IMPLEMENTATION-VERIFIED.** Axolite is an alternative Overworld equipment path. Its strength is equivalent to Netherite, while its durability is equivalent to Diamond. This is not permission to replace vanilla Netherite progression or alter Celestial Axolotl Armor recipes outside the specified conversion.
+
+### 1A. Ore, mining and refinement
+
+- Add **Axolite Ore**. It may be mined **only with a Gold Pickaxe or the Ring of the One**, not ordinary pickaxes of other materials regardless of mining tier. Enforce the restriction server-side and for actual loot/drop behavior.
+- The ore is **Fortune-compatible** and drops **Raw Axolite Dust**. Exact base drop quantity, Fortune distribution, ore generation dimensions/height/vein size/frequency, and Silk Touch behavior have **not been specified**.
+- **Smelt Raw Axolite Dust in a furnace or blast furnace** to obtain the refined **Axolite Dust** used in the ingot recipe. Smelting XP, duration and fuel rules are not separately specified; preserve vanilla defaults unless later decided.
+
+### 1B. Axolite Ingot crafting
+
+- Craft **1 Axolite Ingot** using **4 refined Axolite Dust + 2 Iron Ingots + 2 Copper Ingots** in a **shapeless 3×3 crafting-table recipe**, just like the vanilla Netherite Ingot recipe. Any placement of the eight ingredients is valid.
+- **No fixed slot pattern, empty center, or ring arrangement is required.** The recipe needs eight ingredients, so it cannot fit in the player’s 2×2 inventory grid.
+
+### 1C. Iron → Axolite smithing upgrade
+
+| Smithing slot | Ingredient |
+|---|---|
+| **Template (left)** | **1 Axolite Ingot** — consumed as the catalyst, instead of a conventional smithing template |
+| **Base (middle)** | Corresponding **Iron armor/tool/weapon** |
+| **Addition (right)** | **1 Diamond** |
+| **Output** | Corresponding **Axolite armor/tool/weapon** |
+
+- Axolite equipment has **Netherite-equivalent combat, mining and protection performance**, including Netherite-equivalent knockback resistance where applicable, but **Diamond-equivalent durability**. Define per-item attributes consistently against vanilla Netherite and Diamond counterparts.
+- Preserve the source equipment's enchantments, custom name, lore and other compatible data components during upgrading. Do not blindly carry over source-specific attribute overrides that would replace the output's intended material stats.
+- The user specified a **nine-item equipment set costing nine Diamonds**, one per upgrade. For the nine upgrades, the ingot ingredients total **36 refined Axolite Dust, 18 Iron Ingots, 18 Copper Ingots**, plus the nine Iron equipment bases. The precise nine-item lineup should be checked when item registration is finalized; the stated total is the design target.
+- Implement the special use of the template slot without breaking vanilla smithing recipes or allowing unintended recipes to match.
+
+### 1D. Axolite → Netherite shapeless conversion
+
+- **One Axolite equipment item + one Netherite Scrap → the corresponding vanilla Netherite item.**
+- **Shapeless** recipe works in both the player's **2×2 inventory crafting grid** and a **3×3 crafting table**. **No Netherite Upgrade Template** and no extra ingredients required.
+- **Restore output to 100% durability** (zero damage) even if the input Axolite item is heavily worn.
+- **Preserve the input's enchantments, custom name, lore, and all other compatible item data components**. Explicitly reset only durability damage; avoid copying Axolite-specific attributes that would override the native Netherite stats.
+- This provides a Netherite conversion route before the player's eventual **Celestial Axolotl Armor** progression. It does not mean Celestial armor is automatically crafted from Axolite.
+- Engineering note: preserving arbitrary input components and resetting damage in a crafting recipe may require a custom server-side recipe implementation in NeoForge 1.21.1; verify the resulting output and crafting preview in inventory and recipe viewers.
+
+### 1E. Axolite acceptance tests (NEW; all pending)
+
+- [ ] Gold Pickaxe and Ring of the One mine Axolite Ore; other pickaxes cannot bypass restriction.
+- [ ] Fortune affects Raw Axolite Dust drops as intended; furnace and blast furnace produce refined Axolite Dust.
+- [ ] Shapeless eight-ingredient Axolite Ingot recipe works in any valid 3×3 arrangement, and does not match incomplete ingredient sets.
+- [ ] Axolite Ingot works in smithing **template slot**, Iron item in base slot, Diamond in addition slot; normal smithing remains unaffected.
+- [ ] Armor protection, attack, mining speed, knockback resistance and item-specific durability match the designated vanilla tiers.
+- [ ] Nine-piece progression consumes the intended resources and does not allow duplication.
+- [ ] Shapeless Axolite + Netherite Scrap works in 2×2 and 3×3 grids, producing matching vanilla Netherite equipment.
+- [ ] Netherite output is fully repaired and preserves enchantments, names, lore and compatible components; no invalid Axolite attributes remain.
+- [ ] Test multiplayer/server authority, save/reload, JEI and EMI recipe visibility/transfer where relevant.
+
+## 2. Celestial Anvil module — XP-point repair clarification
+
+**Status: USER-SPECIFIED MECHANIC; IMPLEMENTATION ALREADY REPORTED WORKING GENERALLY IN V21, BUT THESE EXACT RATIOS HAVE NOT BEEN RE-VERIFIED IN CODE.**
+
+| Repair condition | Durability restored per XP point | XP points for 100 missing durability |
+|---|---:|---:|
+| Item **has Mending** | **2** | **50** |
+| Item **lacks Mending** | **1** | **100** |
+
+- The Celestial Anvil **module** can repair eligible equipment even without Mending, using the player's available **XP points**; Mending doubles repair efficiency.
+- This **repair mechanism is distinct from ordinary Celestial Anvil item-combining/enchantment operations**, which have their previously agreed XP-level discount rule (`max(1, ceil(vanilla level cost / 2))` for valid operations). Do not confuse XP points with XP levels.
+- Rounding for partial-point repair, interface feedback, zero-XP behavior, item-specific restrictions and how the module invokes the repair action require code review or field verification rather than assumptions.
+- [ ] Verify 2 durability per XP point with Mending; 1 without; no Mending prerequisite; XP deducted in points accurately; no negative XP or unintended repair exploits.
+
+## 3. Remembered, Never Forgotten — experimental companion feature
+
+**Status: EXPERIMENTAL SOURCE PATCH REPORTED TO LOAD; GAMEPLAY NOT YET CERTIFIED.** The latest discussion recalls a November 8 experimental patch and successful loading, **not individual in-game acceptance tests**. Do not mark complete merely because the game starts.
+
+**Reported experimental scope:**
+
+- Friendly-fire protection for companions, with **sneak + direct melee** as an intentional override.
+- Record companion loss, including **unnamed companions prior to registration**.
+- **Midnight ghost hauntings** associated with lost companions.
+- Naming via **renamed name tags**.
+- **Apology interaction** and **permanent forgiveness**.
+- **Sleep prevention** tied to the haunting mechanic.
+
+**Pending verification:**
+
+- [ ] Test protection for owner attacks and indirect damage; confirm only the intended sneak/direct-melee override applies.
+- [ ] Confirm correct records for named and unnamed companions, including persistence across saves/restarts.
+- [ ] Verify haunting time/trigger, owner targeting and no unrelated-player effects.
+- [ ] Test renamed-name-tag naming, apology/forgiveness, permanent state persistence and sleep restrictions.
+- [ ] Verify multiplayer behavior and compatibility with Above All, Wrath, Abyssal Axolotls and Book of the Axoluthu; do not assume every companion species participates without code confirmation.
+
+## 4. Updated next-work docket
+
+1. **Axolite:** preserve the confirmed shapeless ingot recipe; finalize ore generation/drop details and any remaining item-specific equipment parameters; implement and test new progression.
+2. **Remembered, Never Forgotten:** run dedicated gameplay and multiplayer field tests; fix only verified issues.
+3. **Celestial Anvil:** verify the exact 2:1 versus 1:1 durability/XP-point repair implementation, preserving previously completed anvil functionality.
+4. **EMI Repository recipe transfer:** still the single unchecked test in V21's original 22-item regression matrix.
+5. **Axoluthu and Cosmic Trident:** retain V21's pending endgame implementation/confirmation docket.
+6. **Release regression:** preserve completed Temple/Origin/Abyss/Watergate/Repository/companion/lore/visual systems. **NO TOUCHIE BOAT.**
+
+---
+
+# Preserved V21 roadmap and all earlier historical appendices (unchanged)
+
+# Temple of the Axolotl — Master Development Roadmap V21
+
+**Updated:** November 8, 2026 — developer-confirmed completion of 21/22 regression checks, Abyss ecosystem, companion command systems, celestial visuals, and both Patchouli book/lore workstreams.  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl` · **Package:** `com.devaxo.templeoftheaxolotl`
+
+> **V21 precedence / evidence:** This new checkpoint supersedes **all older current-status labels** in V20–V1 wherever the developer's November 8 confirmations apply. The full V20 roadmap and all its historical appendices follow **unchanged** for technical and design traceability; older unchecked tasks within those historical sections are **not current TODOs** when superseded here. **DEVELOPER-CONFIRMED COMPLETE / TESTED** denotes explicit developer confirmation, not an independent source audit. **NOT CONFIRMED** means the developer has not stated that the item is complete. Do not downgrade confirmed systems merely because a preserved historical entry still says “planned.”
+
+## 0. Executive status — the November 8 completion milestone
+
+| Workstream | **Authoritative V21 status** | Evidence and scope |
+|---|---|---|
+| Regular Temple and dungeon gameplay | **DEVELOPER-CONFIRMED COMPLETE / REGRESSION-TESTED** | Real multiplayer entry, extraction, death return, friendly fire and loot ownership passed. |
+| Origin Temple, boss, rescue and companion resurrection | **DEVELOPER-CONFIRMED COMPLETE / REGRESSION-TESTED** | Origin campaign reentry, boss tiers, rescue, endings and safe reset; Above All/Wrath multiplayer and unloaded-Wrath duplicate guard checked. |
+| Celestial Repository, JEI, tiers and Anvil | **DEVELOPER-CONFIRMED COMPLETE / TESTED**, **EXCEPT EMI** | Repository Normal/Iron/Gold/Diamond tier functionality and persistence, Celestial Anvil costs/enchantments and prior JEI integration confirmed. |
+| Celestial HUD, toolbar and title music | **DEVELOPER-CONFIRMED COMPLETE / TESTED** | HUD trim checked across GUI scales; previously confirmed quick-access UI and persistent music control preserved. |
+| Starry Seas, pressure/Bends and Thermocline | **DEVELOPER-CONFIRMED COMPLETE / TESTED** | Pressure tiers, dimension scope, ascent severity, treatments, equipment, Thermocline collision/passage/persistence and boat physics. **NO TOUCHIE BOAT.** |
+| Watergate, Merolotl Ruins and Abyss worldgen | **DEVELOPER-CONFIRMED COMPLETE / TESTED** | Save/reload during awakening and READY, multiplayer mid-awakening sync, beams, portal transport/return, ruins generation and music activation. |
+| Watergate memory optimization | **DEVELOPER-CONFIRMED COMPLETE / TESTED** | 61,440 → 16 BlockState combinations, with major observed Java heap reduction; retain this architecture. |
+| Shorkolotl-100 submarine | **DEVELOPER-CONFIRMED COMPLETE / TESTED** | Space/V navigation, speed, steering, camera-independent movement, ±45° tilt, bubbles, headlights and renderer culling. |
+| Axoleviathan hunting and terrain restoration | **DEVELOPER-CONFIRMED COMPLETE / TESTED** | Pursuit/priority/cutoff/attacks, 600-tick terrain restoration across chunk reload, randomized death messages and Heart drop. |
+| Eight Abyss creatures: rendering, ecology and persistence | **DEVELOPER-CONFIRMED COMPLETE / TESTED** | Peekaboo Abyss V3 compiled and field-tested; Leviathan X/Z 460, Y 450 culling, seven other renderers, no-natural-despawn behavior, species ecology, combat and persistence. |
+| Abyssal Axolotl advanced companion | **DEVELOPER-CONFIRMED COMPLETE** | Developer states companion system finished, superseding V20/V19 “design only” labels. Preserve detailed requirements and implemented behavior. |
+| Book of the Axoluthu | **DEVELOPER-CONFIRMED COMPLETE** | Companion roster/management, store/resummon, revive status, Guardian Mode and command interface workstream confirmed finished. |
+| Abyssal Lantern | **DEVELOPER-CONFIRMED COMPLETE** | Held/module dynamic cyan lighting workstream confirmed finished; preserve 8-second cycle specifications. |
+| Celestial skies and overlay command | **DEVELOPER-CONFIRMED COMPLETE** | Overworld/End visuals and unified celestial overlay controls confirmed finished; preserve Starry Seas and boat physics. |
+| An Axolotl's Field Guide | **DEVELOPER-CONFIRMED COMPLETE** | Practical Patchouli guide and associated distribution/recipe/chapter workstream confirmed finished. |
+| Diary of an Axolotl and world lore | **DEVELOPER-CONFIRMED COMPLETE** | Narrative book, lore blocks/sites, chapter persistence, illustrations and Origin reveal workstream confirmed finished. |
+| **EMI recipe transfer** | **STILL UNCHECKED / NOT CONFIRMED** | The **only unchecked item** among the 22 explicitly enumerated regression tests; independently validate EMI transfer against JEI. |
+| **Axoluthu endgame boss encounter** | **DESIGN DOCUMENTED; COMPLETION NOT CONFIRMED** | No developer confirmation of completed boss implementation. Keep boss fight as the main potential new-content docket. |
+| Cosmic Trident implementation | **NOT SEPARATELY CONFIRMED** | Recipe and boss-only-damage rules documented; do not infer that item/recipe or boss-hit validation is shipped. |
+
+### 0A. Formal verification scoreboard — 21 of 22 passed
+
+**Developer's supplied checklist: 21 checked / 1 unchecked (95.45%).** This is a record of explicit test reports, not a computed estimate of the entire mod's completion percentage.
+
+**Highest-priority checkpoint — 5/5 PASS**
+
+- [x] Watergate save/reload during awakening and after READY; beams, entry and return.
+- [x] Watergate multiplayer mid-awakening synchronization.
+- [x] Peekaboo Abyss V3 compiled and field-tested across eight creature renderers/persistence changes.
+- [x] Axoleviathan full-body culling: **X/Z 460; Y 450**.
+- [x] Creature persistence after distance travel, chunk unload/reload and server restart.
+
+**Abyss gameplay and ecosystem — 9/9 PASS**
+
+- [x] Shorkolotl-100 controls: Space/V, speed cap, steering, camera-independent movement.
+- [x] Shorkolotl-100 visuals: ±45° pitch, bubble jets, headlights, culling.
+- [x] Leviathan hunting AI: targeting, pursuit, submarine priority, cutoff, attacks.
+- [x] Leviathan terrain restoration after 600 ticks, including chunk reload.
+- [x] Leviathan death messages and guaranteed Heart of the Abyss loot.
+- [x] Other Abyss fauna: spawning, swimming, attacks, animations, loot and persistence.
+- [x] Pressure/Bends: damage tiers, dimension scoping, ascent severity, treatment, protection.
+- [x] Thermocline: collision, subthermal passage, persistence.
+- [x] Merolotl Ruins/Watergate worldgen, music activation, safe transport.
+
+**Earlier-system regression certification — 7/8 PASS**
+
+- [x] Real multiplayer Temple shared entry, independent extraction/death return, friendly fire and loot ownership.
+- [x] Above All/Wrath multiplayer flight and unloaded-Wrath resurrection duplicate guard.
+- [x] Repository Normal/Iron/Gold/Diamond tiers, capacity, consolidation, persistence.
+- [ ] **EMI recipe transfer — NOT YET CONFIRMED.** Independently test recipe placement, server-side inventory extraction, crafting and no duplication/loss.
+- [x] Celestial Anvil experience costs, enchantment levels and special incompatibilities.
+- [x] Shared HUD backing trim across GUI scales/resolutions.
+- [x] Origin campaign portal reentry, tiers, rescue, endings and safe reset.
+
+### 0B. Additional completed content — developer confirmation
+
+The developer additionally confirmed that **all four previously listed remaining workstreams** are finished:
+
+1. **Abyssal Axolotl:** taming, permanent naming, owner chat commands, amphibious AI, bucket/identity persistence, Bends support, Merolotl diplomacy and combat/advanced companion functionality.
+2. **Book of the Axoluthu:** companion roster, store/resummon, revive status, Guardian Mode and command interface.
+3. **Abyssal Lantern and celestial skies:** held/module lighting, 8-second breathing effect, Overworld/End sky visuals and `/tota celestialoverlay` controls.
+4. **An Axolotl's Field Guide and Diary of an Axolotl:** both distinct Patchouli books, onboarding, lore blocks/Obelisks, persistent chapter discovery, illustrations and Origin prison-door title reveal.
+
+**Evidence boundary:** These four workstreams were reported complete as groups; unlike the 21 enumerated tests above, the developer did not provide a new per-subfeature test matrix in this exchange. Preserve the earlier detailed feature specifications as documentation, but don't invent measurements, screenshots, or individual test outcomes.
+
+## 1. Engineering achievements to preserve
+
+### 1A. Watergate state-space / memory optimization
+
+- Original Watergate BlockState count: `4 FACING × 2 WATERLOGGED × 2 READY × 15 AWAKENING × 256 CHUNK_PROGRESS = 61,440`.
+- Optimized count: `4 × 2 × 2 = 16` (3,840× fewer). Store awakening/progress in `WatergateEntity`, synchronize to renderer.
+- Developer-observed Java heap **startup 1.4–2.4 GB → 0.3–0.5 GB**, **in-game ~2.5–4.4 GB → 0.7–1.2 GB**.
+- Portal awakening, save/reload, beams, multiplayer synchronization, worldgen and transport are now developer-confirmed tested. Do not reintroduce progress as high-cardinality BlockState properties.
+
+### 1B. Peekaboo Abyss V3 — finalized field test
+
+- **Axoleviathan** visual/frustum bounds inflate **460 blocks horizontally (X/Z)** and **450 vertically (Y)**; do not revert to the rejected small 85/35 margins.
+- **Axokraken, Merolotl, Abyssal Angler, Axobloop, Abyssal Jellyfish, Ghostfish and Abyssal Axolotl** also receive the tested visibility/persistence behavior.
+- No natural distance-based despawn; **normal death, intentional removal and chunk unloading remain allowed**. Frustum visibility is not entity persistence and does not imply force-loaded chunks.
+- Latest V3 was explicitly checked off as **compiled and field-tested** by the developer.
+
+### 1C. Previously completed systems — regression protection
+
+- Regular Temple 9×9 versus Origin 13×13; persistent Origin campaign, boss, Second Fall, Celestial Key rescue, Above All/Wrath ritual, multiplayer protections and extraction.
+- Repository tier progression, JEI integration, Celestial Anvil, Ring balance, Supernova/Star-Blasted Bedrock, title music, Celestial toolbar and HUD.
+- Starry Seas water, boat buoyancy, Watergate, pressure/Bends/Thermocline, Shorkolotl, Leviathan terrain restoration and broader fauna ecology.
+- Abyssal Axolotl commands/ownership and Book of the Axoluthu; Abyssal Lantern/celestial overlay; Field Guide and Diary lore.
+- **NO TOUCHIE BOAT** remains an explicit regression guardrail.
+
+## 2. What is *actually* outstanding after the November 8 confirmations
+
+| Priority | Work | Status / next action |
+|---|---|---|
+| **1 — Outstanding known verification** | **EMI Repository recipe transfer** | **UNCHECKED.** Verify independently of working JEI. If absent or broken, implement/fix and field-test. |
+| **2 — Major boss docket** | **Axoluthu** | **NOT CONFIRMED COMPLETE.** Review/finish model, arena, wave composition, tentacle combat, stun, exposed weak point, Cosmic Trident-only damage and post-death five-Leviathan hunt. Do not mark shipped without confirmation. |
+| **3 — Related progression** | **Cosmic Trident** | **NOT SEPARATELY CONFIRMED.** Confirm item/recipe and hit-validation implementation, or build as part of Axoluthu docket. |
+| **4 — Release hygiene** | Integration/release regression | After any future patch, rerun targeted checks for affected systems; this is ongoing maintenance, not an assertion that completed features are unfinished. |
+
+**No longer active TODOs solely on the basis of old roadmap labels:** Watergate save/reload or multiplayer; Peekaboo Abyss V3; Leviathan hunting, culling, persistence or tunnel restoration; Shorkolotl controls; Merolotl Ruins; pressure/Bends/Thermocline; Temple/Origin multiplayer; Repository tiers; Celestial Anvil/HUD; Abyssal Axolotl; Book of the Axoluthu; Abyssal Lantern/skies; Field Guide; Diary/lore. These have been superseded by explicit developer completion confirmations.
+
+## 3. Axoluthu — preserved next-boss design docket (implementation not confirmed)
+
+**Boss identity:** Axoluthu, the Ethereal Abyss endgame boss; not the same entity as the ecosystem's Axoleviathan or Axokraken. Preserve canonical naming and older lore without inventing new canon.
+
+**Progression:** A qualifying Axoleviathan kill guarantees a **Heart of the Abyss** and provokes/unlocks Axoluthu. Cosmic Trident recipe uses four vanilla Tridents in corners, four Orbs of Envy in edge centers and the Heart in the center. **Only the Cosmic Trident** can damage Axoluthu, and the newer encounter design additionally requires striking the briefly exposed weak point.
+
+**Encounter loop:** Waves of Abyss creatures → tentacle attack → overcome tentacle to stun boss → exposed weak point → short Cosmic Trident strike opportunity → repeat until victory. Upon actual boss death, **five Axoleviathans** spawn and hunt the responsible player. Ensure server-authoritative multiplayer validation and no duplicate final-spawn event after reload.
+
+**Open implementation/design details unless already decided elsewhere:** boss model/arena, HP, wave composition/counts, tentacle hitboxes and animation, stun/weak-point timing and location, Trident thrown-versus-melee interaction, music, loot, reset/reentry, multiplayer scaling and safe finale spawning. Do not fabricate fixed numbers for these.
+
+**Boss acceptance criteria (pending confirmation):** correct first-Leviathan-kill unlock; guaranteed Heart; exact Cosmic Trident recipe; immunity outside valid Cosmic Trident weak-point strikes; reliable wave/tentacle/stun/weak-point cycle; multiplayer synchronization; stable boss rendering; exactly five final wrath Leviathans without duplication; no regressions to existing Abyss/Temple systems.
+
+## 4. Historical preservation and interpretation
+
+The complete **V20** roadmap, with its preserved **V19 through V1** history, follows unchanged. This preserves exact recipes, entity mechanics, patch history, lore, UI and all prior design decisions. When an old historical section says **ACTIVE**, **PLANNED**, **UNVERIFIED** or contains an unchecked task for a system confirmed above, treat it as a historical snapshot, **not** the current project status. Only **EMI**, **Axoluthu completion**, and **Cosmic Trident implementation status** remain explicitly unresolved in the current confirmations; future new ideas may add additional work.
+
+---
+
+# Preserved V20 roadmap and all earlier historical appendices (unchanged)
+
+# Temple of the Axolotl — Master Development Roadmap V20
+
+**Updated:** November 8, 2026 — Watergate RAM breakthrough, working awakening regression, Abyss fauna visibility/persistence patch, and expanded Axoluthu boss docket.  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl` · **Package:** `com.devaxo.templeoftheaxolotl`
+
+> **V20 precedence:** This opening checkpoint supersedes older **current-status** claims, not the underlying historical specifications. V19 and its V18–V1 appendices are preserved **verbatim below**. **USER-TESTED** = explicitly reported functioning in game; **USER-OBSERVED** = narrower direct observation; **SOURCE PATCH DELIVERED / UNVERIFIED** = patch ZIP supplied, not confirmed built or field-tested; **DESIGN LOCKED** = agreed intended behavior, not implementation; **OPEN** = details not finalized. Do not treat a patch download, past prototype, or old appendix as proof of a completed feature.
+
+## 0. Executive checkpoint — latest achievements and boundaries
+
+| Workstream | V20 status | Accomplished / outstanding boundary |
+|---|---|---|
+| **Watergate block-state memory optimization** | **USER-TESTED: MAJOR SUCCESS** | Removed transient awakening/progress values from enumerated BlockStates; startup and in-game Java heap measurements dropped dramatically. |
+| **Watergate awakening and portal behavior** | **USER-REPORTED WORKING AFTER RAM PATCH** | Developer explicitly reports the awakening sequence and other portal functionality still work. Multiplayer synchronization and save/reload edge cases merit separate regression. |
+| **Axoleviathan and seven other Abyss creatures: visibility/persistence** | **PATCH V3 DELIVERED / NOT YET FIELD-CERTIFIED** | Culling and natural-despawn protections supplied for eight creature types; Axoleviathan horizontal inflation set to **460**, vertical **450**. |
+| **Axoluthu endgame boss** | **DESIGN LOCKED IN PART; NOT IMPLEMENTED / NOT TESTED** | Added waves → tentacle → exposed weak-point/Cosmic Trident fight concept. Preserve Leviathan-provocation trigger and five-Leviathan final wrath. |
+| **Cosmic Trident / Heart of the Abyss** | **DESIGN LOCKED; IMPLEMENTATION NOT CERTIFIED** | Four vanilla Tridents + four Orbs of Envy + one guaranteed Leviathan Heart; only authorized boss-damaging weapon. |
+| **Axoleviathan predator gameplay** | **PARTIAL USER FIELD-TEST; ACTIVE** | Earlier player/submarine chase and attack observations remain valid; newer culling patch not automatically certified by those tests. |
+| **Abyss fauna and companion ecosystem** | **MIXED IMPLEMENTATION / PATCH STATUS** | Axokraken, Merolotl, Abyssal Angler, Axobloop, Abyssal Jellyfish, Ghostfish and Abyssal Axolotl all present in the latest culling patch; do not infer complete AI, spawn ecology or companion command certification. |
+| **Shorkolotl-100** | **ACTIVE / PARTIAL FIELD TEST** | Preserve V19 movement, controls, bubbles, tilt, headlights and predator interaction; newest combined patch certification remains distinct. |
+| **Starry Seas and boat physics** | **USER-APPROVED COMPLETE** | **NO TOUCHIE BOAT.** Preserve visuals and buoyancy. |
+| **Origin Temple, Wrath resurrection, Ring, Repository JEI, music/UI** | **PREVIOUSLY USER-CONFIRMED / TESTED AS SPECIFIED IN V18–V19** | Do not regress; keep real multiplayer, EMI, Repository tiers and HUD trim verification separate. |
+| **Abyssal Axolotl companion commands and Book of the Axoluthu** | **DESIGN / PATCH WORKFLOW IN PROGRESS** | Preserve permanent naming, owner-specific commands, bucket/companion data and later book/roster features; don't mark the full command system tested without a new field report. |
+| **Diary of an Axolotl / Adventurer's Field Guide / celestial visuals** | **PLANNED** | Preserve the two distinct Patchouli books, lore-block mechanics, lantern cycle and unified overlay command. |
+
+## 1. WATERGATE — RAM optimization breakthrough (November 8)
+
+### 1A. Root cause, exact state count and architecture
+
+**Status: USER-TESTED MEMORY IMPROVEMENT.** Profiling showed an exceptionally large population of `BlockState`, `ArrayTable`, `ImmutableMapEntry` and related map/array objects. Inspection of `WatergateBlock.java` identified the concrete source of a large part of the block-state combinatorial explosion:
+
+| Original Watergate BlockState property | Values |
+|---|---:|
+| `FACING` | 4 |
+| `WATERLOGGED` | 2 |
+| `READY` | 2 |
+| `AWAKENING` (0–14) | 15 |
+| `CHUNK_PROGRESS` (0–255) | 256 |
+
+**Original combinations:** `4 × 2 × 2 × 15 × 256 = 61,440`.  
+**Optimized combinations:** `4 × 2 × 2 = 16`.  
+**Reduction:** **61,424 states / 99.97396%**, or **3,840× fewer** Watergate block-state combinations.
+
+The delivered optimization keeps `FACING`, `WATERLOGGED` and `READY` as block properties while relocating transient awakening and chunk-progress values into `WatergateEntity` fields. `AbyssTrialEvents` updates the block entity; `WatergateRenderer` reads synchronized progress instead of BlockState properties. This retains the visual and gameplay sequence without preallocating every possible progress combination. **This is a state-space optimization, not evidence of a conventional growing memory leak.**
+
+### 1B. Developer-observed memory results
+
+| Measurement | Before | After | Evidence |
+|---|---|---|---|
+| Startup Java heap | **1.4–2.4 GB** | **0.3–0.5 GB** | Developer-reported readings after the patch |
+| In-game Java heap | **~2.5–4.4 GB** | **0.7–1.2 GB** | Developer-reported observed range |
+| Portal awakening | Working before | **Still working after** | Explicit developer confirmation |
+| Other Watergate functionality | Working before | **Reported working after** | Developer confirmation; not an exhaustive test matrix |
+
+These are observed ranges, not identical controlled runs or Windows process working-set/RSS measurements. The target of staying below **1–1.5 GB observed in-game heap** has been met in the reported test. Do not promise the same figures for every world, machine or future content build.
+
+### 1C. Preserve and regression-test
+
+- Preserve five nested beam pairs, violet attempt/cyan completion, fifth-pair final glow, staged 20-tick shutdown, portal READY indication, GeckoLib frame, translucent scrolling/pulsing panel, controller orientation and travel behavior.
+- Validate a save/reload during an incomplete awakening, save/reload after ready, client joining mid-sequence, multiplayer client synchronization, portal entry/return and world migration from the former state properties.
+- Avoid reintroducing high-cardinality integer progress values as `BlockState` properties in other blocks. Prefer block entities for changing process state; use block properties for low-cardinality world state that actually needs block-state behavior.
+- The Watergate RAM fix is **already in the latest user-supplied `Checkpoint - Peekaboo Abyss.zip`**, per the user's description. Do not overwrite it with older source.
+
+## 2. PEEKABOO ABYSS — creature visibility and persistence
+
+**Status: COMPLETE SOURCE PATCH V3 DELIVERED; COMPILE/RUNTIME RESULT NOT YET REPORTED.** Source overlays were issued in three revisions. **V3 supersedes V1 and V2**; do not stack earlier ZIPs on top of V3.
+
+| Creature | V20 target |
+|---|---|
+| **Axoleviathan** | Preserve oversized full-body visibility for ~150-block visual length; **inflation X/Z = 460 blocks, Y = 450 blocks** around the entity bounds; retain no-natural-despawn logic. |
+| **Axokraken** | Expand culling around its scaled visual/hitbox; prevent natural despawn. |
+| **Merolotl** | Expand culling appropriately; prevent natural despawn. |
+| **Abyssal Angler** | Expand culling appropriately; prevent natural despawn. |
+| **Axobloop** | Expand culling appropriately; prevent natural despawn. |
+| **Abyssal Jellyfish** | Expand culling appropriately; prevent natural despawn. |
+| **Ghostfish** | Expand culling appropriately; prevent natural despawn. |
+| **Abyssal Axolotl** | Expand culling appropriately; prevent natural despawn, preserving owner/tame/bucket identity behavior. |
+
+**User correction preserved:** A prior attempt reduced Leviathan culling to approximately 85 horizontal / 35 vertical and risked making the tail disappear while the head left the frustum. The user rejected that reduction. V2 restored the original 450-all-axis inflation; V3 adds **10 horizontal blocks** on both X and Z, for **460 horizontal and 450 vertical**. Do not revert to the small bounding box merely to optimize rendering.
+
+**Important distinction:** Renderer/frustum culling controls whether a model is drawn; natural despawning controls whether the entity remains alive in the world. Neither means force-loading unloaded chunks. Normal death, intentional removal and ordinary chunk unloading must still work. Oversized Leviathan bounds trade rendering work for reliable full-body visibility; profile only if performance actually degrades.
+
+**Acceptance checklist:** compile V3; observe all eight species at oblique camera angles and while leaving/reentering view; verify the Leviathan's tail remains visible after its head moves offscreen; travel away and back without natural despawn; verify chunk unload/reload and server restart; verify owner/taming and combat behaviors; run multiplayer visibility test if available.
+
+## 3. AXOLUTHU — EXPANDED ENDGAME BOSS DOCKET
+
+**Status: DESIGN LOCKED IN PART / NOT IMPLEMENTED OR USER-TESTED.** The sea king **Axoluthu** (also called Axothulu in some discussion) is the major endgame Abyss boss. The Axoleviathan and Axokraken are hostile ecosystem predators, **not** bosses. Do not silently rename the existing canonical `Axoluthu` references or infer that a model, arena, health pool or AI already exists.
+
+### 3A. Narrative, trigger and progression
+
+1. Explore the Ethereal Abyss and survive its ocean layers and hostile ecosystem.
+2. **Kill any Axoleviathan** to obtain its **guaranteed Heart of the Abyss**. This first qualifying kill **provokes/unlocks Axoluthu's confrontation**; the boss's hostility/provocation should persist appropriately rather than reset simply because the player leaves.
+3. Craft the **Cosmic Trident** using **four vanilla Tridents**, **four Orbs of Envy**, and **one Heart of the Abyss** in the preserved 3×3 pattern below.
+4. Confront Axoluthu. **Only the Cosmic Trident can damage the boss**; no ordinary attacking weapon, companion attack or substitute weapon should bypass the core requirement. The weak-point phase adds a **timing requirement**, not an alternate damage source.
+5. **When Axoluthu dies, five Axoleviathans spawn and actively hunt the responsible player** as his final wrath. Preserve this ending event, subject to safe spawning and persistence protections.
+
+| Cosmic Trident crafting | | |
+|:---:|:---:|:---:|
+| Vanilla Trident | Orb of Envy | Vanilla Trident |
+| Orb of Envy | **Heart of the Abyss** | Orb of Envy |
+| Vanilla Trident | Orb of Envy | Vanilla Trident |
+
+The Heart is a **guaranteed drop from each killed Axoleviathan**, including wrath-spawned ones under the existing historical rule. Do not invent new ingredients, percentages or alternative crafting paths. Exact Trident melee-versus-thrown attack behavior remains open.
+
+### 3B. Latest fight concept — waves, tentacles and brief vulnerability
+
+| Sequence | Agreed direction | Implementation boundary |
+|---|---|---|
+| **Creature waves** | Axoluthu commands waves of Abyss creatures before the next attack opportunity. | Exact wave composition, counts, timing and spawn limits **OPEN**. |
+| **Tentacle attack** | The boss attacks with a tentacle following the wave phase. | Exact animation, hitboxes, reach, targeting and damage **OPEN**. |
+| **Counterplay** | Successfully defeating/overcoming the attacking tentacle **stuns Axoluthu**. | Define what qualifies as a defeated tentacle and how it is synchronized; **OPEN**. |
+| **Weak-point reveal** | Stun briefly **exposes a weak point**. | Exact duration, model location and feedback **OPEN**. |
+| **Cosmic Trident strike** | Player must **quickly hit the exposed weak point using the Cosmic Trident** to damage the boss. | Authoritative server validation and hit detection needed; other weapons remain ineffective. |
+| **Repeat / finale** | Repeat readable encounter phases until victory; death releases **five hunting Axoleviathans**. | Phase count, boss HP, checkpoints and ending presentation **OPEN**. |
+
+**Scale/performance constraint:** The user prefers an impressive encounter **without a render-distance-killing mega-boss**. Achieve scale and threat through phases, waves, tentacle presentation and carefully bounded rendering rather than arbitrarily making the entire boss hundreds of blocks long. This does not set an exact model size.
+
+**Vulnerability reconciliation:** Historical specification says *only the Cosmic Trident can damage Axoluthu*. The newer fight concept further restricts successful boss damage to the brief exposed-weak-point opportunity. Until revised by the developer, both requirements apply. Whether environmental damage is globally blocked, how the weak-point collision is represented and whether the Trident must be thrown remain open engineering details.
+
+### 3C. Ecosystem and encounter integration
+
+- Axoluthu's Abyssal worshippers / Merolotl faction background and world lore remain part of the historical plan; do not assume all Merolotls are identical to the original worshipper concept without source/design confirmation.
+- Axoleviathan and Axokraken remain allied hostile predators, not subordinate boss phases by default. Preserve existing independent hunting behavior.
+- The post-death five-Leviathan event must select valid water positions, respect server safety and player targeting, avoid duplicate activation on reload and not accidentally erase existing ecosystem entities.
+- Preserve the **no-natural-despawn** policy for relevant Abyss creatures and the oversized Leviathan culling requirement while implementing the boss; do not confuse boss lifecycle with normal fauna persistence.
+- Axoluthu's boss AI, health, armor, arena, music, model, attack damage, exact wave composition, spawn trigger location, multiplayer participation, reset behavior and loot beyond the historical rules are **NOT FINALIZED**.
+
+### 3D. Axoluthu acceptance tests — future
+
+- [ ] A new campaign cannot initiate the boss confrontation before a qualifying Leviathan kill.
+- [ ] Qualifying kill guarantees a Heart and persistently provokes/unlocks the boss.
+- [ ] Cosmic Trident recipe uses the exact 3×3 layout and ingredient quantities.
+- [ ] Non-Trident attacks cannot damage Axoluthu; Trident hits outside an exposed valid weak point cannot bypass the phase design.
+- [ ] Creature waves, tentacle attack, tentacle defeat, boss stun, weak-point exposure and brief Trident strike work in order.
+- [ ] Weak-point state and hit validation are server-authoritative and multiplayer-safe.
+- [ ] Boss rendering is reliable without excessive world-scale culling bounds.
+- [ ] On actual boss death, **exactly five** Axoleviathans spawn and hunt the intended player; no duplication after reload.
+- [ ] Existing Watergate, Abyss fauna, Shorkolotl, Starry Seas, pressure and Temple/Origin mechanics are unaffected.
+
+## 4. Additional ongoing Abyss and companion work
+
+### 4A. Existing live/prototype fauna versus finished mechanics
+
+The recent source-patch inventory contains renderers/entities for Axokraken, Merolotl, Abyssal Angler, Axobloop, Abyssal Jellyfish, Ghostfish, Abyssal Axolotl and Axoleviathan. This is evidence of active source development, **not** blanket certification of spawning, AI, loot, networking, combat and worldgen. The developer has reported live Leviathan/submarine encounters; V19's earlier **'planned only'** language for the entire Abyss ecosystem is therefore outdated as an absolute status. Record individual systems as **source present / active / partially tested** unless explicit tests establish more.
+
+### 4B. Abyssal Axolotl companion and command-book continuity
+
+Preserve V19 §2's thirteen companion requirements: Abyssal Torch taming, permanent first name, addressed owner chat commands, amphibious locomotion, tamed-only bucket transport with persistent UUID/name/owner, pressure immunity, proximity-based Bends prevention/cure, Mer-Village diplomacy, Axokraken combat, Leviathan non-targeting and immunity, Watergate bucket transit, and advanced commands. **Do not silently choose the undecided taming odds or Bends protection radius.**
+
+Recent companion-command planning additionally names the **Book of the Axoluthu** (renamed from **Book of Commands**) and describes a persistent companion registry/roster, store/resummon workflow, red **“Need Revive”** state, Guardian Mode, command autocomplete and copy buttons. Preserve learned commands and companion data during the book rename; retain registry identifiers where possible to avoid save incompatibility. These are **design/patch-workflow requirements**, not automatically field-tested shipped features. The **Book of the Axoluthu** is distinct from both **An Axolotl's Field Guide** and **Diary of an Axolotl**.
+
+### 4C. Remaining established systems
+
+- **Shorkolotl-100:** preserve V19's 1.25-block/tick cap, Space ascend, configurable V descend, W/S and A/D movement, ±45° visual pitch, speed-scaled jet bubbles, real headlights without END_ROD headlight particles, and culling protection. Re-test latest combined build.
+- **Watergate and ruins:** current Watergate is operational in developer tests; preserve first-time chunk initialization, progress beams, cyan READY indicator, jukebox/music trigger and safe travel/return. Merolotl Ruins worldgen and every edge case still need explicit certification.
+- **Thermocline and Abyss pressure:** preserve previously specified depth/pressure barrier, underwater travel, Bends, Diving Helmet and treatment plans. Do not mark an old plan as newly tested merely because a related creature is now present.
+- **Golden Tropical Fish Sushi:** one accumulated Bends severity level cured per sushi; three cure level III. **Diluted Ichor** retains full cure, and milk remains ineffective under the earlier specification.
+- **Abyssal Lantern:** held or Celestial Modules-equipped cyan dynamic light, **8-second** min→max→min breathing cycle with pauses; underwater **13–15**, out of water **10–13**.
+- **Celestial overlay:** planned unified `/tota celestialoverlay enable/disable/status` for existing Starry Seas and future cosmic skies. **NO TOUCHIE BOAT**.
+- **Temple/Origin:** preserve the V17–V19 completed Origin endgame, new Above All Ring-to-campfire Wrath resurrection, multiplayer isolation rules, Star-Blasted Bedrock, JEI crafting, title music and Celestial UI. No automatic status downgrade from old appendices.
+- **Books/lore:** practical Field Guide (first-entry copy, Book + Tropical Fish recipe) and narrative Diary (intact/broken lore blocks, true Origin iron-double-door reveal, 75% illustration-on-parchment rule) remain separate planned workstreams.
+
+## 5. Prioritized next development and verification
+
+| Priority | Work | Required next evidence |
+|---|---|---|
+| **1 — Protect major win** | Watergate RAM optimization | Retain in all new checkpoints; test save/reload, multiplayer awakening and legacy-world migration. |
+| **2 — Test delivered patch** | Peekaboo Abyss V3 | Compile; verify Leviathan **460 horizontal / 450 vertical** culling, other seven species' visibility, no natural despawn, normal chunk unload/reload. |
+| **3 — Finish active Abyss work** | Shorkolotl, Leviathan, fauna, Watergate worldgen | Field-test each latest merged source change; keep working Watergate and Starry Seas intact. |
+| **4 — Flesh out Axoluthu docket** | Boss arena/model, waves, tentacle hitbox, stun, weak-point timing, Trident validation, final wrath | Set remaining open parameters before implementation; preserve all locked requirements. |
+| **5 — Companion system** | Abyssal Axolotl and Book of the Axoluthu | Validate owner data, naming, commands, roster, revive and bucket behavior; no data loss on migration. |
+| **6 — Earlier backlog** | EMI, Repository tier regression, multiplayer, HUD, Field Guide, Diary, lantern, skies, pressure/Bends | Retain all V19 detailed acceptance boundaries. |
+
+**Engineering guardrails:** Preserve **NO TOUCHIE BOAT**; no large-cardinality transient BlockState properties; no reverting Watergate RAM fix; do not shrink Leviathan's culling margin; don't mistake renderer culling for despawn; avoid duplicate boss-triggered spawns; do not turn planned Axoluthu mechanics into fabricated implementation claims; always use the latest successfully compiled source and the developer's actual in-game tests as implementation authority.
+
+---
+
+# Preserved V19 roadmap and all earlier historical appendices (unchanged)
+
 # Temple of the Axolotl — Master Development Roadmap V19
 
 **Updated:** November 5, 2026 — Abyss predator/submarine development checkpoint, celestial visual planning, and Abyssal Axolotl companion design.  

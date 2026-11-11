@@ -19,6 +19,12 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 /** Persistent Merolotl neighborhood guardian; attacks players on sight, never residents. */
 public class AxokrakenEntity extends PathfinderMob implements GeoEntity {
+    // Abyss inhabitants persist across player-distance despawn checks.
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
+        return false;
+    }
+
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private BlockPos home;
     // Lowest permitted guardian position: safely above the thermocline top (~Y=110).
@@ -74,6 +80,7 @@ public class AxokrakenEntity extends PathfinderMob implements GeoEntity {
         }
     }
 
+    @Override protected int decreaseAirSupply(int currentAir) { return currentAir; }
     @Override protected void registerGoals() {
         goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.25, true));
         goalSelector.addGoal(2, new Goal() {

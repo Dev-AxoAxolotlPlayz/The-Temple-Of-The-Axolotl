@@ -17,7 +17,7 @@ public final class AbyssalCompanionRegistry {
     private static void commit(ServerPlayer player, CompoundTag all) { player.getPersistentData().put(KEY, all); }
     private static String key(UUID id) { return id.toString(); }
     public static void observe(ServerPlayer player, AbyssalAxolotlEntity axo) {
-        if (!player.getUUID().equals(axo.getOwnerUUID()) || !axo.isTame()) return;
+        if (!player.getUUID().equals(axo.getOwnerUUID()) || !axo.isTame() || axo.getPersistentData().getBoolean("tota_forgotten_ghost")) return;
         CompoundTag all = all(player), tag = all.getCompound(key(axo.getUUID()));
         if (tag.getString("State").equals("stored") || tag.getString("State").equals("revive") || tag.getString("State").equals("pending")) return;
         tag.putString("Name", axo.getName().getString()); tag.putString("State", "active");
@@ -30,7 +30,7 @@ public final class AbyssalCompanionRegistry {
      * a second copy of an entity while its old chunk is unloaded.
      */
     public static void checkLoaded(ServerPlayer player, AbyssalAxolotlEntity axo) {
-        if (!player.getUUID().equals(axo.getOwnerUUID()) || !axo.isTame()) return;
+        if (!player.getUUID().equals(axo.getOwnerUUID()) || !axo.isTame() || axo.getPersistentData().getBoolean("tota_forgotten_ghost")) return;
         CompoundTag all = all(player), tag = all.getCompound(key(axo.getUUID()));
         String state = tag.getString("State");
         if (state.equals("revive")) {
@@ -75,6 +75,28 @@ public final class AbyssalCompanionRegistry {
         all.put(key(axo.getUUID()), tag); commit(player, all);
         sync(player);
     }
+    /** Capture a dying tameable before vanilla removes it. The saved snapshot is
+     * authoritative proof of death; missing/unloaded entities are NOT proof. */
+    public static void defeatedPet(ServerPlayer owner, net.minecraft.world.entity.TamableAnimal pet) {
+        if (!pet.isTame() || !owner.getUUID().equals(pet.getOwnerUUID())) return;
+        if (!pet.hasCustomName() && !(pet instanceof AbyssalAxolotlEntity)) return;
+        if (pet instanceof AbyssalAxolotlEntity axo) {
+            defeated(owner, axo);
+            return;
+        }
+        CompoundTag all = all(owner);
+        CompoundTag tag = all.getCompound(key(pet.getUUID()));
+        tag.putUUID("UUID", pet.getUUID());
+        tag.putString("Name", pet.getName().getString());
+        tag.putBoolean("CustomNamed", pet.hasCustomName());
+        tag.putString("Category", companionCategory(pet));
+        tag.putString("EntityType", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(pet.getType()).toString());
+        tag.put("Entity", pet.saveWithoutId(new CompoundTag()));
+        tag.putString("State", "revive");
+        all.put(key(pet.getUUID()), tag);
+        commit(owner, all);
+        sync(owner);
+    }
     private static String companionCategory(net.minecraft.world.entity.TamableAnimal pet) {
         if (pet instanceof AbyssalAxolotlEntity) return "Abyssal";
         if (pet instanceof TameableWrathEntity || pet instanceof AxolotlAbsoluteEntity ||
@@ -83,7 +105,7 @@ public final class AbyssalCompanionRegistry {
     }
 
     private static void observeNamedPet(ServerPlayer owner, net.minecraft.world.entity.TamableAnimal pet) {
-        if (!pet.isTame() || !pet.hasCustomName() || !owner.getUUID().equals(pet.getOwnerUUID())) return;
+        if (!pet.isTame() || !pet.hasCustomName() || !owner.getUUID().equals(pet.getOwnerUUID()) || pet.getPersistentData().getBoolean("tota_forgotten_ghost")) return;
         if (pet instanceof AbyssalAxolotlEntity axo) { observe(owner, axo); return; }
         CompoundTag all = all(owner);
         String id = key(pet.getUUID());
@@ -97,6 +119,10 @@ public final class AbyssalCompanionRegistry {
         entry.putInt("Y", pet.blockPosition().getY());
         entry.putInt("Z", pet.blockPosition().getZ());
         entry.putString("EntityType", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(pet.getType()).toString());
+        if ("revive".equals(entry.getString("State")) || "stored".equals(entry.getString("State"))) {
+            // Do not erase a death or storage snapshot during roster discovery.
+            return;
+        }
         if ("pending".equals(entry.getString("State"))) {
             // Existing entity has finally loaded: safely teleport that same UUID.
             if (teleportNamedPet(owner, pet)) entry.putString("State", "active");
@@ -311,7 +337,11 @@ public final class AbyssalCompanionRegistry {
 
     private static void actionNamedPet(ServerPlayer player, UUID id, CompoundTag all, CompoundTag tag) {
         String state = tag.getString("State");
-        if (state.equals("stored")) {
+        if (state.equals("stored") || state.equals("revive")) {
+            if (state.equals("revive") && !validShrine(player)) {
+                player.sendSystemMessage(Component.literal("Need Revive: use the Book of Axoluthu at an Abyssal Moai lectern."));
+                return;
+            }
             if (!tag.contains("Entity", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
                 player.sendSystemMessage(Component.literal("Cannot summon: saved companion snapshot missing. Registry entry preserved."));
                 return;
@@ -345,6 +375,7 @@ public final class AbyssalCompanionRegistry {
                 return;
             }
             restored.setUUID(id);
+            if (state.equals("revive")) restored.setHealth(restored.getMaxHealth());
             if (!restored.isTame() || !player.getUUID().equals(restored.getOwnerUUID())) {
                 player.sendSystemMessage(Component.literal("Saved companion ownership mismatch; original snapshot preserved."));
                 return;

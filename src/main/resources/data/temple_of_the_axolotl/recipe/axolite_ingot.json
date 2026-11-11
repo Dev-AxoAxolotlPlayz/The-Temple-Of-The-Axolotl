@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "temple_of_the_axolotl:refined_axolite_dust"
+    },
+    {
+      "item": "temple_of_the_axolotl:refined_axolite_dust"
+    },
+    {
+      "item": "temple_of_the_axolotl:refined_axolite_dust"
+    },
+    {
+      "item": "temple_of_the_axolotl:refined_axolite_dust"
+    },
+    {
+      "item": "minecraft:iron_ingot"
+    },
+    {
+      "item": "minecraft:iron_ingot"
+    },
+    {
+      "item": "minecraft:copper_ingot"
+    },
+    {
+      "item": "minecraft:copper_ingot"
+    }
+  ],
+  "result": {
+    "id": "temple_of_the_axolotl:axolite_ingot",
+    "count": 1
+  }
+}

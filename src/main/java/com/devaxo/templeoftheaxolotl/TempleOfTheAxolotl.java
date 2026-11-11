@@ -70,9 +70,12 @@ public class TempleOfTheAxolotl {
                 output.accept(ModBlocks.ABYSSAL_LORE_BLOCK_ITEM.get());
                 output.accept(ModBlocks.BROKEN_ABYSSAL_LORE_BLOCK_ITEM.get());
                                 output.accept(ModBlocks.DIARY_ITEM.get());
+                                output.accept(com.devaxo.templeoftheaxolotl.item.ModItems.ARCHITECTS_JOURNAL.get());
                                 output.accept(ModBlocks.FIELD_GUIDE_ITEM.get());
                                 output.accept(ModBlocks.SHIPYARD_CRANE_ITEM.get());
                                 output.accept(ModBlocks.ANNEALING_KILN_ITEM.get());
+                                output.accept(ModBlocks.AXOLITE_ORE_ITEM.get());
+                                output.accept(ModBlocks.DEEPSLATE_AXOLITE_ORE_ITEM.get());
                                 output.accept(ModBlocks.ABYSSAL_WATERGATE_ITEM.get());
                                 output.accept(com.devaxo.templeoftheaxolotl.brewing.CosmicBrewingRegistries.STAND_ITEM.get());
 
@@ -110,6 +113,7 @@ public class TempleOfTheAxolotl {
         // Register custom spawn-relative temple structure placement.
         com.devaxo.templeoftheaxolotl.abyss.WatergateEntities.TYPES.register(modEventBus);
         TempleWorldgenPlacements.PLACEMENTS.register(modEventBus);
+        com.devaxo.templeoftheaxolotl.axolite.AxoliteWorldgen.FEATURES.register(modEventBus);
         com.devaxo.templeoftheaxolotl.worldgen.ShallowsRuinStructures.STRUCTURES.register(modEventBus);
         com.devaxo.templeoftheaxolotl.worldgen.ShallowsRuinPieceTypes.TYPES.register(modEventBus);
         TempleRewardMenuTypes.MENUS.register(modEventBus);
@@ -119,6 +123,7 @@ public class TempleOfTheAxolotl {
         com.devaxo.templeoftheaxolotl.brewing.CosmicBrewingRegistries.MENUS.register(modEventBus);
         com.devaxo.templeoftheaxolotl.eclipse.EclipseMenus.MENUS.register(modEventBus);
         com.devaxo.templeoftheaxolotl.eclipse.EclipseBlockEntities.TYPES.register(modEventBus);
+        com.devaxo.templeoftheaxolotl.block.AbyssalChestEntities.TYPES.register(modEventBus);
         com.devaxo.templeoftheaxolotl.compass.CelestialModulesMenuTypes.MENUS.register(modEventBus);
         com.devaxo.templeoftheaxolotl.repository.CelestialRepositoryMenuTypes.MENUS.register(modEventBus);
 
@@ -171,6 +176,8 @@ public class TempleOfTheAxolotl {
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.CelestialRadialActionPayload::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.CelestialRadialStatePayload::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.CelestialRadialOpenBookPayload::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.AxoluthuJournalPayload::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.AxoluthuJournalRequestPayload::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.AbyssalLorePayload::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.RepositoryRecipeFillPayload::register);
 

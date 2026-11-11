@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "item": "temple_of_the_axolotl:raw_axolite_dust"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:refined_axolite_dust",
+    "count": 1
+  },
+  "experience": 0.2,
+  "cookingtime": 200
+}

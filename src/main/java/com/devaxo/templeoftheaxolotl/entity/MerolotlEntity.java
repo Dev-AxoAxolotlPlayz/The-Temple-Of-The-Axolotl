@@ -18,6 +18,12 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 /** Abyss village resident. Independent aquatic resident with no Drowned behavior. */
 public class MerolotlEntity extends PathfinderMob implements GeoEntity {
+    // Abyss inhabitants persist across player-distance despawn checks.
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
+        return false;
+    }
+
     private final AnimatableInstanceCache animations = GeckoLibUtil.createInstanceCache(this);
     private UUID villageAlarmTarget;
     private int villageAlarmTicks;
@@ -61,6 +67,7 @@ public class MerolotlEntity extends PathfinderMob implements GeoEntity {
         }
     }
 
+    @Override protected int decreaseAirSupply(int currentAir) { return currentAir; }
     @Override protected void registerGoals() {
         goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.15, true));
         goalSelector.addGoal(2, new VillageWaterPatrolGoal());

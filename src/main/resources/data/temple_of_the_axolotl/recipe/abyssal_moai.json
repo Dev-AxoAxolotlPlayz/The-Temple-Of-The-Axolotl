@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "EGE",
+    "SLS",
+    "SPS"
+  ],
+  "key": {
+    "E": {
+      "item": "minecraft:ender_pearl"
+    },
+    "G": {
+      "item": "minecraft:glow_ink_sac"
+    },
+    "S": {
+      "item": "minecraft:echo_shard"
+    },
+    "L": {
+      "item": "minecraft:lapis_block"
+    },
+    "P": {
+      "item": "minecraft:prismarine_crystals"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:abyssal_torch",
+    "count": 1
+  }
+}

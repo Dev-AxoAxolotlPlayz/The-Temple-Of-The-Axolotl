@@ -100,6 +100,7 @@ public final class TempleHudModules {
             case 9 -> stack.is(ModItems.ABYSS_PRESSURE_GAUGE.get());
             case 10 -> stack.is(ModItems.ABYSSAL_GILLS.get());
             case 11 -> stack.is(ModItems.ABYSSAL_LANTERN.get());
+            case 14 -> stack.is(ModItems.ARCHITECTS_JOURNAL.get());
             case 15 -> stack.is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.DIARY_ITEM.get());
             case 16 -> stack.is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.FIELD_GUIDE_ITEM.get());
             case 17 -> stack.is(ModItems.NOODLE_COMMAND_BOOK.get());

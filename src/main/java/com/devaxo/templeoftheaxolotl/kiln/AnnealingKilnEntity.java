@@ -30,7 +30,7 @@ public class AnnealingKilnEntity extends BlockEntity implements MenuProvider {
    if(!inventory.getItem(i).is(ModItems.MOLTEN_GLASS_IN_A_MOLD.get()))return false;n++;}
   if(n==0)return false;
   ItemStack out=inventory.getItem(OUTPUT);
-  if(!out.isEmpty()&&(!ItemStack.isSameItemSameComponents(out,new ItemStack(ModItems.GLASS_MOLD.get()))||out.getCount()+n>out.getMaxStackSize()))return false;
+  if(!out.isEmpty()&&(!ItemStack.isSameItemSameComponents(out,new ItemStack(ModItems.PRESSURE_TREATED_ACRYLIC_PANEL.get()))||out.getCount()+n>out.getMaxStackSize()))return false;
   int cost=n*(n+7),available=coolantUnits+inventory.getItem(FUEL).getCount()*24;
   if(available<cost||(!inventory.getItem(FUEL).isEmpty()&&!inventory.getItem(FUEL).is(Items.BLUE_ICE)))return false;
   // Commit the exact batch before the first cooling tick; subsequent slot mutation is forbidden.
@@ -44,8 +44,8 @@ public class AnnealingKilnEntity extends BlockEntity implements MenuProvider {
   if(!(level instanceof ServerLevel)||!be.cooling)return;
   if(++be.progress>=COOL_TICKS){
    ItemStack out=be.inventory.getItem(OUTPUT);
-   if(out.isEmpty())be.inventory.setItem(OUTPUT,new ItemStack(ModItems.GLASS_MOLD.get(),be.activeCount));
-   else if(out.is(ModItems.GLASS_MOLD.get())&&out.getCount()+be.activeCount<=out.getMaxStackSize())out.grow(be.activeCount);
+   if(out.isEmpty())be.inventory.setItem(OUTPUT,new ItemStack(ModItems.PRESSURE_TREATED_ACRYLIC_PANEL.get(),be.activeCount));
+   else if(out.is(ModItems.PRESSURE_TREATED_ACRYLIC_PANEL.get())&&out.getCount()+be.activeCount<=out.getMaxStackSize())out.grow(be.activeCount);
    else {be.progress=COOL_TICKS-1;return;}
    be.activeCount=0;be.cooling=false;be.progress=0;
   }

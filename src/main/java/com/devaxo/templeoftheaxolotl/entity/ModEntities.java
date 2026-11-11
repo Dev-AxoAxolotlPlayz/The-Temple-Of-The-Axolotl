@@ -16,6 +16,31 @@ public class ModEntities {
                     TempleOfTheAxolotl.MODID
             );
 
+    public static final DeferredHolder<EntityType<?>, EntityType<WaifuAxoluthuEntity>> WAIFU_AXOLUTHU =
+            ENTITY_TYPES.register("waifu_axoluthu", () -> EntityType.Builder
+                    .of(WaifuAxoluthuEntity::new, MobCategory.CREATURE)
+                    .sized(0.6F, 1.8F).clientTrackingRange(16).updateInterval(2)
+                    .build("waifu_axoluthu"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<MegolotlEntity>> MEGOLOTL =
+            ENTITY_TYPES.register("megolotl", () -> EntityType.Builder.of(MegolotlEntity::new, MobCategory.WATER_CREATURE)
+                    .sized(19.8F, 11.3F).clientTrackingRange(32).build("megolotl"));
+    public static final DeferredHolder<EntityType<?>, EntityType<AbyssalJellyfishEntity>> ABYSSAL_JELLYFISH =
+            ENTITY_TYPES.register("abyssal_jellyfish", () -> EntityType.Builder.of(AbyssalJellyfishEntity::new, MobCategory.WATER_AMBIENT)
+                    .sized(4.7F, 5.5F).clientTrackingRange(20).build("abyssal_jellyfish"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<AxobloopEntity>> AXOBLOOP =
+            ENTITY_TYPES.register("axobloop", () -> EntityType.Builder.of(AxobloopEntity::new, MobCategory.WATER_AMBIENT)
+                    .sized(55.0F, 19.0F).clientTrackingRange(32).build("axobloop"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<GhostfishEntity>> GHOSTFISH =
+            ENTITY_TYPES.register("ghostfish", () -> EntityType.Builder.of(GhostfishEntity::new, MobCategory.WATER_AMBIENT)
+                    .sized(10.5F, 1.8F).clientTrackingRange(20).build("ghostfish"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<AbyssalAnglerEntity>> ABYSSAL_ANGLER =
+            ENTITY_TYPES.register("abyssal_angler", () -> EntityType.Builder.of(AbyssalAnglerEntity::new, MobCategory.WATER_AMBIENT)
+                    .sized(16.0F, 8.0F).clientTrackingRange(24).build("abyssal_angler"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<AbyssalAxolotlEntity>> ABYSSAL_AXOLOTL =
             ENTITY_TYPES.register("abyssal_axolotl", () -> EntityType.Builder.of(AbyssalAxolotlEntity::new, MobCategory.CREATURE)
                     .sized(1.0f, 0.8f).clientTrackingRange(10).build("abyssal_axolotl"));

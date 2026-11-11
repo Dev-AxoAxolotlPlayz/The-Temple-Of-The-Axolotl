@@ -64,6 +64,22 @@ public final class AbyssMerfolkVillages {
         if (dx%step!=0 || dz%step!=0) return false;
         return occupied(cx,cz,dx/step,dz/step);
     }
+    private static boolean selectedLoreHouse(ChunkPos cp) {
+        int cx = Math.floorDiv(cp.x, CELL), cz = Math.floorDiv(cp.z, CELL);
+        if (random(cx, cz, 73100) >= .35) return false;
+        int step = islandStep(villageCount(cx, cz));
+        int ax = anchorX(cx, cz), az = anchorZ(cx, cz);
+        double best = Double.POSITIVE_INFINITY;
+        int chosenX = Integer.MIN_VALUE, chosenZ = Integer.MIN_VALUE;
+        for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
+            if (dx == 0 && dz == 0) continue; // Choose a house, not the central hall.
+            if (!occupied(cx, cz, dx, dz)) continue;
+            int x = ax + dx * step, z = az + dz * step;
+            double score = random(x, z, 73101);
+            if (score < best) { best = score; chosenX = x; chosenZ = z; }
+        }
+        return cp.x == chosenX && cp.z == chosenZ;
+    }
     public static void paint(LevelChunk chunk, ChunkPos cp) {
         if(!isVillageChunk(cp))return;
         int cx=Math.floorDiv(cp.x,CELL),cz=Math.floorDiv(cp.z,CELL);
@@ -71,6 +87,14 @@ public final class AbyssMerfolkVillages {
         int x=cp.getMinBlockX()+8,z=cp.getMinBlockZ()+8;
         int y=145+(int)(random(cp.x,cp.z,72006)*17);
         buildIsland((pos,state)->chunk.setBlockState(pos,state,false),x,y,z,central,cp.x,cp.z);
+        // One possible lore block per village, in a deterministic eligible house.
+        if (selectedLoreHouse(cp)) {
+            chunk.setBlockState(new BlockPos(x, y + 1, z),
+                    com.devaxo.templeoftheaxolotl.registry.ModBlocks.ABYSSAL_LORE_BLOCK.get()
+                    .defaultBlockState().setValue(
+                    com.devaxo.templeoftheaxolotl.lore.AbyssalLoreBlock.FACING,
+                    Direction.NORTH), false);
+        }
     }
     private static void put(BiConsumer<BlockPos,BlockState> writer,int x,int y,int z,BlockState state) {
         writer.accept(new BlockPos(x,y,z),state);

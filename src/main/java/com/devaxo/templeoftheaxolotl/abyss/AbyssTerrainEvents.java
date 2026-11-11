@@ -35,6 +35,17 @@ public final class AbyssTerrainEvents {
     private static AbyssTerrainEvents activePainter;
     private final Queue<ChunkPos> pending = new ArrayDeque<>();
     private final Set<Long> queued = new HashSet<>();
+    // Scan loaded chunks in small batches; a single vanilla water block in the
+    // false-seafloor layer indicates an incomplete terrain pass.
+    private final Queue<ChunkPos> scanPending = new ArrayDeque<>();
+    private final Set<Long> scanQueued = new HashSet<>();
+    private long lastNearbyScan;
+    private static final int SCAN_RADIUS = 4;
+    private static final int SCANS_PER_TICK = 8;
+    private static final int SCAN_INTERVAL = 10;
+    private int playerScanCursor;
+    // Work only on loaded chunks close to players; never force-load chunks for maintenance.
+    private static final int THERMO_MIN_Y = 101, THERMO_MAX_Y = 110;
     private final Map<BlockPos, Long> vents = new HashMap<>();
     private final Map<BlockPos, Long> activePlumes = new HashMap<>();
     private long lastVentScan;
@@ -86,31 +97,122 @@ public final class AbyssTerrainEvents {
         LevelChunk chunk = level.getChunk(chunkX, chunkZ);
         ChunkPos cp = new ChunkPos(chunkX, chunkZ);
         BlockPos marker = new BlockPos(cp.getMinBlockX(), MARKER_Y, cp.getMinBlockZ());
-        if (!chunk.getBlockState(marker).is(Blocks.OBSIDIAN)) {
+        if (!chunk.getBlockState(marker).is(Blocks.OBSIDIAN) || hasBrokenThermocline(chunk, cp)) {
             activePainter.paint(level, chunk, cp);
             activePainter.queued.remove(cp.toLong());
             activePainter.pending.remove(cp);
         }
-        return chunk.getBlockState(marker).is(Blocks.OBSIDIAN);
+        return chunk.getBlockState(marker).is(Blocks.OBSIDIAN) && !hasBrokenThermocline(chunk, cp);
     }
 
     private void queue(ChunkPos cp) { if (queued.add(cp.toLong())) pending.add(cp); }
+    private static long playerDistanceSq(ChunkPos cp, List<ServerPlayer> players) {
+        long nearest = Long.MAX_VALUE;
+        for (ServerPlayer player : players) {
+            ChunkPos center = player.chunkPosition();
+            long dx = (long) cp.x - center.x, dz = (long) cp.z - center.z;
+            nearest = Math.min(nearest, dx * dx + dz * dz);
+        }
+        return nearest;
+    }
+    private static boolean nearPlayer(ChunkPos cp, List<ServerPlayer> players) {
+        for (ServerPlayer player : players) {
+            ChunkPos center = player.chunkPosition();
+            if (Math.abs(cp.x - center.x) <= SCAN_RADIUS && Math.abs(cp.z - center.z) <= SCAN_RADIUS)
+                return true;
+        }
+        return false;
+    }
+    private static ChunkPos takeNearest(Queue<ChunkPos> work, Set<Long> ids, List<ServerPlayer> players) {
+        ChunkPos best = null;
+        long distance = Long.MAX_VALUE;
+        for (ChunkPos cp : work) {
+            long d = playerDistanceSq(cp, players);
+            if (d < distance) { best = cp; distance = d; }
+        }
+        if (best != null) { work.remove(best); ids.remove(best.toLong()); }
+        return best;
+    }
+    private void queueScan(ChunkPos cp) {
+        if (scanQueued.add(cp.toLong())) scanPending.add(cp);
+    }
+    private static boolean hasBrokenThermocline(LevelChunk chunk, ChunkPos cp) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int y = THERMO_MIN_Y; y <= THERMO_MAX_Y; y++)
+            for (int x = cp.getMinBlockX(); x <= cp.getMaxBlockX(); x++)
+                for (int z = cp.getMinBlockZ(); z <= cp.getMaxBlockZ(); z++) {
+                    pos.set(x, y, z);
+                    if (chunk.getBlockState(pos).is(Blocks.WATER)) return true;
+                }
+        return false;
+    }
     @SubscribeEvent public void onChunk(ChunkEvent.Load event) {
         if (event.getLevel() instanceof ServerLevel level && level.dimension().equals(AbyssTrialEvents.ABYSS)) {
-            ChunkPos cp=event.getChunk().getPos(); queue(cp); registerExistingVents(level,cp);
+            ChunkPos cp=event.getChunk().getPos(); queue(cp); queueScan(cp); registerExistingVents(level,cp);
         }
     }
     @SubscribeEvent public void onTick(ServerTickEvent.Post event) {
         activePainter = this;
         ServerLevel level = event.getServer().getLevel(AbyssTrialEvents.ABYSS);
         if (level == null) return;
-        int budget=1;
-        while(budget-->0 && !pending.isEmpty()) {
-            ChunkPos cp=pending.poll(); queued.remove(cp.toLong());
-            if(!level.hasChunk(cp.x,cp.z)) continue;
-            LevelChunk chunk=level.getChunk(cp.x,cp.z);
-            if(chunk.getBlockState(new BlockPos(cp.getMinBlockX(),MARKER_Y,cp.getMinBlockZ())).is(Blocks.OBSIDIAN)) continue;
-            paint(level,chunk,cp);
+        List<ServerPlayer> players = level.players();
+        if (!players.isEmpty()) {
+            // Discard old maintenance work that is no longer near any player.
+            // The chunk-load event or next player-centered sweep will rediscover it.
+            scanPending.removeIf(cp -> {
+                if (nearPlayer(cp, players) && level.getChunkSource().hasChunk(cp.x, cp.z)) return false;
+                scanQueued.remove(cp.toLong());
+                return true;
+            });
+            // Every sweep, schedule loaded chunks in concentric rings. Rotate the
+            // starting player to avoid starving other players on multiplayer servers.
+            if (level.getGameTime() - lastNearbyScan >= SCAN_INTERVAL) {
+                lastNearbyScan = level.getGameTime();
+                for (int i = 0; i < players.size(); i++) {
+                    ServerPlayer player = players.get((playerScanCursor + i) % players.size());
+                    ChunkPos center = player.chunkPosition();
+                    for (int radius = 0; radius <= SCAN_RADIUS; radius++)
+                        for (int dx = -radius; dx <= radius; dx++)
+                            for (int dz = -radius; dz <= radius; dz++) {
+                                if (Math.max(Math.abs(dx), Math.abs(dz)) != radius) continue;
+                                int cx = center.x + dx, cz = center.z + dz;
+                                if (level.getChunkSource().hasChunk(cx, cz)) queueScan(new ChunkPos(cx, cz));
+                            }
+                }
+                playerScanCursor = (playerScanCursor + 1) % players.size();
+            }
+            for (int i = 0; i < SCANS_PER_TICK && !scanPending.isEmpty(); i++) {
+                ChunkPos cp = takeNearest(scanPending, scanQueued, players);
+                if (cp == null || !nearPlayer(cp, players) || !level.getChunkSource().hasChunk(cp.x, cp.z)) continue;
+                LevelChunk chunk = level.getChunk(cp.x, cp.z);
+                if (hasBrokenThermocline(chunk, cp)) {
+                    TempleOfTheAxolotl.LOGGER.warn("Abyss false-seafloor water found in chunk {}, {}; scheduling full repaint", cp.x, cp.z);
+                    queue(cp);
+                }
+            }
+        }
+        // Only one expensive full repaint per tick. Prioritize the closest
+        // loaded chunk rather than old FIFO entries from distant chunk loads.
+        if (!players.isEmpty() && !pending.isEmpty()) {
+            pending.removeIf(cp -> {
+                if (nearPlayer(cp, players) && level.getChunkSource().hasChunk(cp.x, cp.z)) return false;
+                queued.remove(cp.toLong());
+                return true;
+            });
+            ChunkPos cp = takeNearest(pending, queued, players);
+            if (cp != null && level.getChunkSource().hasChunk(cp.x, cp.z)) {
+                LevelChunk chunk = level.getChunk(cp.x, cp.z);
+                boolean marked = chunk.getBlockState(new BlockPos(cp.getMinBlockX(), MARKER_Y, cp.getMinBlockZ())).is(Blocks.OBSIDIAN);
+                if (!marked || hasBrokenThermocline(chunk, cp)) {
+                    paint(level, chunk, cp);
+                    if (hasBrokenThermocline(chunk, cp)) {
+                        TempleOfTheAxolotl.LOGGER.error("Abyss repaint did not repair thermocline in chunk {}, {}; will retry", cp.x, cp.z);
+                        queue(cp);
+                    } else {
+                        TempleOfTheAxolotl.LOGGER.info("Abyss terrain verified in chunk {}, {}", cp.x, cp.z);
+                    }
+                }
+            }
         }
         flushClientResync(level);
         tickVents(level);
@@ -203,18 +305,6 @@ public final class AbyssTerrainEvents {
         // Place naturally generated merfolk archipelagos after geological painting.
         AbyssMerfolkVillages.paint(chunk, cp);
         AbyssMerfolkVillages.populate(level, cp);
-        // Independent collectible Abyssal lore; generated once per new painted chunk.
-        if (hash(cp.x, cp.z, 779031) < .065 && (Math.abs(cp.x)>3 || Math.abs(cp.z)>3)) {
-            int x=cp.getMinBlockX()+4+(int)(hash(cp.x,cp.z,779032)*8);
-            int z=cp.getMinBlockZ()+4+(int)(hash(cp.x,cp.z,779033)*8);
-            int y=floor(x,z)+1;
-            if (y < SEA-2 && y > -59) {
-                var direction=net.minecraft.core.Direction.from2DDataValue((int)(hash(cp.x,cp.z,779034)*4));
-                chunk.setBlockState(new BlockPos(x,y,z),
-                    com.devaxo.templeoftheaxolotl.registry.ModBlocks.ABYSSAL_LORE_BLOCK.get().defaultBlockState()
-                        .setValue(com.devaxo.templeoftheaxolotl.lore.AbyssalLoreBlock.FACING,direction),false);
-            }
-        }
         chunk.setBlockState(new BlockPos(cp.getMinBlockX(),MARKER_Y,cp.getMinBlockZ()),Blocks.OBSIDIAN.defaultBlockState(),false);
         chunk.setUnsaved(true);
         // Allow the bulk chunk edits to settle before sending full terrain/biome/light data.

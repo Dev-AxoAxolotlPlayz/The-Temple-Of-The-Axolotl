@@ -1,0 +1,21 @@
+{
+  "description": {
+    "translate": "enchantment.temple_of_the_axolotl.treecapitator"
+  },
+  "supported_items": "#minecraft:axes",
+  "weight": 5,
+  "max_level": 3,
+  "min_cost": {
+    "base": 10,
+    "per_level_above_first": 12
+  },
+  "max_cost": {
+    "base": 35,
+    "per_level_above_first": 12
+  },
+  "anvil_cost": 4,
+  "slots": [
+    "mainhand"
+  ],
+  "effects": {}
+}

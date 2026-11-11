@@ -33,7 +33,16 @@ public final class ModItems {
             new com.devaxo.templeoftheaxolotl.entity.AbyssalCharmItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> NOODLE_COMMAND_BOOK = ITEMS.register("book_of_commands", () ->
             new com.devaxo.templeoftheaxolotl.entity.NoodleCommandBookItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<Item> ARCHITECTS_JOURNAL = ITEMS.register("architects_journal", () ->
+            new com.devaxo.templeoftheaxolotl.entity.AxoluthuArchitectJournalItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> NOODLE_TRAINING_MEDAL = basic("training_medal", 1);
+
+    // Axolite metal: future smithing-template ingredient.
+    public static final DeferredItem<Item> AXOLITE_INGOT = basic("axolite_ingot", 64);
+
+    // Axolite stage 1: pink raw dust becomes cyan after smelting.
+    public static final DeferredItem<Item> RAW_AXOLITE_DUST = basic("raw_axolite_dust", 64);
+    public static final DeferredItem<Item> REFINED_AXOLITE_DUST = basic("refined_axolite_dust", 64);
 
     // Shorkolotl-100 microcrafting materials.
     public static final DeferredItem<Item> REINFORCED_IRON_PLATING = basic("reinforced_iron_plating", 64);
@@ -367,6 +376,16 @@ public final class ModItems {
     public static final DeferredItem<Item> CELESTIAL_KEY = basic("celestial_key", 1);
 
     // =========================================
+    // Axolite armor: Diamond durability and Netherite-level combat protection.
+    public static final DeferredItem<AxoliteArmorItem> AXOLITE_HELMET = ITEMS.register("axolite_helmet", () ->
+            new AxoliteArmorItem(ArmorMaterials.DIAMOND, ArmorItem.Type.HELMET, new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<AxoliteArmorItem> AXOLITE_CHESTPLATE = ITEMS.register("axolite_chestplate", () ->
+            new AxoliteArmorItem(ArmorMaterials.DIAMOND, ArmorItem.Type.CHESTPLATE, new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<AxoliteArmorItem> AXOLITE_LEGGINGS = ITEMS.register("axolite_leggings", () ->
+            new AxoliteArmorItem(ArmorMaterials.DIAMOND, ArmorItem.Type.LEGGINGS, new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<AxoliteArmorItem> AXOLITE_BOOTS = ITEMS.register("axolite_boots", () ->
+            new AxoliteArmorItem(ArmorMaterials.DIAMOND, ArmorItem.Type.BOOTS, new Item.Properties().stacksTo(1)));
+
 // CELESTIAL AXOLOTL ARMOR
 // =========================================
 
@@ -442,6 +461,10 @@ public final class ModItems {
                     )
             );
 
+    public static final DeferredItem<DeferredSpawnEggItem> WAIFU_AXOLUTHU_SPAWN_EGG = ITEMS.register(
+            "waifu_axoluthu_spawn_egg", () -> new DeferredSpawnEggItem(
+                    ModEntities.WAIFU_AXOLUTHU, 0x24123F, 0x52E5E5, new Item.Properties()));
+
     public static final DeferredItem<DeferredSpawnEggItem> CLUCKLES_SPAWN_EGG = ITEMS.register(
             "cluckles_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.CLUCKLES,
                     0xF7F1DB, 0xE8A92E, new Item.Properties()));
@@ -467,6 +490,9 @@ public final class ModItems {
             CreativeModeTab.Output output
     ) {
 
+        output.accept(RAW_AXOLITE_DUST.get());
+        output.accept(REFINED_AXOLITE_DUST.get());
+        output.accept(AXOLITE_INGOT.get());
         output.accept(GRAIN.get());
         output.accept(UNCOOKED_RICE.get());
         output.accept(KOJI.get());
@@ -511,6 +537,7 @@ public final class ModItems {
         output.accept(SHORKOLOTL_COCKPIT.get());
         output.accept(FLIPPER_STABILIZER.get());
         output.accept(SHORKOLOTL_HULL.get());
+        output.accept(SHORKOLOTL_100_ITEM.get());
         output.accept(SHORKOLOTL_TAIL.get());
         output.accept(MACHINING_BLOCK.get());
         output.accept(BOOM_TRUSS_BLOCK.get());
@@ -521,6 +548,10 @@ public final class ModItems {
         output.accept(SHARD_OF_DIVINITY.get());
         output.accept(ORB_OF_ENVY.get());
         output.accept(CELESTIAL_KEY.get());
+        output.accept(AXOLITE_HELMET.get());
+        output.accept(AXOLITE_CHESTPLATE.get());
+        output.accept(AXOLITE_LEGGINGS.get());
+        output.accept(AXOLITE_BOOTS.get());
         output.accept(AXOLOTL_CHESTPLATE.get());
         output.accept(AXOLOTL_LEGGINGS.get());
         output.accept(AXOLOTL_BOOTS.get());
@@ -556,6 +587,7 @@ public final class ModItems {
         output.accept(ABYSSAL_AXOLOTL_SPAWN_EGG.get());
         output.accept(MEROLOTL_SPAWN_EGG.get());
         output.accept(CLUCKLES_SPAWN_EGG.get());
+        output.accept(WAIFU_AXOLUTHU_SPAWN_EGG.get());
         output.accept(TAMEABLE_WRATH_SPAWN_EGG.get());
         output.accept(BOSS_WRATH_SPAWN_EGG.get());
     }

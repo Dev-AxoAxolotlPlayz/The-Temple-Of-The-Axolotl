@@ -27,6 +27,10 @@ public record CelestialRadialActionPayload(int index) implements CustomPacketPay
                 case 2 -> com.devaxo.templeoftheaxolotl.combat.RingMiningMode.toggle(p);
                 case 3 -> { if (TempleHudModules.getSlot(p,4).is(ModItems.CELESTIAL_MAGNET.get()))
                     com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.cycleMagnet(p); }
+                case 8 -> { if (TempleHudModules.getSlot(p,11).is(ModItems.ABYSSAL_LANTERN.get()))
+                    com.devaxo.templeoftheaxolotl.event.AbyssalLanternEvents.toggle(p); }
+                case 7 -> { if (TempleHudModules.getSlot(p,14).is(ModItems.ARCHITECTS_JOURNAL.get()))
+                    com.devaxo.templeoftheaxolotl.network.AxoluthuJournalPayload.send(p); }
                 case 4 -> { if (TempleHudModules.getSlot(p,15).is(ModBlocks.DIARY_ITEM.get()))
                     PacketDistributor.sendToPlayer(p,new CelestialRadialOpenBookPayload(0)); }
                 case 5 -> { if (TempleHudModules.getSlot(p,16).is(ModBlocks.FIELD_GUIDE_ITEM.get()))
@@ -47,6 +51,11 @@ public record CelestialRadialActionPayload(int index) implements CustomPacketPay
         if (TempleHudModules.getSlot(p,15).is(ModBlocks.DIARY_ITEM.get())) flags |= 16;
         if (TempleHudModules.getSlot(p,16).is(ModBlocks.FIELD_GUIDE_ITEM.get())) flags |= 32;
         if (TempleHudModules.getSlot(p,17).is(ModItems.NOODLE_COMMAND_BOOK.get())) flags |= 64;
+        if (TempleHudModules.getSlot(p,14).is(ModItems.ARCHITECTS_JOURNAL.get())) flags |= 128;
+        if (TempleHudModules.getSlot(p,11).is(ModItems.ABYSSAL_LANTERN.get())) {
+            flags |= 512; // equipped, independent of ON/OFF state
+            if (com.devaxo.templeoftheaxolotl.event.AbyssalLanternEvents.moduleEnabled(p)) flags |= 256;
+        }
         PacketDistributor.sendToPlayer(p, new CelestialRadialStatePayload(flags));
     }
 }

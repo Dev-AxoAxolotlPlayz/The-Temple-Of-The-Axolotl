@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GSG",
+    "GLG",
+    "EAE"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glow_ink_sac"
+    },
+    "S": {
+      "item": "temple_of_the_axolotl:spring"
+    },
+    "L": {
+      "item": "minecraft:soul_lantern"
+    },
+    "E": {
+      "item": "minecraft:echo_shard"
+    },
+    "A": {
+      "item": "minecraft:sea_lantern"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:abyssal_lantern",
+    "count": 1
+  }
+}

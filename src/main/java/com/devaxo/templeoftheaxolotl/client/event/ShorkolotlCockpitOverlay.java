@@ -27,6 +27,12 @@ public final class ShorkolotlCockpitOverlay {
         gui.fill(0, 0, rim, h, 0x8064BED4);
         gui.fill(w - rim, 0, w, h, 0x8064BED4);
         }
+        // Always show server-synchronized hull integrity to distinguish missing bite
+        // registration from a cracked-glass rendering failure during field tests.
+        String hullText = "HULL " + sub.hullIntegrity() + "%";
+        int hullColor = sub.hullIntegrity() <= 25 ? 0xFFFF5555
+                : sub.hullIntegrity() <= 50 ? 0xFFFFC857 : 0xFF88EEFF;
+        gui.drawString(mc.font, hullText, 12, h - 30, hullColor, true);
         // Hull integrity is synchronized from the server, so third-person
         // pilots see the same damage state as first-person pilots.
         if (sub.hullIntegrity() <= 50) {

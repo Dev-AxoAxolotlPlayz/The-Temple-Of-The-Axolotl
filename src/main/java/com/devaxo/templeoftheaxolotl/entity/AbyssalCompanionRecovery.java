@@ -17,7 +17,15 @@ public final class AbyssalCompanionRecovery {
         if (event.getEntity() instanceof ServerPlayer player) recallLoaded(player);
     }
     @SubscribeEvent public static void death(LivingDeathEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) recallLoaded(player);
+        if (event.getEntity() instanceof ServerPlayer player) {
+            recallLoaded(player);
+        } else if (event.getEntity() instanceof net.minecraft.world.entity.TamableAnimal pet
+                && pet.isTame() && pet.getOwnerUUID() != null && !pet.level().isClientSide()) {
+            if (pet.getServer() != null) {
+                ServerPlayer owner = pet.getServer().getPlayerList().getPlayer(pet.getOwnerUUID());
+                if (owner != null) AbyssalCompanionRegistry.defeatedPet(owner, pet);
+            }
+        }
     }
     private static void recallLoaded(ServerPlayer owner) {
         for (var level : owner.server.getAllLevels()) {

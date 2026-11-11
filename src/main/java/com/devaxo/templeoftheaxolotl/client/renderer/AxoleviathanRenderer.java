@@ -38,7 +38,7 @@ public class AxoleviathanRenderer extends GeoEntityRenderer<AxoleviathanEntity> 
     @Override
     public boolean shouldRender(AxoleviathanEntity entity, Frustum frustum,
                                 double camX, double camY, double camZ) {
-        AABB visualBounds = entity.getBoundingBox().inflate(450.0, 450.0, 450.0);
+        AABB visualBounds = entity.getBoundingBox().inflate(460.0, 450.0, 460.0);
         return frustum.isVisible(visualBounds);
     }
 }

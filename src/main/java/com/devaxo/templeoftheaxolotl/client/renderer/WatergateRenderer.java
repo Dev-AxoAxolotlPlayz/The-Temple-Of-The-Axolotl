@@ -33,8 +33,8 @@ public final class WatergateRenderer extends GeoBlockRenderer<WatergateEntity> {
         pose.translate(-.5, 0, -.5);
         // Controller-driven loading beams. Stages 1..8: violet attempt, cyan complete;
         // 9..13: fifth pair stays cyan while earlier pairs shut off every 20 ticks.
-        int stage = entity.getBlockState().getValue(WatergateBlock.AWAKENING);
-        int progress = entity.getBlockState().getValue(WatergateBlock.CHUNK_PROGRESS);
+        int stage = entity.getAwakeningStage();
+        int progress = entity.getChunkProgress();
         if (stage >= 9 && stage < 14 || stage < 9 && progress != 0) {
             VertexConsumer beamBuffer = buffers.getBuffer(RenderType.entityTranslucent(PORTAL));
             Matrix4f beamMatrix = pose.last().pose();

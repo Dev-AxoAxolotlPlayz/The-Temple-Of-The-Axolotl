@@ -1,0 +1,17 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": [
+    "temple_of_the_axolotl:abyssal_plateaus",
+    "temple_of_the_axolotl:abyssal_ravines",
+    "temple_of_the_axolotl:abyssal_kelp_seas",
+    "temple_of_the_axolotl:abyssal_seafloor",
+    "temple_of_the_axolotl:abyssal_sandbars",
+    "temple_of_the_axolotl:abyssal_coral_shelves"
+  ],
+  "spawners": {
+    "type": "temple_of_the_axolotl:abyssal_angler",
+    "weight": 6,
+    "minCount": 1,
+    "maxCount": 2
+  }
+}

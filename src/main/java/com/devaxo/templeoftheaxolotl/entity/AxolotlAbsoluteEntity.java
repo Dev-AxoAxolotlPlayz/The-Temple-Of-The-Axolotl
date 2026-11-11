@@ -18,6 +18,10 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -181,8 +185,26 @@ public class AxolotlAbsoluteEntity extends TamableAnimal
     protected void registerGoals() {
         super.registerGoals();
 
+        // Creeper-sense: engage nearby creepers before they reach the owner.
+        this.targetSelector.addGoal(0, new net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal<>(
+                this, net.minecraft.world.entity.monster.Creeper.class, 10, true, false,
+                candidate -> isTame() && !isOrderedToSit() && !this.isVehicle() && getOwner() != null
+                        && candidate.isAlive() && candidate.distanceToSqr(getOwner()) <= 256.0D));
+        this.targetSelector.addGoal(1, new OwnerHurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new OwnerHurtTargetGoal(this));
+        this.targetSelector.addGoal(3, new HurtByTargetGoal(this));
+        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.15D, true) {
+            @Override public boolean canUse() {
+                return !AxolotlAbsoluteEntity.this.isVehicle() && !AxolotlAbsoluteEntity.this.isOrderedToSit()
+                        && getFlightState() == GROUNDED && super.canUse();
+            }
+            @Override public boolean canContinueToUse() {
+                return !AxolotlAbsoluteEntity.this.isVehicle() && !AxolotlAbsoluteEntity.this.isOrderedToSit()
+                        && getFlightState() == GROUNDED && super.canContinueToUse();
+            }
+        });
         // Flight takes priority over wandering.
-        this.goalSelector.addGoal(1, new RoyalEscortGoal());
+        this.goalSelector.addGoal(2, new RoyalEscortGoal());
 
         this.goalSelector.addGoal(2, new ObstacleFlightGoal());
 
@@ -346,14 +368,33 @@ public class AxolotlAbsoluteEntity extends TamableAnimal
         super.travel(travelVector);
     }
 
+    // Prevent companion-on-companion attacks, including same-owner tameables.
+    private boolean isProtectedCompanion(net.minecraft.world.entity.Entity entity) {
+        if (entity == this || entity == getOwner()) return true;
+        if (entity instanceof TamableAnimal tameable && this.isTame()) {
+            return tameable.isTame() && this.getOwnerUUID() != null
+                    && this.getOwnerUUID().equals(tameable.getOwnerUUID());
+        }
+        return false;
+    }
+
+    @Override
+    public boolean canAttack(LivingEntity victim) {
+        return !isProtectedCompanion(victim) && super.canAttack(victim);
+    }
+
     @Override
     public boolean doHurtTarget(net.minecraft.world.entity.Entity target) {
-        if (target instanceof LivingEntity living && living == this.getOwner()) return false;
+        if (isProtectedCompanion(target)) return false;
         boolean hit = super.doHurtTarget(target);
         if (hit && target instanceof LivingEntity living) {
-            double dx = living.getX() - this.getX();
-            double dz = living.getZ() - this.getZ();
-            living.knockback(2.5D, -dx, -dz);
+            // Gentle Boop: disorient rather than repeatedly punt the target away.
+            living.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                    net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 40, 4));
+            living.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                    net.minecraft.world.effect.MobEffects.BLINDNESS, 40, 0));
+            // Blindness alone does not reliably drop an existing mob target.
+            if (living instanceof net.minecraft.world.entity.Mob mob) mob.setTarget(null);
         }
         return hit;
     }
@@ -416,6 +457,19 @@ public class AxolotlAbsoluteEntity extends TamableAnimal
         // Also enforce for entities loaded from older saves.
         if (!this.isInvulnerable()) this.setInvulnerable(true);
         super.tick();
+        // Aquatic pitch follows actual swimming velocity, independently of aerial flight.
+        // The mounted Above All retains its rider-controlled pitch instead.
+        if (this.isInWater() && this.getControllingPassenger() == null) {
+            Vec3 swim = this.getDeltaMovement();
+            double horizontal = Math.sqrt(swim.x * swim.x + swim.z * swim.z);
+            if (horizontal + Math.abs(swim.y) > 0.025D) {
+                float desiredPitch = (float) (-Math.toDegrees(Math.atan2(swim.y, Math.max(horizontal, 0.001D))));
+                desiredPitch = net.minecraft.util.Mth.clamp(desiredPitch, -55.0F, 55.0F);
+                this.setXRot(net.minecraft.util.Mth.rotLerp(0.20F, this.getXRot(), desiredPitch));
+            } else {
+                this.setXRot(net.minecraft.util.Mth.rotLerp(0.12F, this.getXRot(), 0.0F));
+            }
+        }
 
         // A mounted player must not retain stale fall distance during flight or landing.
         for (net.minecraft.world.entity.Entity passenger : this.getPassengers()) {
@@ -430,6 +484,16 @@ public class AxolotlAbsoluteEntity extends TamableAnimal
             flightCooldown--;
         }
 
+        LivingEntity combatTarget = this.getTarget();
+        if (combatTarget != null && (!combatTarget.isAlive() || !canAttack(combatTarget)
+                || this.isOrderedToSit() || this.isVehicle())) {
+            this.setTarget(null);
+            combatTarget = null;
+        }
+        if (combatTarget != null && getFlightState() == GROUNDED
+                && this.distanceToSqr(combatTarget) > 16.0D && flightCooldown == 0) {
+            beginEscortFlight();
+        }
         int phase = getFlightState();
 
         if (riderFlight) {
@@ -467,7 +531,7 @@ public class AxolotlAbsoluteEntity extends TamableAnimal
         this.fallDistance = 0.0F;
 
         LivingEntity owner = this.getOwner();
-        if (escortFlight && (this.isOrderedToSit()
+        if (escortFlight && combatTarget == null && (this.isOrderedToSit()
                 || owner == null || !owner.isAlive()
                 || owner.level() != this.level())) {
             if (phase == FLYING) {
@@ -512,13 +576,18 @@ public class AxolotlAbsoluteEntity extends TamableAnimal
             this.setNoGravity(true);
             this.fallDistance = 0.0F;
 
-            if (!escortFlight && (flightDestination == null || airborneTicks > 180)) {
+            if (combatTarget == null && !escortFlight && (flightDestination == null || airborneTicks > 180)) {
                 beginLanding();
                 return;
             }
 
             Vec3 target;
-            if (escortFlight && owner != null && owner.isAlive()
+            if (combatTarget != null) {
+                target = combatTarget.position().add(0, combatTarget.getBbHeight() * 0.5, 0);
+                if (this.distanceToSqr(combatTarget) <= 7.0D && this.tickCount % 14 == 0) {
+                    this.doHurtTarget(combatTarget);
+                }
+            } else if (escortFlight && owner != null && owner.isAlive()
                     && !this.isOrderedToSit()) {
                 // Follow the moving owner rather than a stale destination.
                 target = owner.position().add(0, 2.5, 0);
@@ -691,7 +760,8 @@ public class AxolotlAbsoluteEntity extends TamableAnimal
                     && !AxolotlAbsoluteEntity.this.isOrderedToSit()
                     && owner != null && owner.isAlive()
                     && owner.level() == AxolotlAbsoluteEntity.this.level()
-                    && getFlightState() == GROUNDED;
+                    && getFlightState() == GROUNDED
+                    && getTarget() == null;
         }
 
         @Override

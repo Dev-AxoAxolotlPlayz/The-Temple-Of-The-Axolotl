@@ -9,14 +9,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 /** Inscription text must be delivered to the server and validated against the actual altar slots. */
-public record EclipseInscriptionPayload(String name, boolean uniformFont) implements CustomPacketPayload {
+public record EclipseInscriptionPayload(String name, int fontChoice) implements CustomPacketPayload {
     public static final Type<EclipseInscriptionPayload> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, "eclipse_inscribe"));
     public static final StreamCodec<RegistryFriendlyByteBuf, EclipseInscriptionPayload> STREAM_CODEC =
             StreamCodec.of((buf, packet) -> {
                 buf.writeUtf(packet.name(), 50);
-                buf.writeBoolean(packet.uniformFont());
-            }, buf -> new EclipseInscriptionPayload(buf.readUtf(50), buf.readBoolean()));
+                buf.writeVarInt(packet.fontChoice());
+            }, buf -> new EclipseInscriptionPayload(buf.readUtf(50), buf.readVarInt()));
     @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     public static final class Registration {
         public static void register(RegisterPayloadHandlersEvent event) {
@@ -24,7 +24,7 @@ public record EclipseInscriptionPayload(String name, boolean uniformFont) implem
                     context.enqueueWork(() -> {
                         if (context.player() instanceof ServerPlayer player
                                 && player.containerMenu instanceof EclipseMenu menu) {
-                            menu.inscribe(player, packet.name(), packet.uniformFont());
+                            menu.inscribe(player, packet.name(), packet.fontChoice());
                         }
                     }));
         }

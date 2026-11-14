@@ -118,10 +118,14 @@ public final class WaifuAxoluthuConstruction {
             origin=chooseSite(axo,level);
             if(origin==null)return "WAITING_FOR_SAFE_EMPTY_SITE";
             axo.setStage4WorkshopOrigin(origin);
+            WaifuAxoluthuVillageRegistry.registerPlanned(axo, "workshop", origin, 5, 4, 5);
             return "SITE_FOUND "+origin.toShortString();
         }
+        String permit = WaifuAxoluthuBuildingPermit.await(axo, level, "workshop", origin);
+        if (permit != null) return permit;
         int index=axo.getStage4WorkshopStep();
-        if(index>=TOTAL) { axo.finishStage4Workshop(); return "COMPLETE"; }
+        WaifuAxoluthuVillageRegistry.markActive(axo, "workshop", origin, 5, 4, 5, "BUILDING", index, TOTAL);
+        if(index>=TOTAL) { axo.finishStage4Workshop(); WaifuAxoluthuBuildingPermit.complete(axo, "workshop"); WaifuAxoluthuVillageRegistry.registerCompleted(axo, "workshop", axo.getStage4WorkshopOrigin(), 5, 4, 5); return "COMPLETE"; }
         BlockPos target=at(origin,index);
         if(!level.getChunkSource().hasChunk(target.getX()>>4,target.getZ()>>4)) {
             axo.navigateToSavedLocation(origin,1.3);
@@ -162,7 +166,7 @@ public final class WaifuAxoluthuConstruction {
         axo.advanceStage4Workshop();
         WaifuAxoluthuBuildNavigation.completed(axo);
         axo.recordAcquisition("STAGE4_PLACE oak_planks at="+target.toShortString()+" step="+(index+1)+"/"+TOTAL);
-        if(index+1==TOTAL) { axo.finishStage4Workshop();return "COMPLETE"; }
+        if(index+1==TOTAL) { axo.finishStage4Workshop(); WaifuAxoluthuBuildingPermit.complete(axo, "workshop"); WaifuAxoluthuVillageRegistry.registerCompleted(axo, "workshop", axo.getStage4WorkshopOrigin(), 5, 4, 5);return "COMPLETE"; }
         return "BUILDING "+(index+1)+"/"+TOTAL;
     }
 }

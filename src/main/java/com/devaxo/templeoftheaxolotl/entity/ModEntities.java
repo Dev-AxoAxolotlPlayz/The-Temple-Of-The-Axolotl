@@ -61,11 +61,11 @@ public class ModEntities {
 
     public static final DeferredHolder<EntityType<?>, EntityType<AxolotlAbsoluteEntity>>
             AXOLOTL_ABSOLUTE = ENTITY_TYPES.register(
-            "axolotl_absolute",
+            "axolotl_above_all",
             () -> EntityType.Builder.of(
                     AxolotlAbsoluteEntity::new,
                     MobCategory.CREATURE
-            ).sized(1.3F, 1.25F).build("axolotl_absolute")
+            ).sized(1.3F, 1.25F).build("axolotl_above_all")
     );
     public static final DeferredHolder<EntityType<?>, EntityType<ClucklesEntity>> CLUCKLES = ENTITY_TYPES.register(
         "cluckles", () -> EntityType.Builder.of(ClucklesEntity::new, MobCategory.CREATURE).sized(0.65F, 0.95F).build("cluckles")

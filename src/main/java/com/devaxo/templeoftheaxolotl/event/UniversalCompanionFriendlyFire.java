@@ -14,6 +14,18 @@ public final class UniversalCompanionFriendlyFire {
     private UniversalCompanionFriendlyFire() {}
 
     @SubscribeEvent public static void protect(LivingIncomingDamageEvent event) {
+        if (event.getEntity() instanceof com.devaxo.templeoftheaxolotl.entity.WaifuAxoluthuEntity axo) {
+            java.util.UUID owner = axo.getBondedPlayer();
+            if (owner == null) return;
+            Entity attacker = event.getSource().getEntity();
+            if (attacker instanceof Player player && owner.equals(player.getUUID())) {
+                event.setCanceled(true);
+            } else if (attacker instanceof TamableAnimal pet && pet.isTame()
+                    && owner.equals(pet.getOwnerUUID())) {
+                event.setCanceled(true);
+            }
+            return;
+        }
         if (!(event.getEntity() instanceof TamableAnimal victim) || !victim.isTame()) return;
         Entity credited = event.getSource().getEntity();
         Entity direct = event.getSource().getDirectEntity();
@@ -22,6 +34,12 @@ public final class UniversalCompanionFriendlyFire {
         if (credited instanceof Player player && player.getUUID().equals(victim.getOwnerUUID())) {
             // The override applies ONLY to a direct player melee hit, not arrows or AoE.
             if (direct == player && player.isShiftKeyDown()) return;
+            event.setCanceled(true);
+            return;
+        }
+        if (credited instanceof com.devaxo.templeoftheaxolotl.entity.WaifuAxoluthuEntity axo
+                && victim.getOwnerUUID() != null
+                && victim.getOwnerUUID().equals(axo.getBondedPlayer())) {
             event.setCanceled(true);
             return;
         }

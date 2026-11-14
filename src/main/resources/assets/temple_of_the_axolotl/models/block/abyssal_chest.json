@@ -1,5 +1,5 @@
 {
-  "credit": "Abyssal Chest \u2014 animated cosmic-oceanic voxel model",
+  "credit": "Abyssal Chest \u2014 full cube, latch-free, original animated textures",
   "ambientocclusion": false,
   "textures": {
     "front": "temple_of_the_axolotl:block/abyssal_chest_front",
@@ -13,97 +13,69 @@
   "elements": [
     {
       "from": [
-        1,
-        1,
-        1
+        0,
+        0,
+        0
       ],
       "to": [
-        15,
-        10,
-        15
+        16,
+        16,
+        16
       ],
       "faces": {
         "north": {
-          "texture": "#front"
+          "texture": "#front",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "south": {
-          "texture": "#back"
+          "texture": "#back",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "west": {
-          "texture": "#left"
+          "texture": "#left",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "east": {
-          "texture": "#right"
+          "texture": "#right",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "up": {
-          "texture": "#top"
+          "texture": "#top",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "down": {
-          "texture": "#bottom"
-        }
-      }
-    },
-    {
-      "from": [
-        1,
-        10,
-        1
-      ],
-      "to": [
-        15,
-        15,
-        15
-      ],
-      "faces": {
-        "north": {
-          "texture": "#front"
-        },
-        "south": {
-          "texture": "#back"
-        },
-        "west": {
-          "texture": "#left"
-        },
-        "east": {
-          "texture": "#right"
-        },
-        "up": {
-          "texture": "#top"
-        },
-        "down": {
-          "texture": "#bottom"
-        }
-      }
-    },
-    {
-      "from": [
-        7,
-        7,
-        0.4
-      ],
-      "to": [
-        9,
-        11,
-        1.1
-      ],
-      "faces": {
-        "north": {
-          "texture": "#front"
-        },
-        "south": {
-          "texture": "#front"
-        },
-        "west": {
-          "texture": "#front"
-        },
-        "east": {
-          "texture": "#front"
-        },
-        "up": {
-          "texture": "#front"
-        },
-        "down": {
-          "texture": "#front"
+          "texture": "#bottom",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         }
       }
     }

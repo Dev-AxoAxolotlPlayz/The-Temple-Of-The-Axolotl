@@ -11,6 +11,71 @@ public final class WaifuAxoluthuBuildNavigation {
     private WaifuAxoluthuBuildNavigation() {}
     private record Attempt(BlockPos target, BlockPos stand, long tick, double x, double z, int retries) {}
     private static final Map<UUID, Attempt> attempts = new HashMap<>();
+    private record Recovery(BlockPos destination, long checked, double x, double z,
+                            int failures, boolean returningHome, boolean usedHome, long nextRequest) {}
+    private static final Map<UUID, Recovery> recoveries = new HashMap<>();
+
+    /** Constant-time watchdog; never creates candidate paths during recovery. */
+    private static String travel(WaifuAxoluthuEntity axo, ServerLevel level, BlockPos destination) {
+        UUID id = axo.getUUID();
+        long now = level.getGameTime();
+        Recovery r = recoveries.get(id);
+        if (r == null || !r.destination().equals(destination)) {
+            r = new Recovery(destination, now, axo.getX(), axo.getZ(), 0, false, false, 0);
+        }
+        BlockPos home = axo.getHomePosition();
+        if (r.returningHome()) {
+            if (home == null) { recoveries.remove(id); return "ALL_ROADS_LEAD_HOME_NO_ANCHOR"; }
+            if (axo.distanceToSqr(home.getX()+.5,home.getY(),home.getZ()+.5) <= 9.0) {
+                // Arrival is a radius, not an exact coordinate or the bed itself.
+                r = new Recovery(destination, now, axo.getX(), axo.getZ(), 0, false, true, now+40);
+                axo.getNavigation().stop();
+                recoveries.put(id,r);
+                return "ALL_ROADS_LEAD_HOME_HOME_REACHED";
+            }
+            if (now - r.checked() >= 100) {
+                double moved = Math.hypot(axo.getX()-r.x(), axo.getZ()-r.z());
+                if (moved < 0.8 && r.failures() >= 2) {
+                    recoveries.remove(id);
+                    return "ALL_ROADS_LEAD_HOME_HOME_UNREACHABLE";
+                }
+                r = new Recovery(destination, now, axo.getX(), axo.getZ(),
+                        moved < 0.8 ? r.failures()+1 : 0, true, true, now);
+            }
+            if (now >= r.nextRequest() && (axo.getNavigation().isDone() || now-r.checked()>=100)) {
+                axo.navigateToSavedLocation(home, 1.1);
+                r = new Recovery(destination,r.checked(),r.x(),r.z(),r.failures(),true,true,now+40);
+            }
+            recoveries.put(id,r);
+            return "ALL_ROADS_LEAD_HOME_RETURNING";
+        }
+        if (now - r.checked() >= 100) {
+            double moved = Math.hypot(axo.getX()-r.x(), axo.getZ()-r.z());
+            int failures = moved < 0.8 ? r.failures()+1 : 0;
+            if (failures >= 3) {
+                if (r.usedHome()) {
+                    recoveries.remove(id);
+                    return "ALL_ROADS_LEAD_HOME_BUILD_DESTINATION_UNREACHABLE";
+                }
+                if (home != null && axo.distanceToSqr(home.getX()+.5,home.getY(),home.getZ()+.5)>9) {
+                    r = new Recovery(destination,now,axo.getX(),axo.getZ(),0,true,true,now);
+                    recoveries.put(id,r);
+                    return "ALL_ROADS_LEAD_HOME_ACTIVATED";
+                }
+                // Already at home: a home trip cannot improve the route.
+                recoveries.remove(id);
+                return "ALL_ROADS_LEAD_HOME_BUILD_DESTINATION_UNREACHABLE";
+            }
+            r = new Recovery(destination,now,axo.getX(),axo.getZ(),failures,false,r.usedHome(),now);
+        }
+        if (now >= r.nextRequest() && axo.getNavigation().isDone()) {
+            axo.navigateToSavedLocation(destination,1.15);
+            r = new Recovery(destination,r.checked(),r.x(),r.z(),r.failures(),false,r.usedHome(),now+40);
+        }
+        recoveries.put(id,r);
+        return "RETURNING_TO_BUILD_SITE";
+    }
+
 
     private static boolean safe(ServerLevel level, BlockPos feet, WaifuAxoluthuEntity axo) {
         if (!level.getChunkSource().hasChunk(feet.getX() >> 4, feet.getZ() >> 4)) return false;
@@ -21,13 +86,13 @@ public final class WaifuAxoluthuBuildNavigation {
     }
 
     public static String approach(WaifuAxoluthuEntity axo, ServerLevel level, BlockPos target, double speed) {
-        if (WaifuAxoluthuBuildReach.inRange(axo,target)) { attempts.remove(axo.getUUID()); return null; }
+        if (WaifuAxoluthuBuildReach.inRange(axo,target)) { attempts.remove(axo.getUUID()); recoveries.remove(axo.getUUID()); return null; }
         // From distant forestry trips, first return to the build site through
         // short loaded waypoints; remote candidate paths cannot be reached.
         if (target.distSqr(axo.blockPosition()) > 144) {
-            axo.navigateToSavedLocation(target,1.15);
-            return "RETURNING_TO_BUILD_SITE";
+            return travel(axo,level,target);
         }
+        recoveries.remove(axo.getUUID());
         UUID id=axo.getUUID();
         long now=level.getGameTime();
         Attempt prior=attempts.get(id);
@@ -117,5 +182,5 @@ public final class WaifuAxoluthuBuildNavigation {
         return "WAITING_FOR_SELF_CLEARANCE_PATH";
     }
 
-    public static void completed(WaifuAxoluthuEntity axo) {attempts.remove(axo.getUUID());}
+    public static void completed(WaifuAxoluthuEntity axo) {attempts.remove(axo.getUUID()); recoveries.remove(axo.getUUID());}
 }

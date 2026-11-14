@@ -19,6 +19,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.LadderBlock;
+import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.core.Direction;
@@ -31,16 +33,64 @@ public final class WaifuAxoluthuStage5Build {
     private static final String KEY="stage5HousingProject";
     private static final String[] PHASES={"BUILDING_FLOOR","BUILDING_WALLS","BUILDING_ROOF","BUILDING_WINDOWS","BUILDING_INTERIOR"};
     private static int category(CompoundTag e, BlockPos origin) {
+        if (e.contains("phase", 3)) return e.getInt("phase");
         String id=e.getString("block"); BlockPos pos=BlockPos.of(e.getLong("pos"));
         if(pos.getY()==origin.getY())return 0;
         if(id.contains("glass")||id.contains("door"))return 3;
         if(pos.getY()>=origin.getY()+6)return 2;
         return 1;
     }
+    private static BlockState desiredState(CompoundTag entry, Block block, BlockPos pos,
+                                           BlockPos origin, CompoundTag project) {
+        BlockState state=block.defaultBlockState();
+        if(block instanceof StairBlock) {
+            Direction facing=pos.getX()-origin.getX()<project.getInt("width")/2?Direction.WEST:Direction.EAST;
+            if(entry.contains("facing",8))facing=Direction.byName(entry.getString("facing"));
+            if(facing==null)facing=Direction.WEST;
+            state=state.setValue(StairBlock.FACING,facing).setValue(StairBlock.HALF,Half.BOTTOM);
+        }
+        if(block instanceof DoorBlock) {
+            Direction facing=entry.contains("facing",8)?Direction.byName(entry.getString("facing")):Direction.NORTH;
+            state=state.setValue(DoorBlock.FACING,facing==null?Direction.NORTH:facing)
+                    .setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER);
+        }
+        if(block instanceof LadderBlock) {
+            Direction facing=Direction.byName(entry.getString("facing"));
+            state=state.setValue(LadderBlock.FACING,facing==null?Direction.EAST:facing);
+        }
+        return state;
+    }
     private static int held(WaifuAxoluthuEntity axo, Item item) {
         int n=0; var bag=axo.getAcquiredMaterials();
         for(int i=0;i<bag.getContainerSize();i++)if(bag.getItem(i).is(item))n+=bag.getItem(i).getCount();
         return n;
+    }
+    /** Last-resort construction supply, confined to her normal material bag.
+     * Never drops a conjured item into the world or bypasses the manifest.
+     */
+    private static int conjureConstructionBatch(WaifuAxoluthuEntity axo, Item item, int amount) {
+        if (item==Items.AIR || amount<=0) return 0;
+        var bag=axo.getAcquiredMaterials();
+        int remaining=amount;
+        // Merge into existing compatible stacks first, then use empty slots.
+        for (int i=0;i<bag.getContainerSize() && remaining>0;i++) {
+            ItemStack stack=bag.getItem(i);
+            if (stack.isEmpty() || !stack.is(item)) continue;
+            int add=Math.min(remaining,stack.getMaxStackSize()-stack.getCount());
+            if(add>0){stack.grow(add);remaining-=add;}
+        }
+        for (int i=0;i<bag.getContainerSize() && remaining>0;i++) {
+            if(!bag.getItem(i).isEmpty())continue;
+            int add=Math.min(remaining,new ItemStack(item).getMaxStackSize());
+            bag.setItem(i,new ItemStack(item,add));remaining-=add;
+        }
+        int created=amount-remaining;
+        if(created>0){
+            bag.setChanged();
+            axo.recordAcquisition("CONSTRUCTION_MAGIC_FALLBACK "+BuiltInRegistries.ITEM.getKey(item)+" count="+created);
+            axo.speak("construction_magic_fallback","No materials? No problem! Magic it is! :D");
+        }
+        return created;
     }
     private static boolean consume(WaifuAxoluthuEntity axo,Item item) {
         var bag=axo.getAcquiredMaterials();
@@ -302,7 +352,8 @@ public final class WaifuAxoluthuStage5Build {
                 Block expected = BuiltInRegistries.BLOCK.get(id);
                 BlockState actual = level.getBlockState(target);
                 // Revisit missing blocks only; never overwrite unrelated solid player builds.
-                if (actual.is(expected) || (!actual.isAir() && !actual.canBeReplaced())) continue;
+                if (actual.equals(desiredState(entry,expected,target,origin,project))
+                        || (!actual.isAir() && !actual.canBeReplaced())) continue;
                 project.putInt("buildPhaseIndex", phase);
                 project.putInt("buildCursor", i);
                 project.putString("constructionPhase", PHASES[phase]);
@@ -400,6 +451,30 @@ public final class WaifuAxoluthuStage5Build {
                 if(after>have || (item==Items.SPRUCE_STAIRS && intermediate!=previousIntermediate))
                     attempts.putLong(key,now);
                 p.putInt(progressKey,intermediate);
+                // Only explicit NO_SOURCE permits magic; never a timeout or generic error.
+                boolean impossible=outcome.contains("NO_SOURCE_FOR_");
+                if(after<needed && impossible) {
+                    int wanted=Math.min(16,needed-after);
+                    int created=conjureConstructionBatch(axo,item,wanted);
+                    if(created>0) {
+                        blocked.remove(key);
+                        attempts.putLong(key,now);
+                        p.putInt("materialQueueCursor",index);
+                        p.putString("materialCurrent",key);
+                        p.putString("constructionPhase","GATHERING_BASIC_MATERIALS");
+                        p.putString("notes","Used a little magic to obtain "+item.getDescription().getString()
+                                +" ("+(after+created)+"/"+needed+")! :D");
+                        p.put("materialRetryAfter",blocked);
+                        p.put("materialAttemptSince",attempts);
+                        return "SUPPLIES_MAGIC_FALLBACK";
+                    }
+                    // Full bag: let the normal unloading workflow free space.
+                    if(occupied(axo)>0) {
+                        String deposit=unloadToSite(axo,level,p);
+                        p.putString("notes","Making room for construction materials: "+deposit);
+                        return "SUPPLIES_MAGIC_NEEDS_SPACE_"+deposit;
+                    }
+                }
                 boolean waiting=outcome.contains("WAITING_FOR_HOME_GRINDSTONE")
                         || outcome.contains("BLOCKED_") || outcome.contains("NO_SOURCE_FOR_")
                         || outcome.contains("RECIPE_CYCLE_") || outcome.contains("INVENTORY_FULL");
@@ -412,7 +487,7 @@ public final class WaifuAxoluthuStage5Build {
                     attempts.remove(key);
                     p.putInt("materialQueueCursor",(index+1)%keys.size());
                     p.putString("constructionPhase","GATHERING_BASIC_MATERIALS");
-                    p.putString("notes","I'll try something else while "+key+" is blocked: "+outcome+" QwQ");
+                    p.putString("notes","Trying another way to get "+item.getDescription().getString()+"! QwQ");
                     p.putString("materialCurrent",key);
                     p.putString("materialLastBlocked",key+" : "+outcome);
                     p.put("materialRetryAfter",blocked);
@@ -422,7 +497,7 @@ public final class WaifuAxoluthuStage5Build {
                 p.putInt("materialQueueCursor",index);
                 p.putString("materialCurrent",key);
                 p.putString("constructionPhase",outcome.contains("CRAFT")?"CRAFTING_NECESSARY_CRAFTS":"GATHERING_BASIC_MATERIALS");
-                p.putString("notes","Collecting "+key+" ("+after+"/"+needed+"): "+outcome);
+                p.putString("notes","Gathering "+item.getDescription().getString()+" ("+after+"/"+needed+")! :3");
                 p.put("materialRetryAfter",blocked);
                 p.put("materialAttemptSince",attempts);
                 return "SUPPLIES_"+outcome;
@@ -448,15 +523,20 @@ public final class WaifuAxoluthuStage5Build {
                 BlockPos pos=BlockPos.of(e.getLong("pos"));
                 if(!level.isLoaded(pos))return "WAITING_FOR_CHUNK";
                 Block block=BuiltInRegistries.BLOCK.get(ResourceLocation.parse(e.getString("block")));
-                BlockState state=block.defaultBlockState();
-                if(block instanceof StairBlock) {
-                    // Opposing stair slopes; direction selected by the roof ridge.
-                    state=state.setValue(StairBlock.FACING,pos.getX()-origin.getX()<p.getInt("width")/2?Direction.EAST:Direction.WEST);
-                }
-                if(block instanceof DoorBlock)state=state.setValue(DoorBlock.FACING,Direction.NORTH).setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER);
+                BlockState state=desiredState(e,block,pos,origin,p);
                 BlockState existing=level.getBlockState(pos);
-                if(existing.is(state.getBlock())) {cursor++;p.putInt("buildCursor",cursor);continue;}
-                if(!existing.isAir()&&!existing.canBeReplaced())return "BLOCKED_"+pos.toShortString();
+                if(existing.equals(state)) {cursor++;p.putInt("buildCursor",cursor);continue;}
+                if(!existing.isAir()&&!existing.canBeReplaced()) {
+                    // Never overwrite old roofs or unknown player modifications automatically.
+                    p.putString("notes","A block at "+pos.toShortString()+" needs inspection before I can continue! QwQ");
+                    return "BLOCKED_OR_MISORIENTED_"+pos.toShortString();
+                }
+                // Stay near the construction footprint instead of building from the beach.
+                BlockPos workStand=origin.offset(-3,0,Math.max(1,p.getInt("depth")/2));
+                if(axo.distanceToSqr(workStand.getX()+.5,workStand.getY()+.5,workStand.getZ()+.5)>100.0) {
+                    String move=WaifuAxoluthuBuildNavigation.approach(axo,level,workStand,1.05);
+                    return move==null?"APPROACHING_HOUSE_WORK_AREA":move;
+                }
                 // Celestial construction reach: blueprint placement does not require
                 // scaffolding or a path to every individual wall/roof block.
                 // Only the active Stage 5 blueprint loop receives this exception;

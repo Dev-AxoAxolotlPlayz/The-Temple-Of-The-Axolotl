@@ -27,6 +27,12 @@ public record AxoluthuJournalPayload(String content) implements CustomPacketPayl
             result = WaifuAxoluthuStage5Journal.liveView(axo);
             break;
         }
+        // Never send personalized project contents to an unbonded player.
+        if (result.startsWith("No loaded bonded Axoluthu")) {
+            player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                    "[Axoluthu] Your bonded Axoluthu must be nearby to open her journal."));
+            return;
+        }
         PacketDistributor.sendToPlayer(player, new AxoluthuJournalPayload(result));
     }
 }

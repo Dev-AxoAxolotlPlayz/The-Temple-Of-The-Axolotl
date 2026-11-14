@@ -38,7 +38,8 @@ public final class EclipseScreen extends AbstractContainerScreen<EclipseMenu> {
     };
     private static final long GHOST_INTERVAL_MS = 1000L;
     private EditBox nameBox;
-    private boolean uniformFont;
+    private int fontChoice;
+    private static final String[] FONT_NAMES = {"Default", "Bony Bones", "Lilomon", "Freebooter", "Treasure Deadhand"};
 
     public EclipseScreen(EclipseMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -72,12 +73,12 @@ public final class EclipseScreen extends AbstractContainerScreen<EclipseMenu> {
             nameBox.setHint(Component.literal("Enter item name..."));
             addRenderableWidget(nameBox);
             addRenderableWidget(Button.builder(Component.literal("Font: Default"), b -> {
-                uniformFont = !uniformFont;
-                b.setMessage(Component.literal(uniformFont ? "Font: Uniform" : "Font: Default"));
-            }).bounds(leftPos + 4, topPos + 47, 72, 17).build());
+                fontChoice = (fontChoice + 1) % FONT_NAMES.length;
+                b.setMessage(Component.literal("Font: " + FONT_NAMES[fontChoice]));
+            }).bounds(leftPos + 4, topPos + 47, 125, 17).build());
             addRenderableWidget(Button.builder(Component.literal("INSCRIBE"), b -> {
                 if (nameBox != null) PacketDistributor.sendToServer(
-                        new EclipseInscriptionPayload(nameBox.getValue(), uniformFont));
+                        new EclipseInscriptionPayload(nameBox.getValue(), fontChoice));
             }).bounds(leftPos - 65, topPos + 171, 104, 20).build());
         }
     }
@@ -172,6 +173,7 @@ public final class EclipseScreen extends AbstractContainerScreen<EclipseMenu> {
             g.drawCenteredString(font, "DYE", 70, 102, 0xFFE9D3A5);
             g.drawCenteredString(font, "STYLE", 128, 102, 0xFFE9D3A5);
             g.drawCenteredString(font, "FEATHER", 186, 102, 0xFFE9D3A5);
+            g.drawCenteredString(font, "Ritual: " + menu.displayedCost() + " XP", 128, 19, 0xFFF3D48B);
         } else {
             g.drawCenteredString(font, "ITEM I", 70, 51, 0xFFE9D3A5);
             g.drawCenteredString(font, "OUTPUT", 128, 51, 0xFFE9D3A5);

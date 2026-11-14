@@ -33,8 +33,13 @@ public final class ModItems {
             new com.devaxo.templeoftheaxolotl.entity.AbyssalCharmItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> NOODLE_COMMAND_BOOK = ITEMS.register("book_of_commands", () ->
             new com.devaxo.templeoftheaxolotl.entity.NoodleCommandBookItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<Item> ABYSSAL_RING = basic("abyssal_ring", 1);
+    public static final DeferredItem<Item> ABYSSAL_COMPANION_REGISTRY = ITEMS.register("abyssal_companion_registry", () ->
+            new com.devaxo.templeoftheaxolotl.entity.NoodleCommandBookItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> ARCHITECTS_JOURNAL = ITEMS.register("architects_journal", () ->
             new com.devaxo.templeoftheaxolotl.entity.AxoluthuArchitectJournalItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<Item> CELESTIAL_BLUEPRINT = ITEMS.register("celestial_blueprint", () ->
+            new com.devaxo.templeoftheaxolotl.entity.AxoluthuCelestialBlueprintItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> NOODLE_TRAINING_MEDAL = basic("training_medal", 1);
 
     // Axolite metal: future smithing-template ingredient.
@@ -445,35 +450,51 @@ public final class ModItems {
 
     public static final DeferredItem<DeferredSpawnEggItem> ABYSSAL_AXOLOTL_SPAWN_EGG = ITEMS.register(
             "abyssal_axolotl_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ABYSSAL_AXOLOTL,
-                    0x0D062A, 0x00E9E9, new Item.Properties()));
+                    0xFFFFFF, 0xFFFFFF, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> MEROLOTL_SPAWN_EGG = ITEMS.register(
             "merolotl_spawn_egg", () -> new DeferredSpawnEggItem(
-                    ModEntities.MEROLOTL, 0x153D59, 0x66E7E5, new Item.Properties()));
+                    ModEntities.MEROLOTL, 0xFFFFFF, 0xFFFFFF, new Item.Properties()));
 
     public static final DeferredItem<DeferredSpawnEggItem> AXOLOTL_ABSOLUTE_SPAWN_EGG =
             ITEMS.register(
-                    "axolotl_absolute_spawn_egg",
+                    "axolotl_above_all_spawn_egg",
                     () -> new DeferredSpawnEggItem(
                             ModEntities.AXOLOTL_ABSOLUTE,
-                            0xF7F5EE,
-                            0x69D9FF,
+                            0xFFFFFF,
+                            0xFFFFFF,
                             new Item.Properties().stacksTo(64)
                     )
             );
 
     public static final DeferredItem<DeferredSpawnEggItem> WAIFU_AXOLUTHU_SPAWN_EGG = ITEMS.register(
             "waifu_axoluthu_spawn_egg", () -> new DeferredSpawnEggItem(
-                    ModEntities.WAIFU_AXOLUTHU, 0x24123F, 0x52E5E5, new Item.Properties()));
+                    ModEntities.WAIFU_AXOLUTHU, 0xFFFFFF, 0xFFFFFF, new Item.Properties()));
 
     public static final DeferredItem<DeferredSpawnEggItem> CLUCKLES_SPAWN_EGG = ITEMS.register(
             "cluckles_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.CLUCKLES,
-                    0xF7F1DB, 0xE8A92E, new Item.Properties()));
+                    0xFFFFFF, 0xFFFFFF, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> BOSS_WRATH_SPAWN_EGG = ITEMS.register(
             "boss_wrath_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.BOSS_WRATH,
-                    0x1F0000, 0xFF2400, new Item.Properties()));
+                    0xFFFFFF, 0xFFFFFF, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> TAMEABLE_WRATH_SPAWN_EGG = ITEMS.register(
             "tameable_wrath_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.TAMEABLE_WRATH,
-                    0x660808, 0xA61CFF, new Item.Properties()));
+                    0xFFFFFF, 0xFFFFFF, new Item.Properties()));
+
+    // Seven Abyssal creature spawn eggs.
+    public static final DeferredItem<DeferredSpawnEggItem> MEGOLOTL_SPAWN_EGG = ITEMS.register(
+            "megolotl_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.MEGOLOTL, 0xFFFFFF, 0xFFFFFF, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> ABYSSAL_JELLYFISH_SPAWN_EGG = ITEMS.register(
+            "abyssal_jellyfish_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ABYSSAL_JELLYFISH, 0xFFFFFF, 0xFFFFFF, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> AXOBLOOP_SPAWN_EGG = ITEMS.register(
+            "axobloop_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.AXOBLOOP, 0xFFFFFF, 0xFFFFFF, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> GHOSTFISH_SPAWN_EGG = ITEMS.register(
+            "ghostfish_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.GHOSTFISH, 0xFFFFFF, 0xFFFFFF, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> ABYSSAL_ANGLER_SPAWN_EGG = ITEMS.register(
+            "abyssal_angler_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ABYSSAL_ANGLER, 0xFFFFFF, 0xFFFFFF, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> AXOLEVIATHAN_SPAWN_EGG = ITEMS.register(
+            "axoleviathan_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.AXOLEVIATHAN, 0xFFFFFF, 0xFFFFFF, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> AXOKRAKEN_SPAWN_EGG = ITEMS.register(
+            "axokraken_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.AXOKRAKEN, 0xFFFFFF, 0xFFFFFF, new Item.Properties()));
 
     // =========================================
     // CREATIVE TAB ICON ITEM
@@ -570,6 +591,8 @@ public final class ModItems {
         output.accept(NOODLE_STARTER.get());
         output.accept(ABYSSAL_CHARM.get());
         output.accept(NOODLE_COMMAND_BOOK.get());
+        output.accept(ABYSSAL_RING.get());
+        output.accept(ABYSSAL_COMPANION_REGISTRY.get());
         output.accept(NOODLE_TRAINING_MEDAL.get());
         output.accept(LOGISTICS_MAESTRO.get());
         output.accept(CELESTIAL_ANVIL.get());
@@ -584,8 +607,14 @@ public final class ModItems {
         output.accept(AXOLOTL_ABSOLUTE.get());
         output.accept(AXOLOTL_ABSOLUTE_SPAWN_EGG.get());
         output.accept(ABYSSAL_AXOLOTL_SPAWN_EGG.get());
-        output.accept(ABYSSAL_AXOLOTL_SPAWN_EGG.get());
         output.accept(MEROLOTL_SPAWN_EGG.get());
+        output.accept(MEGOLOTL_SPAWN_EGG.get());
+        output.accept(ABYSSAL_JELLYFISH_SPAWN_EGG.get());
+        output.accept(AXOBLOOP_SPAWN_EGG.get());
+        output.accept(GHOSTFISH_SPAWN_EGG.get());
+        output.accept(ABYSSAL_ANGLER_SPAWN_EGG.get());
+        output.accept(AXOLEVIATHAN_SPAWN_EGG.get());
+        output.accept(AXOKRAKEN_SPAWN_EGG.get());
         output.accept(CLUCKLES_SPAWN_EGG.get());
         output.accept(WAIFU_AXOLUTHU_SPAWN_EGG.get());
         output.accept(TAMEABLE_WRATH_SPAWN_EGG.get());

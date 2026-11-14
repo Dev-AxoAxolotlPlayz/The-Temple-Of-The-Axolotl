@@ -15,6 +15,11 @@ import org.joml.Vector3f;
 public final class WaifuAxoluthuMagicGathering {
     private WaifuAxoluthuMagicGathering() {}
     public record Result(String status, boolean completed) {}
+    // Per-entity channeling state: callers may pass the current game tick, which
+    // must not reset a gathering action every time construction is evaluated.
+    private record Channel(Item item, long startedAt) {}
+    private static final java.util.Map<WaifuAxoluthuEntity, Channel> CHANNELS =
+            new java.util.WeakHashMap<>();
     private static final DustParticleOptions CYAN = new DustParticleOptions(new Vector3f(.26f,.96f,.94f),1.0f);
     public static void poof(ServerLevel level,BlockPos pos) {
         level.sendParticles(CYAN,pos.getX()+.5,pos.getY()+1.08,pos.getZ()+.5,13,.23,.15,.23,.04);
@@ -47,12 +52,19 @@ public final class WaifuAxoluthuMagicGathering {
             station=Blocks.GRINDSTONE;
         else if(item==Items.SUGAR_CANE || item==Items.WHEAT_SEEDS || item==Items.WHEAT ||
                 item==Items.POPPY || item==Items.DANDELION || item==Items.CORNFLOWER)
-            station=Blocks.CARTOGRAPHY_TABLE;
+            station=Blocks.COMPOSTER;
         else if(item==Items.SAND || item==Items.RED_SAND || item==Items.TERRACOTTA ||
                 item==Items.CLAY_BALL || item==Items.NETHERRACK || item==Items.BLACKSTONE ||
                 item==Items.BASALT || item==Items.END_STONE || item==Items.SOUL_SAND ||
                 item==Items.NETHER_BRICKS || item==Items.CRIMSON_STEM || item==Items.WARPED_STEM)
-            station=Blocks.STONECUTTER;
+            station=Blocks.GRINDSTONE;
+        else if(item==Items.BONE || item==Items.STRING || item==Items.ROTTEN_FLESH ||
+                item==Items.GUNPOWDER || item==Items.ENDER_PEARL ||
+                item==Items.BLAZE_ROD || item==Items.GHAST_TEAR ||
+                item==Items.MAGMA_CREAM || item==Items.WITHER_SKELETON_SKULL ||
+                item==Items.SLIME_BALL || item==Items.SPIDER_EYE ||
+                item==Items.PHANTOM_MEMBRANE)
+            station=Blocks.COMPOSTER;
         else return new Result("NO_ROUTE",false);
         BlockPos pos=find(axo,station);
         if(pos==null)return new Result("NO_WORKSTATION",false);
@@ -60,7 +72,13 @@ public final class WaifuAxoluthuMagicGathering {
             axo.getNavigation().moveTo(pos.getX()+.5,pos.getY(),pos.getZ()+.5,.85);
             return new Result("APPROACH",false);
         }
-        if(level.getGameTime()-lastTick<duration)return new Result("CHANNELING",false);
+        long now=level.getGameTime();
+        Channel channel=CHANNELS.get(axo);
+        if(channel==null || channel.item()!=item || now<channel.startedAt()) {
+            CHANNELS.put(axo,new Channel(item,now));
+            return new Result("CHANNELING",false);
+        }
+        if(now-channel.startedAt()<duration)return new Result("CHANNELING",false);
         SimpleContainer inv=axo.getAcquiredMaterials();
         boolean space=false;
         for(int i=0;i<inv.getContainerSize();i++) {
@@ -70,6 +88,7 @@ public final class WaifuAxoluthuMagicGathering {
         if(!space)return new Result("INVENTORY_FULL",false);
         ItemStack remaining=inv.addItem(new ItemStack(item));
         if(!remaining.isEmpty())return new Result("INVENTORY_FULL",false);
+        CHANNELS.remove(axo);
         poof(level,pos);
         axo.recordAcquisition("MAGIC "+item+" at "+pos.toShortString());
         return new Result("GATHERED",true);

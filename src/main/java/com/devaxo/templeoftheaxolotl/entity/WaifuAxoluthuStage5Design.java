@@ -46,13 +46,8 @@ public final class WaifuAxoluthuStage5Design {
         for (int attempt = 0; attempt < 48; attempt++) {
             int width = 7 + 2 * random.nextInt(4);
             int depth = 7 + 2 * random.nextInt(4);
-            String footprint = switch (random.nextInt(3)) {
-                case 0 -> "RECTANGLE";
-                case 1 -> "L_WING";
-                default -> "OFFSET_WING";
-            };
-            String roof = roofEvidence > 0 && random.nextInt(4) != 0 ? "PITCHED_GABLE" :
-                    (random.nextBoolean() ? "PITCHED_GABLE" : "HIP");
+            String footprint = "RECTANGLE"; // Starter cottage: stable three-room floor plan.
+            String roof = "PITCHED_GABLE";
             int dx = random.nextInt(49) - 24, dz = random.nextInt(49) - 24;
             BlockPos origin = center.offset(dx, 0, dz);
             if (!level.getChunkSource().hasChunk(origin.getX() >> 4, origin.getZ() >> 4)
@@ -67,7 +62,7 @@ public final class WaifuAxoluthuStage5Design {
                 BlockPos floor = origin.offset(x, -1, z);
                 if (!level.getChunkSource().hasChunk(floor.getX() >> 4, floor.getZ() >> 4)) {valid=false;break;}
                 if (level.getBlockState(floor).isAir() || !level.getFluidState(floor).isEmpty()) {valid=false;break;}
-                for (int h = 0; h <= 7; h++) {
+                for (int h = 0; h <= 14; h++) {
                     BlockPos p = origin.offset(x,h,z);
                     if (!level.getBlockState(p).isAir() || !level.getFluidState(p).isEmpty()) {valid=false;break;}
                 }

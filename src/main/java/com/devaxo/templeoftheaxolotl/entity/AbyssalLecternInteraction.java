@@ -27,17 +27,17 @@ public final class AbyssalLecternInteraction {
         var state = level.getBlockState(pos);
         if (!state.is(Blocks.LECTERN) || !(level.getBlockEntity(pos) instanceof LecternBlockEntity lectern)) return;
         ItemStack held = event.getEntity().getMainHandItem();
-        if (!state.getValue(LecternBlock.HAS_BOOK) && held.is(ModItems.NOODLE_COMMAND_BOOK.get())) {
+        if (!state.getValue(LecternBlock.HAS_BOOK) && held.is(ModItems.ABYSSAL_COMPANION_REGISTRY.get())) {
             if (!level.isClientSide && event.getEntity() instanceof ServerPlayer player) {
                 ItemStack inserted = held.copy(); inserted.setCount(1);
                 lectern.setBook(inserted);
                 level.setBlock(pos, state.setValue(LecternBlock.HAS_BOOK, true), 3);
                 if (!player.getAbilities().instabuild) held.shrink(1);
-                player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Book of Axoluthu placed. Click the lectern to open it."));
+                player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Abyssal Companion Registry placed. Click the lectern to open it."));
             }
             event.setCancellationResult(InteractionResult.SUCCESS);
             event.setCanceled(true);
-        } else if (lectern.getBook().is(ModItems.NOODLE_COMMAND_BOOK.get())) {
+        } else if (lectern.getBook().is(ModItems.ABYSSAL_COMPANION_REGISTRY.get())) {
             if (!level.isClientSide && event.getEntity() instanceof ServerPlayer player)
                 PacketDistributor.sendToPlayer(player, new CelestialRadialOpenBookPayload(2));
             event.setCancellationResult(InteractionResult.SUCCESS);

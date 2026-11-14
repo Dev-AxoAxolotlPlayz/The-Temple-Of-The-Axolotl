@@ -15,13 +15,13 @@ public final class WaifuAxoluthuFurnaceActions {
         if(!(axo.level() instanceof ServerLevel level))return "SERVER_ONLY";
         BlockPos pos=WaifuAxoluthuMagicGathering.find(axo,Blocks.FURNACE);
         if(pos==null)return "NO_FURNACE";
-        if(pos.distSqr(axo.blockPosition())>4) {
-            axo.getNavigation().moveTo(pos.getX()+.5,pos.getY(),pos.getZ()+.5,.85);
-            return "APPROACH_FURNACE";
+        if(!WaifuAxoluthuWorkshopActions.canInteract(axo,pos)) {
+            if (!WaifuAxoluthuWorkshopActions.approachStation(axo,pos)) return "APPROACH_FURNACE";
         }
         axo.getNavigation().stop();
         axo.getLookControl().setLookAt(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5);
-        if(!axo.actionReady(WaifuAxoluthuEntity.ACTION_WORKSTATION,pos,30,60))return "WORKSTATION_ANIMATION";
+        if(!axo.actionReady(WaifuAxoluthuEntity.ACTION_WORKSTATION,pos,10,20))
+            return "WORKSTATION_ANIMATION";
         if(!(level.getBlockEntity(pos) instanceof AbstractFurnaceBlockEntity furnace))return "NO_FURNACE_ENTITY";
         var inv=axo.getAcquiredMaterials();
         ItemStack output=furnace.getItem(2);

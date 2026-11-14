@@ -24,6 +24,13 @@ public final class EclipseAltarEntity extends BlockEntity implements software.be
         }
     };
 
+    public final SimpleContainer inscriptionOfferings = new SimpleContainer(6) {
+        @Override public void setChanged() {
+            super.setChanged();
+            EclipseAltarEntity.this.setChanged();
+        }
+    };
+
     public EclipseAltarEntity(BlockPos pos, BlockState state) {
         super(EclipseBlockEntities.ALTAR.get(), pos, state);
     }
@@ -36,6 +43,11 @@ public final class EclipseAltarEntity extends BlockEntity implements software.be
         NonNullList<ItemStack> items = NonNullList.withSize(6, ItemStack.EMPTY);
         for (int i = 0; i < 6; i++) items.set(i, offerings.getItem(i));
         ContainerHelper.saveAllItems(tag, items, registries);
+        CompoundTag inscriptionTag = new CompoundTag();
+        NonNullList<ItemStack> inscriptionItems = NonNullList.withSize(6, ItemStack.EMPTY);
+        for (int i = 0; i < 6; i++) inscriptionItems.set(i, inscriptionOfferings.getItem(i));
+        ContainerHelper.saveAllItems(inscriptionTag, inscriptionItems, registries);
+        tag.put("InscriptionInventory", inscriptionTag);
     }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
@@ -43,5 +55,16 @@ public final class EclipseAltarEntity extends BlockEntity implements software.be
         NonNullList<ItemStack> items = NonNullList.withSize(6, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, items, registries);
         for (int i = 0; i < 6; i++) offerings.setItem(i, items.get(i));
+        NonNullList<ItemStack> inscriptionItems = NonNullList.withSize(6, ItemStack.EMPTY);
+        if (tag.contains("InscriptionInventory"))
+            ContainerHelper.loadAllItems(tag.getCompound("InscriptionInventory"), inscriptionItems, registries);
+        else {
+            // Legacy shared slots: transfer inscription-only offerings without duplicating them.
+            inscriptionItems.set(3, offerings.getItem(3));
+            inscriptionItems.set(4, offerings.getItem(4));
+            offerings.setItem(3, ItemStack.EMPTY);
+            offerings.setItem(4, ItemStack.EMPTY);
+        }
+        for (int i = 0; i < 6; i++) inscriptionOfferings.setItem(i, inscriptionItems.get(i));
     }
 }

@@ -1,3 +1,240 @@
+# Temple of the Axolotl — Master Development Roadmap V27
+
+**Checkpoint:** November 13, 2026 — Axoluthu cleanup and stabilization scope freeze.
+
+**V27 precedence:** The following active docket supersedes conflicting earlier plans only within its stated scope. All previous roadmap content follows unchanged for history and backlog. No implementation, compilation or gameplay verification is claimed by this planning update. AX-C13 is reserved pending recovery of its exact specification.
+
+## Current consolidated implementation docket
+
+**Target:** Minecraft 1.21.1 / NeoForge / Java 21  
+**Date:** November 13, 2026  
+**Status:** Frozen scope; pending implementation and validation.  
+**Delivery:** One consolidated source overlay against the latest authoritative checkpoint.
+
+## AX-C01–AX-C07 — Cleanup and correctness
+
+- [ ] **AX-C01 — Bonding message:** retain only “Axoluthu recognizes you as her companion.” Remove legacy movement-command suggestion.
+- [ ] **AX-C02 — Interaction spam:** remove unsolicited AI state and movement-mode messages on right-click; preserve meaningful interactions.
+- [ ] **AX-C03 — Construction diagnostics:** silence unsolicited debug messages and obsolete command hints; preserve explicitly enabled OP diagnostics, approval requests, cooperative furnishing and meaningful owner messages. Future contextual dialogue interface is deferred.
+- [ ] **AX-C04 — Deprecations:** resolve the two deprecated BlockState rotation calls in WaifuAxoluthuVillageRegistry.java (around line 214) and WaifuAxoluthuWorkstationHandoff.java (around line 56). Verify the NeoForge replacement and preserve forward/inverse orientation semantics.
+- [ ] **AX-C05 — Nametag:** raise to the top of her actual model or hitbox with stable clearance.
+- [ ] **AX-C06 — Localization:** display Axoluthu instead of Waifu Axoluthu; do not rename internal IDs, Java classes, assets or save keys.
+- [ ] **AX-C07 — Abyssal lore blocks:** reject broken-block interaction server-side before unlock logic for every player; display exactly “The Depths hide more than this can hold” using the regular broken-block message presentation. Intact blocks unlock one previously undiscovered fragment and become broken only after success, preserving orientation. If nothing remains eligible, leave intact. Preserve regular lore-block wording and behavior.
+
+## AX-C08 — An Axolotl’s Field Guide expansion
+
+- [ ] Keep all entries ungated and preserve existing chapters. Audit live registered recipes, mechanics, acquisition, tooltips and eligible Shift-click recipe navigation. Do not invent recipes or describe unimplemented features as functional.
+
+| Category | Required coverage |
+|---|---|
+| Sushi Cuisine | Iron Infused Salt, Rice, Koji, separate Yin and Yang Singularity entries; leave existing Fish Fillet entry untouched. |
+| Workstations & Utilities | Handheld Hydraulic Press, Meat Tenderizer, Fillet Knife, Cosmic Essence, Logistics Maestro, Training Medals, Companion Registry, Abyssal Ring, Shipyard Crane, Annealing Kiln, Cosmic Brewing Stand. Include acquisition, recipes, operation, supported processing, configuration, restrictions and actual mechanics as applicable. |
+| Celestial Equipment | Axolotl Chestplate, Leggings and Boots; Axolite material and acquisition/processing; Axolite armor, weapons and tools clearly marked WIP where appropriate; Shorkolotl-100 recipe, deployment, controls, abilities and Thermocline traversal. |
+| Repository Storage | Each tier’s actual upgrade recipe, capacity, incremental and inherited features, crafting and implemented JEI/EMI integration. |
+| Celestial Modules | Every obtainable module, icon, acquisition, recipe where applicable and function; valid/equipped-only dynamically spaced wheel. |
+| Glass and Metals (new) | Separate entry for every submarine part, subcomponent and glass/metal manufacturing intermediate. Include each actual recipe, processing method and purpose. Audit the complete chain from source; Shorkolotl-100 itself remains in Celestial Equipment. |
+
+## AX-C09–AX-C11 — Lore and book revisions
+
+- [ ] **AX-C09 — Revised canon:** update Axothulu’s existing lore entry in Book of Axoluthu and add a separate father chapter, AxoCthulu (also referred to as Axocthulu). Keep father/final boss and daughter/architect companion distinct. Derive final prose from latest approved canon, including relevant Abyssal Egg and Cosmic Trident progression; preserve unlock rules and typography.
+- [ ] **AX-C10 — Abyssal Field Guide:** remove duplicate Thermocline Layer chapter only from Book of Axoluthu; retain the full entry in An Axolotl’s Field Guide. Paginate remaining chapters to prevent clipping and preserve Bones font, parchment and Back controls. Add individual bestiary entries for Axobloops, Megolotls, Abyssal Anglers, Abyssal Jellyfish and Ghostfish, using actual behavior and habitat. Preserve unbonded access to the guide and bonded-only personal sections.
+- [ ] **AX-C11 — Diary reveal:** successful Origin Temple prison rescue (not boss defeat alone) reveals “Diary of an Axolotl” and opening “My Diary. For Above All’s Flippers Only”. Verify exact persistent rescue flag in source (previously described as originRescue); update existing copies and synchronize per player. Preserve pre-rescue obfuscation, memories, illustrations, cover and progress.
+
+## AX-C12–AX-C13 — Final additions
+
+- [ ] **AX-C12 — Complete custom-mob spawn audit:** verify all custom entities’ dimension and biome rules, natural/structure/ritual-only spawning, weights, group sizes, depth, caps and duplicate restrictions. Overworld deep oceans: Abyssal Axolotl uncommon, Abyssal Jellyfish uncommon, Megolotl rare. Do not turn scripted bosses/companions into natural spawns. Report actual values and changes; no arbitrary numeric balancing without supporting design or approval.
+- [ ] **AX-C13 — Final last-second addition:** exact requirement not recovered from available conversation context. Reserved as an open blocking specification; obtain original wording before implementing or declaring the docket complete. Do not substitute an unrelated backlog item.
+
+## Acceptance and regression gates
+
+- Establish current full checkpoint, reconcile overlays, inspect actual registries and APIs; preserve existing save data, IDs and mechanics.
+- Compile client and server. Record actual compiler output, including the two targeted warnings. No claim of compilation or field-test success before evidence.
+- Test owner/non-owner and multiplayer interactions, broken/intact lore state and facing, Diary before/after rescue and after relog, existing book copies, GUI scales/pagination, module wheel, recipe links, and spawn eligibility in allowed and excluded environments.
+- Preserve architecture approval, physical blueprint handoff, furnishing workflow, plot ledgers and maintenance/repair controls, Registry persistence and owner checks. Do not add unrelated features or regress approved behavior.
+- Validate AX-C13’s original specification before final sign-off. Record touched files, unresolved items, tests performed and results in the eventual overlay notes.
+
+
+---
+
+# Retained V26 roadmap and historical appendices
+
+# Temple of the Axolotl — Master Development Roadmap V26
+
+**Checkpoint:** November 13, 2026 — HD art, Axothulu/Registry integration, book GUI polish and offline recovery.  
+**Platform:** Minecraft 1.21.1 · NeoForge · Java 21.  
+
+> **V26 precedence:** This section supersedes older *status* claims where specifically updated. The full V25 and its historical appendices remain below. **Artwork approved/delivered** is not proof of in-game asset wiring; **source patch packaged** is not proof of successful compilation; **field-tested** requires explicit in-game evidence. Keep AxoCthulu (father/final boss) separate from Axothulu (daughter/architect companion), even where legacy Java classes use WaifuAxoluthu.
+
+## 1. November 13 progress ledger
+
+| Workstream | Today's deliverable / progress | Verification boundary |
+|---|---|---|
+| HD item textures | Multiple approved/locked collections and transparency-corrected PNG packages, including 31-item approved collection, spawn eggs, sushi and equipment | Art files exist; integration and in-game render audit outstanding |
+| Above All / Repository HD assets | Above All/Repository integration overlay and all-spawn-eggs correction ZIP | Source/asset overlay; test creative inventory, in-world item renders and alpha |
+| Book of Axoluthu | GUI 2× and actual-size correction ZIPs | Test screen scale, Bones typography, tab/scroll behavior and ownership |
+| Axothulu / Registry | Ring/Registry integration source overlay; companion respawn persistence and logout follow-up | Build, restart, reconnect, multiplayer, death and inventory consistency still pending |
+| Offline-owner companion deaths | Offline Owner Recovery source ZIP (3 Java files, ZIP integrity checked) | Not compiled or gameplay-certified; check SavedData migration, UUID ownership, duplicate suppression and reload |
+| Crane / Watergate | GUI scaling fix overlay | Visual test at varied GUI scales |
+| Temple Seeker compass | HD face/needle/pivot art iterations | Final transparent layers, correctly centered pivot, 32-frame animation and ethereal kelp tip not accepted |
+| PentaPatch carryovers | Multiple earlier source overlays for Registry ribbons, book scroll, wheel equipment gating, anvil and follow logic | Some explicitly partial/prototype; merge against latest full checkpoint before claiming complete |
+
+## 2. Active near-term engineering queue (ordered)
+
+- [ ] **Establish authoritative source baseline:** compare latest full project checkpoint against today's overlays; inventory collisions, renamed files and dependencies; make backup before merge.
+- [ ] **Compile integrated project:** address Java errors and mod-loading failures; run client/server smoke tests; avoid treating ZIP validation as compilation.
+- [ ] **Companion Registry and offline recovery:** verify owner offline at companion death, persistence through restart, reconnect-to-registry transfer, correct Revive flow, saved inventory/backpack/build state, duplicate guards, stale chunk entities and multiplayer ownership.
+- [ ] **Axothulu lifecycle and commands:** test bond with Abyssal Ring, Follow/Sit/Free, /hey actions, home, backpack, owner-only Book/Architect's Journal, Recall/Summon/Revive and logout persistence. Preserve previously approved behavior.
+- [ ] **Registry UI and wheel:** confirm animated scroll, three red ribbon category tabs and counts, correct Minecraft-font names in Registry, Bones font in lore GUIs, valid/equipped-only wheel entries evenly distributed, and Companion Registry replacing old journal slot.
+- [ ] **HD art integration:** test item model JSON, resource paths, spawn eggs, actual PNG alpha, texture atlas/mipmaps, Repository icon, and all previously approved assets in-game.
+- [ ] **Temple Seeker compass:** clean alpha, align pivot to face, render directional animation without off-center needle, finalize ethereal kelp tip, test world navigation.
+- [ ] **Axothulu procedural architecture:** verify one-story multiroom variable footprints, room connections, sea-lantern lighting, floor grindstone, true double chests (four pairs for Storage Hut), 32 Library bookshelves, correct beds, blueprint approval/redesign/reposition, safe terrain changes, build resumption, inventory accounting and normal-TPS animation.
+- [ ] **Crane / Watergate / book GUI:** confirm GUI scaling across settings and fonts, layout and interaction targets; no clipping or lost controls.
+
+## 3. Larger planned features retained from V25 and earlier
+
+| Area | Outstanding work |
+|---|---|
+| **AxoCthulu final boss** | Arena combat, multiplayer final-hit reward of exactly one Eye of the Abyss per victory, Cosmic Trident vulnerability integration and progression reconciliation |
+| **Abyssal Egg ritual** | Dragon Egg + four Eyes recipe; tier-three conduit frame; Conduit right-click; Axothulu summon ownership and duplicate guards |
+| **Tesseract / Allfather ritual** | Temple Seeker + four Eyes recipe; Above All and Wrath both within three blocks; tameable Allfather summon and persistence |
+| **Ethereal Abyss** | Verify Watergate loading/return, Merolotl ruins, Axokraken, Axoleviathan AI/terrain restoration, Thermocline, Bends, pressure, Abyssal Lantern and unified celestial overlay |
+| **Shorkolotl and companions** | Vehicle controls/physics and lighting; Abyssal Axolotl companion mechanics; multiplayer/respawn/recovery tests |
+| **Temple gameplay** | Real multiplayer stabilization MP-01–13, EMI recipe transfer (distinct from confirmed JEI), Repository tier acceptance, Shallows mini-temple, loot/economy and regression |
+| **Books and lore** | Patchouli Adventurer's Field Guide distribution and content, Diary reveal, Architect's Journal merge, Abyssal Companion Registry and lore-block discovery protections |
+| **Equipment / workstations** | Celestial Anvil regression, Ring and Supernova interactions, Celestial Modules, Magnet, Jukebox, celestial sky and light effects |
+| **Progression / polish** | Advancement tree corrections, audio/GUI scaling, model animation, resource integrity, dedicated-server and multiplayer regression |
+
+## 4. Next recommended test session
+
+1. Compile a backed-up merged checkpoint and launch both client and dedicated server.
+2. Test companion offline death → server restart → owner reconnect → Registry revive, including backpack/build state and duplicate prevention.
+3. Test Axothulu owner commands and Registry UI; then build Storage Hut and inspect all four double chests, walkways and furnishings.
+4. Verify HD texture resource wiring and GUI scaling; finish Temple Seeker compass separately.
+5. Only after stable companion/Registry integration, move to AxoCthulu Eye progression and the two distinct summon rituals.
+
+---
+
+# Preserved V25 master roadmap and all historical appendices
+
+# Temple of the Axolotl — Master Development Roadmap V25
+
+**Updated:** November 11–12, 2026 — AxoCthulu final-boss canon, Abyssal Egg revision, Axothulu architect checkpoint  
+**Platform:** Minecraft 1.21.1 · NeoForge 21.1.259 · Java 21 · GeckoLib 4.7.1  
+**Mod ID:** `temple_of_the_axolotl` · **Package:** `com.devaxo.templeoftheaxolotl`
+
+> **V25 precedence:** This new section supersedes conflicting older *current-status and design* statements, while the entire V24–V1 roadmap remains preserved below. **FIELD-CONFIRMED** means observed by the developer in game or logs; **SOURCE-OBSERVED** means code was inspected; **DESIGN LOCKED** means agreed target, not implemented; **PATCH CLAIMED / UNVERIFIED** means an overlay was discussed or offered but build and gameplay are not established. In particular, the previously mentioned room-aware regression repair ZIP has not been independently verified as an actual generated file and must not be treated as a validated patch.
+
+## 0. Canonical character identities and final-boss correction
+
+| Character | Canonical identity | Gameplay role | Status |
+|---|---|---|---|
+| **AxoCthulu** | Father; the true final-boss arena entity | Endgame confrontation in the Ethereal Abyss progression | **DESIGN LOCKED; boss gameplay not field-confirmed** |
+| **Axothulu** | Daughter; formerly referred to as *Waifu Axoluthu* in code and earlier documents | Summonable, bondable autonomous companion, crafter, builder, village architect and defender | **PARTIALLY FIELD-CONFIRMED; active development** |
+| **Axolotl Allfather** | Separate summonable, tameable figure | Summoned through the Tesseract ritual | **DESIGN LOCKED for revised ritual** |
+
+**Important historical correction:** Older chapters sometimes call the Ethereal Abyss final boss “Axoluthu” and assign the Cosmic Trident-only vulnerability to that name. The current canonical final-boss identity is **AxoCthulu**, the father, **not his daughter Axothulu**. Preserve historical text for provenance but interpret old boss references in light of this correction. The previously agreed Cosmic Trident recipe remains **1 Heart of the Abyss + 4 Orbs of Envy + 4 vanilla Tridents**; its precise combat integration with the renamed final boss should be checked against the next boss implementation rather than silently assumed finished.
+
+### AxoCthulu — final boss and lore direction
+
+- **AxoCthulu is the actual final boss**, encountered in his dedicated arena, rather than the daughter-companion's village-building progression.
+- **Each completed arena victory grants exactly 1 Eye of the Abyss to the player who lands the final hit.** This is a per-fight reward, not a blanket reward for every nearby participant. Multiplayer ownership and final-hit attribution need server-side tests.
+- Prior endgame concepts include the Axoleviathan-triggered wrath escalation and a five-Axoleviathan pursuit; these were originally associated with the old “Axoluthu boss” naming. Treat their assignment to AxoCthulu as **requiring reconciliation**, not an automatic transfer of every old mechanic.
+- **Lore anchor:** AxoCthulu is Axothulu's father. Do not conflate their names, story roles, combat encounters, or summon methods.
+
+## 1. Revised Eye of the Abyss progression and crafting rituals
+
+### 1A. Abyssal Egg — new canonical recipe
+
+**Shaped crafting grid** (E = Eye of the Abyss, D = vanilla Dragon Egg, . = empty):
+
+```text
+. E .
+E D E
+. E .
+```
+
+- **Result:** Abyssal Egg. Ingredients: **1 Dragon Egg + 4 Eyes of the Abyss**.
+- **Ritual:** Place the Abyssal Egg in a **tier-three conduit frame**. **Right-click the egg with a Conduit** to summon **Axothulu (the daughter)**.
+- **Status:** **DESIGN LOCKED; implementation and gameplay validation pending**. Verify exact frame detection, item consumption, duplicate-summon guards, multiplayer ownership and ritual recovery before claiming complete.
+
+### 1B. Tesseract — distinct Allfather ritual
+
+**Shaped crafting grid** (E = Eye of the Abyss, S = Temple Seeker Compass, . = empty):
+
+```text
+. E .
+E S E
+. E .
+```
+
+- **Result:** Tesseract. Ingredients: **1 Temple Seeker Compass + 4 Eyes of the Abyss**.
+- **Activation requirement:** **Wrath and Above All must both be within 3 blocks**. Activating the Tesseract under those conditions summons the **tameable Axolotl Allfather**, **not Axothulu**.
+- **Status:** **DESIGN LOCKED; implementation and gameplay validation pending**.
+
+### 1C. Progression economy
+
+- A single Eye is awarded per successful AxoCthulu arena fight, to the final hitter. Thus each four-Eye recipe normally represents **four awarded Eyes**. The Abyssal Egg and Tesseract are **different recipes and different summon targets**.
+- Do not confuse the vanilla Dragon Egg (ingredient) with the crafted Abyssal Egg (ritual item).
+
+## 2. Axothulu — actual companion development progress
+
+### 2A. Field-confirmed achievements (retain from V23–V24)
+
+- **Autonomous piston crafted successfully:** runtime logged `RECIPE_MANAGER_CRAFT minecraft:piston count=1`; later state `pistonStatus=CRAFTED_PISTON`. Ingredient sourcing, workstation visits and crafting were observed. This proves that particular chain, not universal crafting.
+- **First house build completed a construction run:** developer observed her announce “My house is finished! Come see! :D”. The result exposed significant architectural/roof quality problems, so completion is **not** approval of the design system.
+- **Workshop build and furnishing:** developer reported a successful workshop with workstations in the four corners and traversable central space. A grindstone was incorrectly wall-mounted; the intended fix is a **floor-mounted grindstone**.
+- **Known behavior:** owner bonding and STAY / FOLLOW / FREE modes; nine-slot carried inventory; resource gathering; RecipeManager-driven dependency work; magic grindstone mining; storage and workshop interactions; autonomous task planning. Some components are source-observed or prototype-level rather than comprehensively verified.
+
+### 2B. Latest checkpoint and verification boundary
+
+- **Latest user-supplied source baseline:** `Checkpoint - No more shells damn QwQ.zip` (newer than the V24 Cheese-Shroom checkpoint). Use the latest full checkpoint for subsequent changes, not older source-only overlays. The latest checkpoint's complete contents and build status must be revalidated before applying fixes.
+- **Inspected code:** `WaifuAxoluthuVillageStructures.java`, `WaifuAxoluthuFurnishingLayouts.java`, `WaifuAxoluthuUniversalFurnishing.java`, `WaifuAxoluthuMultiblockFurnishing.java`, `WaifuAxoluthuExactSiteBuilder.java`.
+- **Room-aware prototype was not yet accepted.** The developer intends to run the next test tomorrow; do not mark the room-aware regression repair or full village generation as field-passed.
+- **Important file-integrity note:** the previously advertised `Axothulu_Room_Aware_Regression_Repair_Source_Patch.zip` was not verified as physically generated in the recorded work. Treat it as **NOT VERIFIED / NOT READY TO RELY ON** until created and checked against the current source baseline. Do not count it as a delivered fix.
+
+### 2C. Architectural design — agreed requirements
+
+Axothulu is a **creative, autonomous architect**, not a printer of nine fixed schematic shells. The nine functional building categories are **Workshop, Storage Hut, Smithy, Library, Infirmary, Small House, Medium House, Large House and Town Center**. Each category specifies its furnishing/function goals; she invents the building's layout and appearance.
+
+- **Single story only:** one ground-level traversable floor for villagers, MCA villagers and pets. Decorative roof variation and gables are allowed, but no upper occupied story or loft requirement. This V25 rule supersedes V24's earlier loft concept.
+- **Procedural variation:** irregular footprints, alcoves, wings, bays, different rooflines and materials; designs should be meaningfully different rather than copy-pasted square shells.
+- **Multiple real rooms:** interior partitions, walkable connected doorways, coherent use-based furnishing zones; wings should not remain undivided empty appendages. The **entire approved plot counts as one building** for required furniture totals, even if split across rooms.
+- **Capacity-aware planning:** if a design cannot fit every required furnishing plus walkways, **expand the footprint or add a room, regenerate enclosing walls/roof/lighting and recheck**. Never silently omit requirements or strand the planner with a capacity exception. For example, Storage Hut requires **four double chests = eight paired chest blocks**; Library requires **32 bookshelves**, distributed across rooms as needed.
+- **Safe multiblock furnishing:** chest halves must be adjacent and correctly paired, with consecutive blueprint entries for the existing installer. Beds must reserve both foot and head positions in the correct rotated direction. Preserve the previously working installer instead of replacing it with arbitrary independent placement.
+- **Access and navigation:** at least two blocks of headroom, preferably two-wide main walkways, accessible workstations, connected rooms and entrances. Optional **two-wide double doors** must have correct hinges and actually open.
+- **Owner approval:** hologram may overlap terrain, natural structures or player builds so the owner can judge it; **no construction starts until approval**. Redesign generates a substantially different design at the same site and reprompts; Reposition moves the current blueprint to the player's location while preserving layout/rotation and reprompts.
+- **World protection:** protect player-created terrain/blocks. The proposed seed-and-coordinate comparison distinguishes baseline terrain from later changes, but must be validated for generated structures, fluids, previous mod edits and save-world differences before unrestricted terraforming. Construction remains server-authoritative.
+- **Lighting:** use **sea lanterns**, not torches. **Grindstone:** floor-mounted, not wall-mounted. Preserve crafting, magic smelting, item collection, construction animation, owner-authorized storage and four-corner workstation behavior.
+
+### 2D. Diagnosed room-aware regressions (not yet field-fixed)
+
+1. **Chest regression:** newer room-aware furnishing planner assigns chest blocks to nonadjacent independent cells. Existing `WaifuAxoluthuMultiblockFurnishing.placeChest` expects adjacent, consecutive chest entries; preserve that contract.
+2. **Bed regression:** the planner must reserve the head block as well as the foot block in the installer’s rotated SOUTH-facing direction; reject collisions and missing floor support.
+3. **Capacity regression:** planner currently throws `Blueprint lacks furnishing capacity...` rather than expanding/regenerating a footprint until it fits. Room/corridor exclusions and wing usage must be revisited.
+4. **Bounds regression:** `WaifuAxoluthuUniversalFurnishing` checks a type-based fixed width, incompatible with irregular wings and rotations. Validate against the actual approved blueprint footprint and allowed interior.
+5. **Design quality:** workshop and storage designs were reported too similar; Redesign had previously stalled. Confirm the preview/approval state machine survives regeneration and reload.
+
+### 2E. Related combat and village development
+
+- **Mob-clearing during construction:** Axothulu should use the `trident_attack` animation with a full-power, **no-knockback sonic boom** using existing combat damage and protected-target filters; connect timed damage server-side, then resume construction. **DESIGN AGREED; gameplay unverified.**
+- **Abyssal Chest:** right-click a vanilla chest with a Repository Module to convert it, preserving items and respecting owner UUID and shared Repository pages. Prior integration/compile fixes were discussed, but complete build and gameplay verification remain pending.
+- **One-time developer test reset:** `/tota axoluthu dev reset_after_workshop` is intended to keep the physically built Workshop, reset village progress to immediately after Workshop, and make Storage Hut the next task. Verify command presence and behavior in the current checkpoint before use.
+
+## 3. Immediate next-session verification order
+
+1. Confirm the latest full checkpoint and actual source-only patch files exist; **do not rely on an unverified download link**.
+2. Compile with the installed NeoForge/Gradle toolchain; distinguish environmental dependency-download failure from Java compile errors.
+3. In-game, preview a **Storage Hut**: verify irregular multiroom shell, connected walkways, doors, sea lanterns, and **four true double chests**. Verify inventory-backed placement and no single-chest substitutes.
+4. Test **beds**, rotation, occupancy reservations and no overlaps; test **Library 32-bookcase** capacity expansion and rerendering.
+5. Test **Redesign, Reposition, approval gating**, world protection, resume/reload, furniture bounds and owner controls.
+6. Keep **AxoCthulu arena, Eye reward, Abyssal Egg and Tesseract rituals** as separate implementation/test dockets until code and gameplay evidence exist.
+
+**V25 milestone:** The father is the final boss; his Eyes power two distinct late-game rituals. The daughter has already crafted a piston and built real structures, but her next exam is to become a reliable, room-aware architect without breaking multiblocks, navigation, ownership or player trust. 🩵
+
+---
+
+# Preserved V24 roadmap and earlier history (unchanged)
+
 # Temple of the Axolotl — Master Development Roadmap V24
 
 **Updated:** November 10–11, 2026 — nightly Cheese-Shroom Incident checkpoint  

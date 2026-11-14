@@ -9,6 +9,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.core.BlockPos;
 import java.util.*;
 
+import com.devaxo.templeoftheaxolotl.TempleOfTheAxolotl;
+
+
 /** Server-authoritative companion state, stored with the owner's player data. */
 public final class AbyssalCompanionRegistry {
     public static final String KEY = "tota_abyssal_companion_registry_v1";
@@ -22,6 +25,7 @@ public final class AbyssalCompanionRegistry {
         if (tag.getString("State").equals("stored") || tag.getString("State").equals("revive") || tag.getString("State").equals("pending")) return;
         tag.putString("Name", axo.getName().getString()); tag.putString("State", "active");
         tag.putBoolean("CustomNamed", axo.hasCustomName());
+        copyStyledName(tag, axo.saveWithoutId(new CompoundTag()));
         tag.putString("Category", "Abyssal");
         tag.putUUID("UUID", axo.getUUID()); all.put(key(axo.getUUID()), tag); commit(player, all);
     }
@@ -67,11 +71,35 @@ public final class AbyssalCompanionRegistry {
         commit(player, all);
         axo.remove(Entity.RemovalReason.DISCARDED);
     }
+    /** Merge an authoritative death snapshot recorded while the owner was offline.
+     * Never replace an already stored/revive snapshot with a stale active entry. */
+    public static void applyOfflineDeath(ServerPlayer owner, CompoundTag death) {
+        if (!death.hasUUID("UUID") || !owner.getUUID().equals(death.getUUID("Owner"))
+                || !death.contains("Entity", net.minecraft.nbt.Tag.TAG_COMPOUND)) return;
+        UUID id = death.getUUID("UUID");
+        CompoundTag all = all(owner);
+        CompoundTag entry = all.getCompound(key(id));
+        if ("stored".equals(entry.getString("State")) || "revive".equals(entry.getString("State"))) return;
+        entry.putUUID("UUID", id);
+        entry.putString("Name", death.getString("Name"));
+        entry.putString("Category", death.getString("Category"));
+        entry.putBoolean("CustomNamed", death.getBoolean("CustomNamed"));
+        entry.putBoolean("AxoluthuBond", death.getBoolean("AxoluthuBond"));
+        if (death.contains("EntityType", net.minecraft.nbt.Tag.TAG_STRING))
+            entry.putString("EntityType", death.getString("EntityType"));
+        entry.put("Entity", death.getCompound("Entity").copy());
+        copyStyledName(entry, entry.getCompound("Entity"));
+        entry.putString("State", "revive");
+        all.put(key(id), entry);
+        commit(owner, all);
+    }
+
     public static void defeated(ServerPlayer player, AbyssalAxolotlEntity axo) {
         if (!player.getUUID().equals(axo.getOwnerUUID())) return;
         CompoundTag all = all(player), tag = all.getCompound(key(axo.getUUID()));
         tag.putUUID("UUID", axo.getUUID()); tag.putString("Name", axo.getName().getString());
         tag.put("Entity", axo.saveWithoutId(new CompoundTag())); tag.putString("State", "revive");
+        copyStyledName(tag, tag.getCompound("Entity"));
         all.put(key(axo.getUUID()), tag); commit(player, all);
         sync(player);
     }
@@ -92,6 +120,7 @@ public final class AbyssalCompanionRegistry {
         tag.putString("Category", companionCategory(pet));
         tag.putString("EntityType", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(pet.getType()).toString());
         tag.put("Entity", pet.saveWithoutId(new CompoundTag()));
+        copyStyledName(tag, tag.getCompound("Entity"));
         tag.putString("State", "revive");
         all.put(key(pet.getUUID()), tag);
         commit(owner, all);
@@ -112,6 +141,7 @@ public final class AbyssalCompanionRegistry {
         CompoundTag entry = all.getCompound(id);
         entry.putUUID("UUID", pet.getUUID());
         entry.putString("Name", pet.getCustomName().getString());
+        copyStyledName(entry, pet.saveWithoutId(new CompoundTag()));
         entry.putString("Category", companionCategory(pet));
         entry.putBoolean("CustomNamed", true);
         entry.putString("Dimension", pet.level().dimension().location().toString());
@@ -162,9 +192,35 @@ public final class AbyssalCompanionRegistry {
             for (Entity entity : level.getAllEntities())
                 if (entity instanceof net.minecraft.world.entity.TamableAnimal pet) observeNamedPet(player, pet);
         CompoundTag all = all(player);
+        // Bonded Axoluthu is a Celestial companion even without a custom name.
+        for (ServerLevel level : player.server.getAllLevels())
+            for (Entity entity : level.getAllEntities())
+                if (entity instanceof WaifuAxoluthuEntity axo
+                        && player.getUUID().equals(axo.getBondedPlayer())) {
+                    String id = key(axo.getUUID());
+                    CompoundTag entry = all.getCompound(id);
+                    entry.putUUID("UUID", axo.getUUID());
+                    entry.putString("Name", "Axoluthu");
+                    entry.putString("Category", "Celestial");
+                    entry.putBoolean("CustomNamed", true); // Explicit bonded-name exception.
+                    entry.putBoolean("AxoluthuBond", true);
+                    if (!"stored".equals(entry.getString("State"))
+                            && !"revive".equals(entry.getString("State"))
+                            && !"pending".equals(entry.getString("State")))
+                        entry.putString("State", "active");
+                    all.put(id, entry);
+                }
+        commit(player, all);
         net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player,
                 new com.devaxo.templeoftheaxolotl.network.AbyssalRosterPayload(publicRoster(all).toString()));
     }
+    /** Copies vanilla's serialized custom-name component verbatim, never flattening
+     * Celestial Anvil fonts/colors into plain strings. */
+    private static void copyStyledName(CompoundTag entry, CompoundTag snapshot) {
+        if (snapshot.contains("CustomName", net.minecraft.nbt.Tag.TAG_STRING))
+            entry.putString("StyledName", snapshot.getString("CustomName"));
+    }
+
     private static CompoundTag publicRoster(CompoundTag all) {
         CompoundTag view = new CompoundTag();
         for (String key : all.getAllKeys()) {
@@ -183,14 +239,118 @@ public final class AbyssalCompanionRegistry {
                             !legacyName.equalsIgnoreCase("Abyssal Axolotl");
                 }
             }
-            if (!named) continue;
+            if (!named && !original.getBoolean("AxoluthuBond")) continue;
             CompoundTag entry = new CompoundTag();
+            entry.putBoolean("AxoluthuBond", original.getBoolean("AxoluthuBond"));
             entry.putString("Name", original.getString("Name"));
+            String styledName = original.getString("StyledName");
+            if (styledName.isBlank() && original.contains("Entity", net.minecraft.nbt.Tag.TAG_COMPOUND))
+                styledName = original.getCompound("Entity").getString("CustomName");
+            if (!styledName.isBlank()) entry.putString("StyledName", styledName);
             entry.putString("State", original.getString("State"));
             entry.putString("Category", original.getString("Category").isEmpty() ? "Abyssal" : original.getString("Category"));
             view.put(key, entry);
         }
         return view;
+    }
+    /** Preserve Axoluthu's complete NBT, including her backpack and building state. */
+    /** Store a loaded, bonded Axoluthu before her owner disconnects.
+     * The server keeps the complete entity snapshot, including backpack/build state.
+     * This intentionally does not send a roster packet to a disconnecting client.
+     */
+    public static void recallAxoluthuOnLogout(ServerPlayer owner, WaifuAxoluthuEntity axo) {
+        if (!owner.getUUID().equals(axo.getBondedPlayer())) return;
+        CompoundTag all = all(owner);
+        CompoundTag entry = all.getCompound(key(axo.getUUID()));
+        String state = entry.getString("State");
+        if ("stored".equals(state) || "revive".equals(state)) return;
+        entry.putUUID("UUID", axo.getUUID());
+        entry.putString("Name", "Axoluthu");
+        entry.putString("Category", "Celestial");
+        entry.putBoolean("CustomNamed", true);
+        entry.putBoolean("AxoluthuBond", true);
+        entry.put("Entity", axo.saveWithoutId(new CompoundTag()));
+        entry.putString("State", "stored");
+        all.put(key(axo.getUUID()), entry);
+        commit(owner, all);
+        axo.remove(Entity.RemovalReason.DISCARDED);
+    }
+
+    public static void defeatedAxoluthu(ServerPlayer owner, WaifuAxoluthuEntity axo) {
+        if (!owner.getUUID().equals(axo.getBondedPlayer())) return;
+        CompoundTag all = all(owner), entry = all.getCompound(key(axo.getUUID()));
+        entry.putUUID("UUID", axo.getUUID());
+        entry.putString("Name", axo.getName().getString());
+        entry.putString("Category", "Celestial");
+        entry.putBoolean("AxoluthuBond", true);
+        entry.put("Entity", axo.saveWithoutId(new CompoundTag()));
+        entry.putString("State", "revive");
+        all.put(key(axo.getUUID()), entry); commit(owner, all); sync(owner);
+    }
+    public static void checkAxoluthuLoaded(ServerPlayer owner, WaifuAxoluthuEntity axo) {
+        if (!owner.getUUID().equals(axo.getBondedPlayer())) return;
+        CompoundTag all = all(owner), entry = all.getCompound(key(axo.getUUID()));
+        String state = entry.getString("State");
+        if (state.equals("revive") || state.equals("stored")) {
+            axo.remove(Entity.RemovalReason.DISCARDED); return;
+        }
+        if (state.equals("pending")) {
+            entry.put("Entity", axo.saveWithoutId(new CompoundTag()));
+            entry.putString("State", "stored");
+            all.put(key(axo.getUUID()), entry); commit(owner, all);
+            axo.remove(Entity.RemovalReason.DISCARDED); sync(owner);
+        }
+    }
+    private static void actionAxoluthu(ServerPlayer player, UUID id, CompoundTag all, CompoundTag entry) {
+        if (!entry.getBoolean("AxoluthuBond") || !"Celestial".equals(entry.getString("Category"))) return;
+        String state = entry.getString("State");
+        if (state.equals("active") || state.equals("pending")) {
+            for (ServerLevel level : player.server.getAllLevels()) {
+                Entity entity = level.getEntity(id);
+                if (entity instanceof WaifuAxoluthuEntity axo && player.getUUID().equals(axo.getBondedPlayer())) {
+                    entry.put("Entity", axo.saveWithoutId(new CompoundTag()));
+                    entry.putString("State", "stored");
+                    all.put(key(id), entry); commit(player, all);
+                    axo.remove(Entity.RemovalReason.DISCARDED); sync(player);
+                    player.sendSystemMessage(Component.literal("Axoluthu safely recalled.")); return;
+                }
+            }
+            entry.putString("State", "pending");
+            all.put(key(id), entry); commit(player, all); sync(player);
+            player.sendSystemMessage(Component.literal("Axoluthu recall queued until her chunk loads.")); return;
+        }
+        if (!state.equals("stored") && !state.equals("revive")) return;
+        if (state.equals("revive") && !validShrine(player)) {
+            player.sendSystemMessage(Component.literal("Revival requires the Registry on a lectern beside an Abyssal Torch Moai.")); return;
+        }
+        if (!entry.contains("Entity", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+            player.sendSystemMessage(Component.literal("Axoluthu's saved data is missing. Entry preserved.")); return;
+        }
+        for (ServerLevel level : player.server.getAllLevels()) if (level.getEntity(id) != null) {
+            player.sendSystemMessage(Component.literal("Axoluthu's UUID is already loaded; refusing duplicate summon.")); return;
+        }
+        ServerLevel level = player.serverLevel();
+        BlockPos spot = player.blockPosition().offset(1, 0, 1);
+        if (!level.getBlockState(spot).getCollisionShape(level, spot).isEmpty()) spot = player.blockPosition().above();
+        if (!level.getBlockState(spot).getCollisionShape(level, spot).isEmpty()) {
+            player.sendSystemMessage(Component.literal("No safe space to summon Axoluthu.")); return;
+        }
+        WaifuAxoluthuEntity axo = ModEntities.WAIFU_AXOLUTHU.get().create(level);
+        if (axo == null) return;
+        try { axo.load(entry.getCompound("Entity").copy()); }
+        catch (RuntimeException ex) {
+            TempleOfTheAxolotl.LOGGER.error("Axoluthu registry restore failed", ex);
+            player.sendSystemMessage(Component.literal("Axoluthu restore failed; original snapshot preserved.")); return;
+        }
+        if (!player.getUUID().equals(axo.getBondedPlayer())) {
+            player.sendSystemMessage(Component.literal("Saved Axoluthu owner mismatch; snapshot preserved.")); return;
+        }
+        axo.setUUID(id);
+        axo.moveTo(spot.getX() + .5, spot.getY(), spot.getZ() + .5, player.getYRot(), 0);
+        if (state.equals("revive")) axo.setHealth(axo.getMaxHealth());
+        if (!level.addFreshEntity(axo)) return;
+        entry.putString("State", "active"); all.put(key(id), entry); commit(player, all); sync(player);
+        player.sendSystemMessage(Component.literal(state.equals("revive") ? "Axoluthu revived!" : "Axoluthu summoned!"));
     }
     public static void action(ServerPlayer player, UUID id) {
         CompoundTag all = all(player);
@@ -200,6 +360,10 @@ public final class AbyssalCompanionRegistry {
             return;
         }
         CompoundTag tag = all.getCompound(key(id));
+        if (tag.getBoolean("AxoluthuBond")) {
+            actionAxoluthu(player, id, all, tag);
+            return;
+        }
         if (!tag.hasUUID("UUID")) {
             // The registry key is the original UUID. Restore missing redundant metadata only;
             // never manufacture an entity or overwrite a conflicting UUID.
@@ -257,7 +421,7 @@ public final class AbyssalCompanionRegistry {
             sync(player);
         } else if (state.equals("stored") || state.equals("revive")) {
             if (state.equals("revive") && !validShrine(player)) {
-                player.sendSystemMessage(Component.literal("Need Revive: use the Book of Axoluthu at an Abyssal Moai lectern.")); return;
+                player.sendSystemMessage(Component.literal("Need Revive: place the Abyssal Companion Registry on an Abyssal Moai lectern.")); return;
             }
             if (!tag.contains("Entity", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
                 player.sendSystemMessage(Component.literal("Cannot summon: this companion's saved entity data is missing. Keep the world backup and registry entry for recovery."));
@@ -339,7 +503,7 @@ public final class AbyssalCompanionRegistry {
         String state = tag.getString("State");
         if (state.equals("stored") || state.equals("revive")) {
             if (state.equals("revive") && !validShrine(player)) {
-                player.sendSystemMessage(Component.literal("Need Revive: use the Book of Axoluthu at an Abyssal Moai lectern."));
+                player.sendSystemMessage(Component.literal("Need Revive: place the Abyssal Companion Registry on an Abyssal Moai lectern."));
                 return;
             }
             if (!tag.contains("Entity", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
@@ -413,6 +577,7 @@ public final class AbyssalCompanionRegistry {
         tag.put("Entity", snapshot);
         tag.putString("EntityType", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(pet.getType()).toString());
         tag.putString("Name", pet.getCustomName().getString());
+        copyStyledName(tag, snapshot);
         tag.putString("State", "stored");
         all.put(key(id), tag); commit(player, all);
         pet.remove(Entity.RemovalReason.DISCARDED);
@@ -442,7 +607,7 @@ public final class AbyssalCompanionRegistry {
             var facing = state.getValue(net.minecraft.world.level.block.LecternBlock.FACING);
             if (!player.level().getBlockState(p.relative(facing.getOpposite())).is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.ABYSSAL_TORCH.get())) continue;
             if (player.level().getBlockEntity(p) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity lectern
-                    && lectern.getBook().is(com.devaxo.templeoftheaxolotl.item.ModItems.NOODLE_COMMAND_BOOK.get())) return true;
+                    && lectern.getBook().is(com.devaxo.templeoftheaxolotl.item.ModItems.ABYSSAL_COMPANION_REGISTRY.get())) return true;
         }
         return false;
     }

@@ -15,11 +15,21 @@ public final class WaifuAxoluthuResourceRoutes {
                 || item==Items.IRON_ORE || item==Items.COAL || item==Items.RAW_IRON)
             return "GRINDSTONE -> MINING_SIMULATION -> ONE_ITEM_PER_CYCLE";
         if(item==Items.BONE || item==Items.STRING || item==Items.ROTTEN_FLESH
-                || item==Items.GUNPOWDER || item==Items.ENDER_PEARL)
-            return "COMPOSTER -> ONE_VANILLA_LOOT_TABLE_KILL_PER_CYCLE";
+                || item==Items.GUNPOWDER || item==Items.ENDER_PEARL ||
+                item==Items.BLAZE_ROD || item==Items.GHAST_TEAR ||
+                item==Items.MAGMA_CREAM || item==Items.WITHER_SKELETON_SKULL ||
+                item==Items.SLIME_BALL || item==Items.SPIDER_EYE ||
+                item==Items.PHANTOM_MEMBRANE)
+            return "COMPOSTER -> SIMULATED_MOB_DROP -> ONE_ITEM_PER_CYCLE";
         if(item==Items.SUGAR_CANE || item==Items.WHEAT || item==Items.POPPY
                 || item==Items.DANDELION || item==Items.CORNFLOWER)
-            return "CARTOGRAPHY_TABLE -> FARM_FORAGE_SIMULATION -> ONE_ITEM_PER_CYCLE";
+            return "COMPOSTER -> FARM_FORAGE_SIMULATION -> ONE_ITEM_PER_CYCLE";
+        if(item==Items.SAND || item==Items.RED_SAND || item==Items.TERRACOTTA ||
+                item==Items.CLAY_BALL || item==Items.NETHERRACK ||
+                item==Items.BLACKSTONE || item==Items.BASALT || item==Items.END_STONE ||
+                item==Items.SOUL_SAND || item==Items.NETHER_BRICKS ||
+                item==Items.CRIMSON_STEM || item==Items.WARPED_STEM)
+            return "GRINDSTONE -> EXOTIC_MINING_SIMULATION -> ONE_ITEM_PER_CYCLE";
         return "NO_ROUTE_REGISTERED";
     }
 }

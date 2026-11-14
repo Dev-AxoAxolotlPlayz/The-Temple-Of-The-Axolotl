@@ -35,7 +35,7 @@ public final class EclipseMenu extends AbstractContainerMenu {
         this.pos = pos;
         this.inscription = inscription;
         this.altar = inventory.player.level().getBlockEntity(pos) instanceof EclipseAltarEntity a ? a : null;
-        var container = altar != null ? altar.offerings : new SimpleContainer(6);
+        var container = altar != null ? (inscription ? altar.inscriptionOfferings : altar.offerings) : new SimpleContainer(6);
         // 0 item I, 1 item II, 2 diamond/dye, 3 style, 4 feather, 5 output.
         // Inactive slots are positioned offscreen and refuse interaction.
         addSlot(new Slot(container, 0, inscription ? 120 : 62, inscription ? 71 : 62));
@@ -114,7 +114,8 @@ public final class EclipseMenu extends AbstractContainerMenu {
     }
 
     private int ritualCost() {
-        if (inscription || enchantResult().isEmpty()) return 0;
+        if (inscription) return inscriptionCost();
+        if (enchantResult().isEmpty()) return 0;
         ItemStack left = altar.offerings.getItem(0);
         ItemStack right = altar.offerings.getItem(1);
         ItemEnchantments incoming = EnchantmentHelper.getEnchantmentsForCrafting(right);
@@ -142,15 +143,33 @@ public final class EclipseMenu extends AbstractContainerMenu {
         return (int) Math.max(1, Math.min(Integer.MAX_VALUE, (raw + 1) / 2));
     }
 
+    private int inscriptionCost() {
+        if (altar == null) return 0;
+        ItemStack item = altar.inscriptionOfferings.getItem(0);
+        ItemStack dye = altar.inscriptionOfferings.getItem(2);
+        ItemStack style = altar.inscriptionOfferings.getItem(3);
+        ItemStack feather = altar.inscriptionOfferings.getItem(4);
+        if (item.isEmpty() || item.getCount() != 1 || !feather.is(Items.FEATHER)) return 0;
+        if (!dye.isEmpty() && !(dye.getItem() instanceof DyeItem)) return 0;
+        if (!style.isEmpty() && !(style.is(Items.GLOW_INK_SAC) || style.is(Items.BLUE_ORCHID)
+                || style.is(Items.STRING) || style.is(Items.IRON_SWORD)
+                || style.is(Items.SKELETON_SKULL) || style.is(Items.WITHER_SKELETON_SKULL)
+                || style.is(Items.ZOMBIE_HEAD) || style.is(Items.CREEPER_HEAD)
+                || style.is(Items.DRAGON_HEAD) || style.is(Items.PIGLIN_HEAD)
+                || style.is(Items.PLAYER_HEAD))) return 0;
+        int levels = 1 + (dye.isEmpty() ? 0 : 1) + (style.isEmpty() ? 0 : 1);
+        return Math.max(1, (levels * levels + 6 * levels + 1) / 2);
+    }
+
     /** Server-side inscription: the client only supplies text and font choice. */
-    public boolean inscribe(ServerPlayer player, String requestedName, boolean uniformFont) {
+    public boolean inscribe(ServerPlayer player, String requestedName, int fontChoice) {
         if (!inscription || altar == null || !stillValid(player) || requestedName == null) return false;
         String name = requestedName.strip();
         if (name.isEmpty() || name.length() > 50 || name.chars().anyMatch(c -> Character.isISOControl((char)c))) return false;
-        ItemStack item = altar.offerings.getItem(0);
-        ItemStack dyeStack = altar.offerings.getItem(2);
-        ItemStack styleStack = altar.offerings.getItem(3);
-        ItemStack feather = altar.offerings.getItem(4);
+        ItemStack item = altar.inscriptionOfferings.getItem(0);
+        ItemStack dyeStack = altar.inscriptionOfferings.getItem(2);
+        ItemStack styleStack = altar.inscriptionOfferings.getItem(3);
+        ItemStack feather = altar.inscriptionOfferings.getItem(4);
         // Require a single item so renaming never changes an entire stack for one offering.
         if (item.isEmpty() || item.getCount() != 1 || !feather.is(Items.FEATHER)) return false;
         if (!dyeStack.isEmpty() && !(dyeStack.getItem() instanceof DyeItem)) return false;
@@ -164,21 +183,22 @@ public final class EclipseMenu extends AbstractContainerMenu {
                 || styleStack.is(Items.PLAYER_HEAD);
         if (!styleStack.isEmpty() && !(bold || italic || underline || strike || obfuscated)) return false;
         // One level for naming, plus one for each optional offering; 50% off raw XP points.
-        int levels = 1 + (!dyeStack.isEmpty() ? 1 : 0) + (!styleStack.isEmpty() ? 1 : 0);
-        int raw = levels * levels + 6 * levels; // Levels 1..3, cumulative vanilla XP.
-        int price = Math.max(1, (raw + 1) / 2);
+        int price = inscriptionCost();
+        if (price <= 0 || fontChoice < 0 || fontChoice > 4) return false;
         if (sessionXp < price) return false;
         var style = net.minecraft.network.chat.Style.EMPTY.withItalic(italic).withBold(bold)
                 .withUnderlined(underline).withStrikethrough(strike).withObfuscated(obfuscated);
         if (dyeStack.getItem() instanceof DyeItem dye) style = style.withColor(dye.getDyeColor().getTextColor());
-        if (uniformFont) style = style.withFont(ResourceLocation.withDefaultNamespace("uniform"));
+        String[] fontIds = {"", "bony_bones", "lilomon", "freebooter", "treasure_deadhand"};
+        if (fontChoice != 0) style = style.withFont(ResourceLocation.fromNamespaceAndPath(
+                "temple_of_the_axolotl", fontIds[fontChoice]));
         ItemStack result = item.copy();
         result.set(DataComponents.CUSTOM_NAME, Component.literal(name).setStyle(style));
         // Commit only after all validation, cost checks, and result creation succeed.
-        altar.offerings.setItem(0, result);
-        if (!dyeStack.isEmpty()) altar.offerings.removeItem(2, 1);
-        if (!styleStack.isEmpty()) altar.offerings.removeItem(3, 1);
-        altar.offerings.removeItem(4, 1);
+        altar.inscriptionOfferings.setItem(0, result);
+        if (!dyeStack.isEmpty()) altar.inscriptionOfferings.removeItem(2, 1);
+        if (!styleStack.isEmpty()) altar.inscriptionOfferings.removeItem(3, 1);
+        altar.inscriptionOfferings.removeItem(4, 1);
         sessionXp -= price;
         altar.setChanged();
         broadcastChanges();

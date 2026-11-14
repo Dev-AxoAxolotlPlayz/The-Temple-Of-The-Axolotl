@@ -16,7 +16,7 @@ public record CelestialRadialOpenBookPayload(int index) implements CustomPacketP
         event.registrar("1").playToClient(TYPE, STREAM_CODEC, (packet,context) -> context.enqueueWork(() -> {
             if (packet.index() == 0) com.devaxo.templeoftheaxolotl.client.DiaryOpeningScreen.open();
             if (packet.index() == 1) vazkii.patchouli.api.PatchouliAPI.get().openBookGUI(ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID,"axolotls_field_guide"));
-            if (packet.index() == 2) com.devaxo.templeoftheaxolotl.client.AbyssalCommandBookScreen.open(new net.minecraft.world.item.ItemStack(com.devaxo.templeoftheaxolotl.item.ModItems.NOODLE_COMMAND_BOOK.get()));
+            if (packet.index() == 2) com.devaxo.templeoftheaxolotl.client.AbyssalCommandBookScreen.openRegistry(new net.minecraft.world.item.ItemStack(com.devaxo.templeoftheaxolotl.item.ModItems.ABYSSAL_COMPANION_REGISTRY.get()));
         }));
     }
 }

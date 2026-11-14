@@ -1,0 +1,1 @@
+Source patch layered on Eldritch Architect Final Exam. Relocate uses player feet and preserves blueprint/rotation, then prompts approval again. Storage hut pending village proposal gets clickable review reminder (at most every 1200 ticks when planner runs). Grindstone forced to floor attachment; incorrect grindstone states repaired. Source only, NOT compiled or in-game tested.

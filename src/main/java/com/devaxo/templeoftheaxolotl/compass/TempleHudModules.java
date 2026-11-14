@@ -103,7 +103,7 @@ public final class TempleHudModules {
             case 14 -> stack.is(ModItems.ARCHITECTS_JOURNAL.get());
             case 15 -> stack.is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.DIARY_ITEM.get());
             case 16 -> stack.is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.FIELD_GUIDE_ITEM.get());
-            case 17 -> stack.is(ModItems.NOODLE_COMMAND_BOOK.get());
+            case 17 -> stack.is(ModItems.NOODLE_COMMAND_BOOK.get()) || stack.is(ModItems.ABYSSAL_COMPANION_REGISTRY.get());
             default -> false;
         };
     }

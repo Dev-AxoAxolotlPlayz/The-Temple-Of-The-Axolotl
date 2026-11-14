@@ -17,11 +17,12 @@ public final class StructureItemRenderer extends GeoItemRenderer<StructureGeoBlo
         pose.pushPose();
         boolean crane = stack.getItem() instanceof StructureGeoBlockItem item && "shipyard_crane".equals(item.assetName());
         float scale = crane ? 0.12f : 0.22f;
+        float guiScale = crane ? 0.096f : 0.209f;
         if (context == ItemDisplayContext.GUI) {
             pose.translate(0.5, 0.22, 0.5);
             pose.mulPose(Axis.YP.rotationDegrees(145));
             pose.mulPose(Axis.XP.rotationDegrees(20));
-            pose.scale(scale, scale, scale);
+            pose.scale(guiScale, guiScale, guiScale);
             pose.translate(-0.5, -0.5, -0.5);
         } else {
             pose.translate(0.5, 0.5, 0.5);

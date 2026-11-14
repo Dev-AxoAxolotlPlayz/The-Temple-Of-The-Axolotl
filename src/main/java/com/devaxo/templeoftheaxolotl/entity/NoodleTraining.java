@@ -51,9 +51,9 @@ public final class NoodleTraining {
     public static void syncBooks(ServerPlayer player) {
         var library = NoodleCommandLibrary.load(player.getUUID());
         for (ItemStack stack : player.getInventory().items)
-            if (stack.is(ModItems.NOODLE_COMMAND_BOOK.get())) setCommands(stack, library);
+            if (stack.is(ModItems.NOODLE_COMMAND_BOOK.get()) || stack.is(ModItems.ABYSSAL_COMPANION_REGISTRY.get())) setCommands(stack, library);
         for (ItemStack stack : player.getInventory().offhand)
-            if (stack.is(ModItems.NOODLE_COMMAND_BOOK.get())) setCommands(stack, library);
+            if (stack.is(ModItems.NOODLE_COMMAND_BOOK.get()) || stack.is(ModItems.ABYSSAL_COMPANION_REGISTRY.get())) setCommands(stack, library);
         player.getInventory().setChanged();
     }
     @SubscribeEvent public static void login(PlayerEvent.PlayerLoggedInEvent event) {

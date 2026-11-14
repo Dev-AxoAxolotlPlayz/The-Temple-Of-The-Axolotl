@@ -21,6 +21,32 @@ public final class WaifuAxoluthuStage5SiteApproval {
         return data.contains(KEY, 10) ? data.getCompound(KEY) : null;
     }
 
+
+    private static int[] bounds(CompoundTag blueprint) {
+        var blocks = blueprint.getList("blocks", 10);
+        if (blocks.isEmpty()) throw new IllegalArgumentException("Empty blueprint");
+        int minX=Integer.MAX_VALUE,minY=Integer.MAX_VALUE,minZ=Integer.MAX_VALUE;
+        int maxX=Integer.MIN_VALUE,maxY=Integer.MIN_VALUE,maxZ=Integer.MIN_VALUE;
+        for (int i=0;i<blocks.size();i++) {
+            BlockPos b=BlockPos.of(blocks.getCompound(i).getLong("pos"));
+            minX=Math.min(minX,b.getX()); minY=Math.min(minY,b.getY()); minZ=Math.min(minZ,b.getZ());
+            maxX=Math.max(maxX,b.getX()); maxY=Math.max(maxY,b.getY()); maxZ=Math.max(maxZ,b.getZ());
+        }
+        return new int[]{minX,minY,minZ,maxX,maxY,maxZ};
+    }
+
+    private static int obstructions(ServerLevel level, int[] b) {
+        int occupied=0;
+        for(int x=b[0];x<=b[3];x++) for(int z=b[2];z<=b[5];z++)
+            for(int y=b[1];y<=b[4];y++) {
+                BlockPos at=new BlockPos(x,y,z);
+                if (!level.isLoaded(at)) return -1;
+                var state=level.getBlockState(at);
+                if (y>b[1] && !state.isAir() && !state.canBeReplaced()) occupied++;
+            }
+        return occupied;
+    }
+
     public static String propose(WaifuAxoluthuEntity axo, ServerPlayer owner) {
         CompoundTag p = project(axo);
         if (p == null || !p.contains("blueprintPreview",10)) return "Create a project and blueprint first.";
@@ -30,16 +56,10 @@ public final class WaifuAxoluthuStage5SiteApproval {
         int w=p.getInt("width"), d=p.getInt("depth");
         if(w<5 || d<5 || w>31 || d>31) return "Invalid site dimensions.";
         BlockPos origin=BlockPos.of(p.getLong("origin"));
-        int occupied=0, unloaded=0;
-        long fingerprint=1469598103934665603L;
-        for(int x=0;x<w;x++) for(int z=0;z<d;z++) for(int y=0;y<=9;y++) {
-            BlockPos at=origin.offset(x,y,z);
-            if(!level.isLoaded(at)) { unloaded++; continue; }
-            var state=level.getBlockState(at);
-            fingerprint=(fingerprint ^ state.hashCode()) * 1099511628211L;
-            if(y>0 && !state.isAir() && !state.canBeReplaced()) occupied++;
-        }
-        if(unloaded>0) return "Site has "+unloaded+" unloaded positions; cannot request approval.";
+        int[] b=bounds(p.getCompound("blueprintPreview"));
+        int occupied=obstructions(level,b);
+        if(occupied<0) return "Blueprint area has unloaded positions; cannot request approval.";
+        long fingerprint=0L; // Audit marker; approval checks the live blueprint volume.
         p.putLong("approvalFingerprint",fingerprint);
         p.putInt("approvalObstructions",occupied);
         p.putBoolean("siteAuthorized",false);
@@ -48,7 +68,7 @@ public final class WaifuAxoluthuStage5SiteApproval {
         p.putString("notes", occupied>0
                 ? "This site contains "+occupied+" occupied positions. Terrain may be player-modified; permission requires an extra confirmation. No blocks will be altered."
                 : "Proposed site outlined with visual markers. Awaiting player permission; no blocks changed.");
-        markers(level,origin,w,d);
+        // Projection comes from the synchronized blueprint manifest.
         owner.sendSystemMessage(Component.literal("[Axoluthu] I found a place for my house! >:3 Can I build here? Stand inside the glowing boundary to decide."));
         owner.sendSystemMessage(Component.literal("[Yes, build here]").withStyle(Style.EMPTY.withColor(0x55FFAA)
                 .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/tota axoluthu architecture approve")))
@@ -56,9 +76,12 @@ public final class WaifuAxoluthuStage5SiteApproval {
                 .append(Component.literal("[No, find another spot]").withStyle(Style.EMPTY.withColor(0xFF7777)
                 .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/tota axoluthu architecture reject"))))
                 .append(Component.literal("   "))
+                .append(Component.literal("[Rotate 90°]").withStyle(Style.EMPTY.withColor(0x50E9EF)
+                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/tota axoluthu architecture rotate")))
+                .append(Component.literal("   "))
                 .append(Component.literal("[Suggest another area]").withStyle(Style.EMPTY.withColor(0x88CCFF)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/tota axoluthu architecture suggest")))));
-        return "Proposed "+w+"x"+d+" boundary at "+origin.toShortString()+"; "+occupied+" occupied positions. Ghost markers are particles, not blocks.";
+                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/tota axoluthu architecture suggest"))))));
+        return "Proposed "+w+"x"+d+" boundary at "+origin.toShortString()+"; "+occupied+" occupied positions. Blueprint projection is visual only.";
     }
 
 
@@ -113,28 +136,19 @@ public final class WaifuAxoluthuStage5SiteApproval {
                 && !"CONFIRM_TERRAIN_CHANGES".equals(p.getString("phase"))) return "No pending site approval.";
         if(!(axo.level() instanceof ServerLevel level) || level!=owner.serverLevel()
                 || !level.dimension().location().toString().equals(p.getString("dimension"))) return "Wrong dimension.";
-        BlockPos o=BlockPos.of(p.getLong("origin"));
-        int w=p.getInt("width"),d=p.getInt("depth");
+        int[] b=bounds(p.getCompound("blueprintPreview"));
         BlockPos player=owner.blockPosition();
-        if(player.getX()<o.getX() || player.getX()>=o.getX()+w || player.getZ()<o.getZ() || player.getZ()>=o.getZ()+d)
-            return "Please stand inside the marked X-Z area to answer.";
+        if(player.getX()<b[0] || player.getX()>b[3] || player.getZ()<b[2] || player.getZ()>b[5])
+            return "Please stand inside the projected X-Z area to answer.";
         if("reject".equals(choice)) {
             p.putString("phase","SITE_REJECTED");
             p.putBoolean("siteAuthorized",false);
             p.putBoolean("constructionAllowed",false);
-            p.putString("notes","Player rejected this location. A new location must be surveyed and proposed; no blocks changed.");
-            return "Okay! I'll look for somewhere else. QwQ (Use architecture plan after starting a new project; automatic relocation is not implemented yet.)";
+            p.putString("notes","Player rejected this location; no blocks changed.");
+            return "Okay! I'll look for somewhere else. QwQ";
         }
-        // Live validation: block-state hashes change with harmless growth, fluid updates,
-        // and other normal world ticks. Recount actual obstructions instead of locking
-        // the proposal behind an exact historical snapshot.
-        int occupied = 0;
-        for (int x=0; x<w; x++) for (int z=0; z<d; z++) for (int y=0; y<=9; y++) {
-            BlockPos at=o.offset(x,y,z);
-            if (!level.isLoaded(at)) return "Site chunks are not loaded yet; try again when nearby.";
-            var state=level.getBlockState(at);
-            if (y>0 && !state.isAir() && !state.canBeReplaced()) occupied++;
-        }
+        int occupied=obstructions(level,b);
+        if(occupied<0) return "Site chunks are not loaded yet; try again when nearby.";
         int surveyedOccupied=p.getInt("approvalObstructions");
         if (occupied>surveyedOccupied && "CONFIRM_TERRAIN_CHANGES".equals(p.getString("phase"))) {
             // New obstructions since the first confirmation: require a fresh first
@@ -151,11 +165,14 @@ public final class WaifuAxoluthuStage5SiteApproval {
                     .append(Component.literal("[Find another spot]").withStyle(Style.EMPTY.withColor(0xFF7777)
                     .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/tota axoluthu architecture reject"))))
                     .append(Component.literal("   "))
-                    .append(Component.literal("[Suggest another area]").withStyle(Style.EMPTY.withColor(0x88CCFF)
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/tota axoluthu architecture suggest")))));
+                    .append(Component.literal("[Rotate 90°]").withStyle(Style.EMPTY.withColor(0x50E9EF)
+                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/tota axoluthu architecture rotate")))
+                .append(Component.literal("   "))
+                .append(Component.literal("[Suggest another area]").withStyle(Style.EMPTY.withColor(0x88CCFF)
+                    .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/tota axoluthu architecture suggest"))))));
             return "Extra confirmation required because terrain could be player-modified.";
         }
-        p.put("blueprintPreview",WaifuAxoluthuStage5Blueprint.create(p));
+        // Keep the exact rotated manifest that was reviewed; never silently regenerate it.
         p.putBoolean("siteAuthorized",true);
         p.putBoolean("constructionAllowed",false);
         p.putString("phase","SITE_APPROVED");
@@ -232,7 +249,7 @@ public final class WaifuAxoluthuStage5SiteApproval {
         if (w < 5 || d < 5 || w > 31 || d > 31 || !p.contains("origin")) return;
         BlockPos origin = BlockPos.of(p.getLong("origin"));
         if (!level.isLoaded(origin) || !level.isLoaded(origin.offset(w - 1, 0, d - 1))) return;
-        markers(level, origin, w, d);
+        // Projection comes from the synchronized blueprint manifest.
     }
 
     private static void markers(ServerLevel level, BlockPos o,int w,int d) {
@@ -243,4 +260,36 @@ public final class WaifuAxoluthuStage5SiteApproval {
             level.sendParticles(ParticleTypes.END_ROD,at.getX()+0.5,at.getY()+0.5,at.getZ()+0.5,3,0.15,0.3,0.15,0.005);
         }
     }
+    /** Owner-requested rotation. This is a new proposal, never an authorization. */
+    public static String rotateClockwise(WaifuAxoluthuEntity axo, ServerPlayer owner) {
+        CompoundTag p = project(axo);
+        if (p == null || !p.contains("blueprintPreview", 10)) return "No blueprint to rotate.";
+        if (!owner.getUUID().equals(axo.getBondedPlayer())) return "Only Axoluthu's owner can rotate this proposal.";
+        if (!(axo.level() instanceof ServerLevel level) || level != owner.serverLevel())
+            return "Axoluthu and her owner must be in the same dimension.";
+        String phase = p.getString("phase");
+        if (!"AWAITING_SITE_APPROVAL".equals(phase) && !"CONFIRM_TERRAIN_CHANGES".equals(phase)
+                && !"BLUEPRINT_REVIEW".equals(phase) && !"SITE_RECHECK_REQUIRED".equals(phase))
+            return "Rotation is only available before construction approval.";
+        BlockPos pivot = BlockPos.of(p.getLong("origin"));
+        CompoundTag rotated;
+        try { rotated = WaifuAxoluthuBlueprintRotation.rotateClockwise(p.getCompound("blueprintPreview"), pivot); }
+        catch (IllegalArgumentException ex) { return "Cannot rotate: " + ex.getMessage(); }
+        var blocks = rotated.getList("blocks", 10);
+        for (int i = 0; i < blocks.size(); i++) {
+            BlockPos at = BlockPos.of(blocks.getCompound(i).getLong("pos"));
+            if (at.getY() < level.getMinBuildHeight() || at.getY() >= level.getMaxBuildHeight()
+                    || !level.isLoaded(at)) return "Rotated blueprint exceeds loaded or buildable terrain.";
+        }
+        p.put("blueprintPreview", rotated);
+        p.putBoolean("siteAuthorized", false);
+        p.putBoolean("constructionAllowed", false);
+        p.remove("approvalFingerprint");
+        p.remove("approvalObstructions");
+        p.remove("inventoryAudit");
+        p.putString("phase", "BLUEPRINT_REVIEW");
+        p.putString("notes", "Blueprint rotated clockwise; new site survey and owner approval required.");
+        return "Rotated clockwise! >:3 " + propose(axo, owner);
+    }
+
 }

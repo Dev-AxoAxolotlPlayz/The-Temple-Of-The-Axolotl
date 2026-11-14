@@ -55,6 +55,8 @@ public final class WaifuAxoluthuRecipeBrain {
                     && level.getBlockState(locked).is(Blocks.CRAFTING_TABLE)) return locked;
             ACTIVE_TABLES.remove(axo);
         }
+        BlockPos remembered=WaifuAxoluthuVillageRegistry.rememberedStation(axo,level,Blocks.CRAFTING_TABLE);
+        if(remembered!=null){ACTIVE_TABLES.put(axo,remembered);return remembered;}
         // Prefer the site workstation over the home workstation. Only loaded chunks.
         BlockPos origin = axo.blockPosition();
         BlockPos best = null;
@@ -144,18 +146,28 @@ public final class WaifuAxoluthuRecipeBrain {
             return "MINING_"+WaifuAxoluthuMagicGathering.gather(axo,item,lastGather,160).status();
         }
         if(item==Items.RED_SAND ||
-                item==Items.CLAY_BALL || item==Items.NETHERRACK || item==Items.BLACKSTONE ||
+                item==Items.CLAY_BALL || item==Items.TERRACOTTA || item==Items.NETHER_BRICKS || item==Items.NETHERRACK || item==Items.BLACKSTONE ||
                 item==Items.BASALT || item==Items.END_STONE || item==Items.SOUL_SAND ||
                 item==Items.CRIMSON_STEM || item==Items.WARPED_STEM) {
-            String station=WaifuAxoluthuDependencyBrain.ensure(axo,Blocks.STONECUTTER,lastGather);
-            if(!station.equals("READY"))return "NEED_STONECUTTER_"+station;
-            return "STONECUTTER_GATHER_"+WaifuAxoluthuMagicGathering.gather(axo,item,lastGather,160).status();
+            String station=WaifuAxoluthuDependencyBrain.ensure(axo,Blocks.GRINDSTONE,lastGather);
+            if(!station.equals("READY"))return "NEED_GRINDSTONE_"+station;
+            return "EXOTIC_MINING_"+WaifuAxoluthuMagicGathering.gather(axo,item,lastGather,160).status();
         }
         if(item==Items.SUGAR_CANE || item==Items.WHEAT || item==Items.WHEAT_SEEDS ||
-                item==Items.POPPY || item==Items.DANDELION) {
-            String station=WaifuAxoluthuDependencyBrain.ensure(axo,Blocks.CARTOGRAPHY_TABLE,lastGather);
-            if(!station.equals("READY"))return "NEED_CARTOGRAPHY_"+station;
+                item==Items.POPPY || item==Items.DANDELION || item==Items.CORNFLOWER) {
+            String station=WaifuAxoluthuDependencyBrain.ensure(axo,Blocks.COMPOSTER,lastGather);
+            if(!station.equals("READY"))return "NEED_COMPOSTER_"+station;
             return "FORAGING_"+WaifuAxoluthuMagicGathering.gather(axo,item,lastGather,160).status();
+        }
+        if(item==Items.BONE || item==Items.STRING || item==Items.ROTTEN_FLESH ||
+                item==Items.GUNPOWDER || item==Items.ENDER_PEARL ||
+                item==Items.BLAZE_ROD || item==Items.GHAST_TEAR ||
+                item==Items.MAGMA_CREAM || item==Items.WITHER_SKELETON_SKULL ||
+                item==Items.SLIME_BALL || item==Items.SPIDER_EYE ||
+                item==Items.PHANTOM_MEMBRANE) {
+            String station=WaifuAxoluthuDependencyBrain.ensure(axo,Blocks.COMPOSTER,lastGather);
+            if(!station.equals("READY"))return "NEED_COMPOSTER_"+station;
+            return "MOB_SIMULATION_"+WaifuAxoluthuMagicGathering.gather(axo,item,lastGather,160).status();
         }
         return "NO_SOURCE_FOR_"+item;
     }
@@ -225,30 +237,26 @@ public final class WaifuAxoluthuRecipeBrain {
                     return "FOR_"+target+"_"+ensure(axo,option,required,lastGather,visiting,depth+1);
                 }
             }
-            // All normal recipes use the established home workstation, even 2x2.
-            // Only the initial crafting-table bootstrap may be made without one.
-            BlockPos table=recipeTable(axo,level);
-            boolean bootstrap=target==Items.CRAFTING_TABLE && table==null;
-            if(!bootstrap) {
+            // Vanilla 2x2 inventory crafting does not require a workstation.
+            // Keep the existing wood transmutation / forestry dependency chain intact.
+            // Larger recipes MUST still reach an adjacent accessible workstation.
+            boolean inventoryCraftable = selected.size() <= 4
+                    && (!(crafting instanceof net.minecraft.world.item.crafting.ShapedRecipe shaped)
+                        || (shaped.getWidth() <= 2 && shaped.getHeight() <= 2));
+            if (!inventoryCraftable) {
+                BlockPos table=recipeTable(axo,level);
                 if(table==null) {
-                    if(selected.size()>4) return "NEED_CRAFTING_TABLE_"+
-                            WaifuAxoluthuDependencyBrain.ensure(axo,Blocks.CRAFTING_TABLE,lastGather);
-                    // Don't fabricate a workstation: the existing dependency brain
-                    // handles the initial table placement.
                     return "NEED_CRAFTING_TABLE_"+
                             WaifuAxoluthuDependencyBrain.ensure(axo,Blocks.CRAFTING_TABLE,lastGather);
                 }
-                if(table.distSqr(axo.blockPosition())>16) {
-                    // Returning from forestry may be many chunks away. Navigate via
-                    // loaded short waypoints before attempting the table's adjacent tile.
-                    if(table.distSqr(axo.blockPosition())>144) {
-                        axo.navigateToSavedLocation(table,1.15);
-                        return "RETURNING_HOME_TO_CRAFT";
-                    }
-                    if(axo.getNavigation().isDone())
-                        WaifuAxoluthuWorkshopActions.approachCraftingTable(axo,table);
-                    return "APPROACH_CRAFTING_TABLE";
+                if (!WaifuAxoluthuWorkshopActions.canInteract(axo, table)) {
+                    if (!WaifuAxoluthuWorkshopActions.approachStation(axo, table))
+                        return "APPROACH_CRAFTING_TABLE";
                 }
+                axo.getNavigation().stop();
+                axo.getLookControl().setLookAt(table.getX()+.5,table.getY()+.5,table.getZ()+.5);
+                if (!axo.actionReady(WaifuAxoluthuEntity.ACTION_WORKSTATION, table, 10, 20))
+                    return "WORKSTATION_ANIMATION";
             }
             ItemStack made=output.copyWithCount(output.getCount()*batches);
             if(room(bag,made)<made.getCount())return "INVENTORY_FULL";
@@ -260,6 +268,7 @@ public final class WaifuAxoluthuRecipeBrain {
             ItemStack remainder=bag.addItem(made);
             if(!remainder.isEmpty())return "INVENTORY_FULL_AFTER_CRAFT";
             ACTIVE_TABLES.remove(axo);
+            axo.finishAction();
             axo.recordAcquisition("RECIPE_MANAGER_CRAFT "+target+" count="+made.getCount());
             // Only a successful batch teaches the recipe. Remember before speaking so
             // speech cooldowns and future builds never reset the learned status.

@@ -41,7 +41,7 @@ public final class AbyssalChestBlock extends BaseEntityBlock {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
     @Override protected BlockState mirror(BlockState state, Mirror mirror) {
-        return state.rotate(mirror.getRotation(state.getValue(FACING)));
+        return state.setValue(FACING, mirror.getRotation(state.getValue(FACING)).rotate(state.getValue(FACING)));
     }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new AbyssalChestEntity(pos,state); }
     @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }

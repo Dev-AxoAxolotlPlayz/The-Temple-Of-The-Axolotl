@@ -123,8 +123,10 @@ public final class WaifuAxoluthuSettlement {
             axo.setSettlementStorageOrigin(origin);
             return "STORAGE_SITE_FOUND "+origin.toShortString();
         }
+        String permit = WaifuAxoluthuBuildingPermit.await(axo, level, "storage", origin);
+        if (permit != null) return permit;
         int index=axo.getSettlementStorageStep();
-        if(index>=TOTAL) {axo.finishSettlementStorage();return "COMPLETE";}
+        if(index>=TOTAL) {axo.finishSettlementStorage(); WaifuAxoluthuBuildingPermit.complete(axo, "storage"); WaifuAxoluthuVillageRegistry.registerCompleted(axo, "storage", axo.getSettlementStorageOrigin(), 5, 4, 5);return "COMPLETE";}
         Piece p=piece(origin,index);
         if(!loaded(level,p.pos())) {
             axo.navigateToSavedLocation(origin,1.3);
@@ -194,7 +196,7 @@ public final class WaifuAxoluthuSettlement {
         axo.advanceSettlementStorageStep();
         WaifuAxoluthuBuildNavigation.completed(axo);
         axo.recordAcquisition("STORAGE_HUT_PLACE "+p.material()+" at "+p.pos().toShortString()+" "+(index+1)+"/"+TOTAL);
-        if(index+1>=TOTAL) {axo.finishSettlementStorage();return "COMPLETE";}
+        if(index+1>=TOTAL) {axo.finishSettlementStorage(); WaifuAxoluthuBuildingPermit.complete(axo, "storage"); WaifuAxoluthuVillageRegistry.registerCompleted(axo, "storage", axo.getSettlementStorageOrigin(), 5, 4, 5);return "COMPLETE";}
         return "BUILDING_STORAGE "+(index+1)+"/"+TOTAL;
     }
 }

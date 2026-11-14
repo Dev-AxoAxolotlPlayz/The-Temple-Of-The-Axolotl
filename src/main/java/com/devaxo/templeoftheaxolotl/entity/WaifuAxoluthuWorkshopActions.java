@@ -72,22 +72,77 @@ public final class WaifuAxoluthuWorkshopActions {
         }
         return null;
     }
-    public static boolean approachCraftingTable(WaifuAxoluthuEntity axo,BlockPos table) {
-        if(!(axo.level() instanceof ServerLevel level)) return false;
-        BlockPos stand=null; double best=Double.MAX_VALUE;
-        for(net.minecraft.core.Direction d:net.minecraft.core.Direction.Plane.HORIZONTAL) {
-            BlockPos p=table.relative(d);
-            if(!level.getChunkSource().hasChunk(p.getX() >> 4,p.getZ() >> 4)) continue;
-            if(!level.getBlockState(p).isAir() || !level.getBlockState(p.above()).isAir()) continue;
-            if(!level.getBlockState(p.below()).isFaceSturdy(level,p.below(),net.minecraft.core.Direction.UP)) continue;
-            double dist=p.distSqr(axo.blockPosition());
-            if(dist<best) {best=dist;stand=p;}
+    /**
+     * Workstation navigation uses Minecraft's actual ground paths. The remote
+     * interaction fallback remains available so an unreachable workstation
+     * cannot softlock the autonomous crafting dependency chain.
+     */
+    private static final double WORKSTATION_REACH_SQR = 3.5 * 3.5;
+    private static final double REMOTE_FALLBACK_SQR = 24.0 * 24.0;
+    private static final java.util.Map<WaifuAxoluthuEntity, StationRoute> ROUTES = new java.util.WeakHashMap<>();
+    private static final class StationRoute {
+        final BlockPos station;
+        final BlockPos stand;
+        long lastAttempt;
+        net.minecraft.world.phys.Vec3 lastPosition;
+        int stagnantTicks;
+        StationRoute(BlockPos station, BlockPos stand, long time, net.minecraft.world.phys.Vec3 position) {
+            this.station=station; this.stand=stand; this.lastAttempt=time; this.lastPosition=position;
         }
-        return stand!=null && axo.getNavigation().moveTo(stand.getX()+.5,stand.getY(),stand.getZ()+.5,.85);
+    }
+    public static boolean canInteract(WaifuAxoluthuEntity axo, BlockPos station) {
+        if (!(axo.level() instanceof ServerLevel level) || station==null) return false;
+        if (!level.getChunkSource().hasChunk(station.getX()>>4,station.getZ()>>4)) return false;
+        if (axo.position().distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(station)) <= WORKSTATION_REACH_SQR) {
+            ROUTES.remove(axo);
+            return true;
+        }
+        return false;
+    }
+    public static boolean approachStation(WaifuAxoluthuEntity axo, BlockPos station) {
+        if (!(axo.level() instanceof ServerLevel level) || station==null) return false;
+        if (axo.position().distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(station))<=WORKSTATION_REACH_SQR) {
+            ROUTES.remove(axo);
+            return true;
+        }
+        long now=level.getGameTime();
+        StationRoute previous=ROUTES.get(axo);
+        if(previous!=null && previous.station.equals(station)) {
+            if(previous.lastPosition.distanceToSqr(axo.position()) > .25) {
+                previous.lastPosition=axo.position(); previous.stagnantTicks=0;
+            } else previous.stagnantTicks++;
+            if(!axo.getNavigation().isDone() && previous.stagnantTicks<50) return false;
+            if(now-previous.lastAttempt<20 && previous.stagnantTicks<50) return false;
+            ROUTES.remove(axo);
+        }
+        // A valid standing tile must have floor support, headroom, AND the same
+        // Y as the workstation. A successful path is mandatory.
+        net.minecraft.world.level.pathfinder.Path bestPath=null;
+        BlockPos bestStand=null;
+        int bestLength=Integer.MAX_VALUE;
+        for(net.minecraft.core.Direction dir:net.minecraft.core.Direction.Plane.HORIZONTAL) {
+            BlockPos stand=station.relative(dir);
+            if(!level.getChunkSource().hasChunk(stand.getX()>>4,stand.getZ()>>4)) continue;
+            if(!level.getBlockState(stand).getCollisionShape(level,stand).isEmpty()) continue;
+            if(!level.getBlockState(stand.above()).getCollisionShape(level,stand.above()).isEmpty()) continue;
+            if(!level.getBlockState(stand.below()).isFaceSturdy(level,stand.below(),net.minecraft.core.Direction.UP)) continue;
+            net.minecraft.world.level.pathfinder.Path path=axo.getNavigation().createPath(stand,0);
+            if(path==null || !path.canReach()) continue;
+            if(path.getNodeCount()<bestLength) {bestPath=path;bestStand=stand;bestLength=path.getNodeCount();}
+        }
+        if(bestPath!=null && axo.getNavigation().moveTo(bestPath,1.05)) {
+            ROUTES.put(axo,new StationRoute(station,bestStand,now,axo.position()));
+            return false;
+        }
+        // No reachable route: do not issue direct movement through a wall.
+        ROUTES.remove(axo);
+        return axo.position().distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(station))<=REMOTE_FALLBACK_SQR;
+    }
+    public static boolean approachCraftingTable(WaifuAxoluthuEntity axo, BlockPos table) {
+        return approachStation(axo,table);
     }
     public static boolean isNearCraftingTable(WaifuAxoluthuEntity axo) {
-        BlockPos pos=findCraftingTable(axo);
-        return pos!=null && pos.distSqr(axo.blockPosition())<=16;
+        return canInteract(axo, findCraftingTable(axo));
     }
     public static boolean hasCraftingTableItem(WaifuAxoluthuEntity axo) {
         return countItem(axo.getAcquiredMaterials(), Items.CRAFTING_TABLE)>0;
@@ -205,8 +260,10 @@ public final class WaifuAxoluthuWorkshopActions {
         if(!axo.getSelectedDesire().equals("IMPROVE_WORKSHOP")) return new Result(false,"NO_WORKSHOP_PLAN");
         BlockPos table=findCraftingTable(axo);
         if(table==null) return new Result(false,"MISSING_WORKSTATION: CRAFTING_TABLE");
-        if(table.distSqr(axo.blockPosition())>16)
-            return new Result(false,"TOO_FAR_FROM_CRAFTING_TABLE: approach "+table.toShortString());
+        if(!canInteract(axo,table)) {
+            approachStation(axo,table);
+            return new Result(false,"APPROACH_CRAFTING_TABLE: "+table.toShortString());
+        }
         SimpleContainer inv=axo.getAcquiredMaterials();
         if(hasSmithingTableItem(axo)) return new Result(false,"ALREADY_CRAFTED");
         int iron=count(inv,"iron"),planks=count(inv,"planks");

@@ -13,7 +13,12 @@ public class NoodleCommandBookItem extends Item {
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (level.isClientSide) {
-            com.devaxo.templeoftheaxolotl.client.AbyssalCommandBookScreen.open(stack);
+            if (stack.is(com.devaxo.templeoftheaxolotl.item.ModItems.ABYSSAL_COMPANION_REGISTRY.get())) {
+                com.devaxo.templeoftheaxolotl.client.AbyssalCommandBookScreen.openRegistry(stack);
+            } else {
+                // Legacy Book of Axoluthu: original pirate-parchment Field Guide + Journal tab.
+                com.devaxo.templeoftheaxolotl.client.AbyssalCommandBookScreen.open(stack);
+            }
         } else if (player instanceof net.minecraft.server.level.ServerPlayer server) {
             NoodleTraining.syncBooks(server);
         }

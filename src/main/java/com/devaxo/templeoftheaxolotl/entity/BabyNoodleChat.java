@@ -1,3 +1,4 @@
+
 package com.devaxo.templeoftheaxolotl.entity;
 
 import com.devaxo.templeoftheaxolotl.TempleOfTheAxolotl;
@@ -26,12 +27,15 @@ public final class BabyNoodleChat {
     private static final Pattern THINGS = Pattern.compile("(?i)^fetch\\s+me\\s+the\\s+things\\s+to\\s+make\\s+(\\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|[a-z]+-[a-z]+)\\s+([a-z_ :]+?)\\s*$");
     private static final Pattern MATERIALS = Pattern.compile("(?i)^(?:fetch|gather|collect|bring|get)\\s+(?:the\\s+)?(?:materials|ingredients)\\s+(?:for|to craft)\\s+(?:(\\d+)\\s+)?(.+?)\\s*$");
     private static final Pattern GENERIC = Pattern.compile("(?i)^(?:fetch|gather|collect|bring|get)\\s+(?:me\\s+)?(?:(\\d+)\\s+)?([a-z_ :]+?)\\s*$");
+
     /** Validate signed-book instructions before an anvil can program them. */
     public static boolean isAllowedTask(String instruction) {
         if (instruction.length() > 120) return false;
         String clean = stripCourtesy(instruction);
-        return LOGS.matcher(clean).matches() || THINGS.matcher(clean).matches() || MATERIALS.matcher(clean).matches() || GENERIC.matcher(clean).matches();
+        return LOGS.matcher(clean).matches() || THINGS.matcher(clean).matches()
+                || MATERIALS.matcher(clean).matches() || GENERIC.matcher(clean).matches();
     }
+
     private static java.util.Map<Item,Integer> plan(ServerPlayer owner, AbyssalAxolotlEntity a, String line) {
         String command = stripCourtesy(line);
         Matcher logs = LOGS.matcher(command);
@@ -52,14 +56,17 @@ public final class BabyNoodleChat {
         ResourceLocation id = ResourceLocation.tryParse(requested.contains(":") ? requested : "minecraft:" + requested);
         if (id != null && !BuiltInRegistries.ITEM.containsKey(id) && requested.endsWith("s"))
             id = ResourceLocation.tryParse("minecraft:" + requested.substring(0, requested.length()-1));
-        if (id == null || !id.getNamespace().equals("minecraft") || !BuiltInRegistries.ITEM.containsKey(id) || !eligible(id.getPath())) return null;
+        if (id == null || !id.getNamespace().equals("minecraft")
+                || !BuiltInRegistries.ITEM.containsKey(id) || !eligible(id.getPath())) return null;
         return findIngredients(owner, BuiltInRegistries.ITEM.get(id), count);
     }
+
     private static String stripCourtesy(String value) {
         return value.replaceFirst("(?i)^could you\\s+", "")
                 .replaceFirst("(?i)^please\\s+", "")
                 .replaceFirst("(?i)\\s+please[!?.]*$", "").trim();
     }
+
     private static int wordCount(String value) {
         if (value.matches("\\d+")) return safeCount(value);
         String[] names = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"};
@@ -72,10 +79,12 @@ public final class BabyNoodleChat {
         }
         return 1;
     }
+
     private static int safeCount(String value) {
         try { return Math.max(1, Math.min(4096, Integer.parseInt(value))); }
         catch (NumberFormatException ignored) { return 1; }
     }
+
     private static java.util.Map<Item,Integer> customPlan(ServerPlayer owner, AbyssalAxolotlEntity a, String phrase) {
         // Only the server profile library is executable: forgetting a phrase cannot
         // be undone by an old book stored in a chest.
@@ -93,11 +102,17 @@ public final class BabyNoodleChat {
         }
         return combined;
     }
-    @SubscribeEvent public static void chat(ServerChatEvent event) {
-        ServerPlayer owner = event.getPlayer();
-        String text = event.getRawText().trim();
+
+    @SubscribeEvent
+    public static void chat(ServerChatEvent event) {
+        handleText(event.getPlayer(), event.getRawText().trim(), null);
+    }
+
+    /** Shared entry for chat and /hey. A non-null target restricts execution to one owned companion. */
+    public static void handleText(ServerPlayer owner, String text, java.util.UUID target) {
         var nearby = owner.serverLevel().getEntitiesOfClass(AbyssalAxolotlEntity.class,
-                owner.getBoundingBox().inflate(32), a -> a.isAlive() && a.isTame() && a.isOwnedBy(owner));
+                owner.getBoundingBox().inflate(32), a -> a.isAlive() && a.isTame() && a.isOwnedBy(owner)
+                        && (target == null || target.equals(a.getUUID())));
         Matcher naming = NAME.matcher(text);
         if (naming.matches()) {
             for (AbyssalAxolotlEntity a : nearby) if (!a.hasPermanentName()) {
@@ -107,6 +122,7 @@ public final class BabyNoodleChat {
             }
             return;
         }
+
         if (!text.regionMatches(true, 0, "hey ", 0, 4)) return;
         for (AbyssalAxolotlEntity a : nearby) {
             if (!a.hasPermanentName()) continue;
@@ -120,10 +136,10 @@ public final class BabyNoodleChat {
             if (greeting.matches()) {
                 String targetName = greeting.group(1).trim();
                 var matches = owner.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
-                    a.getBoundingBox().inflate(24), entity -> entity != a && entity.isAlive()
-                    && entity.getCustomName() != null && entity.getCustomName().getString().equalsIgnoreCase(targetName)
-                    && (entity instanceof net.minecraft.world.entity.animal.Animal
-                        || entity instanceof net.minecraft.world.entity.npc.AbstractVillager));
+                        a.getBoundingBox().inflate(24), entity -> entity != a && entity.isAlive()
+                                && entity.getCustomName() != null && entity.getCustomName().getString().equalsIgnoreCase(targetName)
+                                && (entity instanceof net.minecraft.world.entity.animal.Animal
+                                || entity instanceof net.minecraft.world.entity.npc.AbstractVillager));
                 matches.sort(java.util.Comparator.comparingDouble(a::distanceToSqr));
                 if (matches.isEmpty()) owner.sendSystemMessage(Component.literal("No named passive friend found nearby: " + targetName));
                 else if (!a.greet(matches.get(0))) owner.sendSystemMessage(Component.literal(a.permanentName() + " is busy right now."));
@@ -163,13 +179,15 @@ public final class BabyNoodleChat {
                         || !eligible(id.getPath())) {
                     owner.sendSystemMessage(Component.literal("That item is not eligible for Abyssal Axolotl recipe gathering.")); return;
                 }
-                Item target = BuiltInRegistries.ITEM.get(id);
-                java.util.Map<Item,Integer> ingredients = findIngredients(owner, target, crafts);
+
+                // Fixed: targetItem avoids collision with the UUID target parameter.
+                Item targetItem = BuiltInRegistries.ITEM.get(id);
+                java.util.Map<Item,Integer> ingredients = findIngredients(owner, targetItem, crafts);
                 if (ingredients == null || ingredients.isEmpty()) {
-                    owner.sendSystemMessage(Component.literal("No eligible vanilla crafting recipe found for " + target.getDescription().getString() + ".")); return;
+                    owner.sendSystemMessage(Component.literal("No eligible vanilla crafting recipe found for " + targetItem.getDescription().getString() + ".")); return;
                 }
                 a.setGuarding(false); a.fetchMaterials(ingredients, crafts);
-                owner.sendSystemMessage(Component.literal(a.permanentName() + " is collecting ingredients for " + crafts + " " + target.getDescription().getString() + "!"));
+                owner.sendSystemMessage(Component.literal(a.permanentName() + " is collecting ingredients for " + crafts + " " + targetItem.getDescription().getString() + "!"));
                 return;
             }
             Matcher logs = LOGS.matcher(command);
@@ -195,8 +213,9 @@ public final class BabyNoodleChat {
             a.acknowledge(); return;
         }
     }
+
     /** Resolve crafting-grid recipes recursively, stopping at non-crafting inputs (e.g. glass).
-     *  Never recursively smelt, stonecut, smith, or process ingredients. */
+     * Never recursively smelt, stonecut, smith, or process ingredients. */
     private static java.util.Map<Item,Integer> findIngredients(ServerPlayer owner, Item result, int count) {
         java.util.Map<Item,Integer> found = new java.util.LinkedHashMap<>();
         if (!expandCrafting(owner, result, count, found, new java.util.HashSet<>(), 0)) return null;
@@ -207,8 +226,9 @@ public final class BabyNoodleChat {
         }
         return found;
     }
+
     private static boolean expandCrafting(ServerPlayer owner, Item item, int count,
-            java.util.Map<Item,Integer> output, java.util.Set<Item> visiting, int depth) {
+                                          java.util.Map<Item,Integer> output, java.util.Set<Item> visiting, int depth) {
         if (depth > 12 || count < 1 || count > 4096 || !visiting.add(item)) return false;
         try {
             if (item == Items.IRON_NUGGET || item == Items.GOLD_NUGGET) {
@@ -251,6 +271,7 @@ public final class BabyNoodleChat {
             return true;
         } finally { visiting.remove(item); }
     }
+
     private static boolean eligible(String id) {
         if (id.endsWith("_spawn_egg") || id.contains("potion") || id.contains("enchanted")
                 || id.contains("command_block") || id.contains("structure_block") || id.contains("jigsaw")
@@ -263,6 +284,7 @@ public final class BabyNoodleChat {
                 "barrier", "light", "debug_stick", "knowledge_book", "written_book", "dragon_breath",
                 "netherite_upgrade_smithing_template", "trident", "mace").contains(id);
     }
+
     private static Item biomeLog(AbyssalAxolotlEntity a) {
         Holder<Biome> biome = a.level().getBiome(a.blockPosition());
         if (biome.is(Biomes.BIRCH_FOREST) || biome.is(Biomes.OLD_GROWTH_BIRCH_FOREST)) return Items.BIRCH_LOG;

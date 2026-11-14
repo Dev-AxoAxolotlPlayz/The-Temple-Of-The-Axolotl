@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ADA",
+    "C C",
+    "PHP"
+  ],
+  "key": {
+    "A": {
+      "item": "temple_of_the_axolotl:axolite_ingot"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "C": {
+      "item": "minecraft:conduit"
+    },
+    "P": {
+      "item": "minecraft:prismarine_crystals"
+    },
+    "H": {
+      "item": "minecraft:heart_of_the_sea"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:abyssal_ring",
+    "count": 1
+  }
+}

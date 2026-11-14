@@ -81,7 +81,7 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
         for (int i = 0; i < 4; i++) {
             int sy = topPos + 16 + (5 + i) * 18;
             g.renderOutline(leftPos + 63, sy, 18, 18, 0xFF70E7D6);
-            g.drawString(font, new String[]{"J", "D", "F", "A"}[i], leftPos + 84, sy + 5, 0xFF8EF1E1, false);
+            g.drawString(font, new String[]{"J", "D", "F", "R"}[i], leftPos + 84, sy + 5, 0xFF8EF1E1, false);
         }
         // Draw controls as icon-only, with illuminated state indicated by a colored outline.
         if (menu.jukeboxInstalled()) {

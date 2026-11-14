@@ -38,6 +38,9 @@ public final class WaifuAxoluthuStage5Journal {
         project.putBoolean("constructionAllowed", false);
         project.putString("notes", "Four-block clear interior; doors, rooms, windows, roof, foundations and material manifest must be resolved before construction.");
         memory.put(KEY, project);
+        // Historical proposal only: no construction authorization and no plot reservation.
+        WaifuAxoluthuVillageRegistry.registerPlanned(axo, "house", design.origin(),
+                design.width(), 1, design.depth());
         return "Project saved at " + design.origin().toShortString() + " (" + design.footprint() + ", "
                 + design.width() + "x" + design.depth() + ", " + design.roof()
                 + "). DESIGN_REVIEW only; no site reserved, materials gathered, or blocks placed.";
@@ -72,7 +75,7 @@ public final class WaifuAxoluthuStage5Journal {
         manifest.putInt("oak_planks", floor + wall);
         manifest.putInt("spruce_stairs", roof);
         manifest.putInt("oak_logs", supports);
-        manifest.putInt("glass_panes", glass);
+        manifest.putInt("glass", glass);
         manifest.putInt("lanterns", lighting);
         manifest.putInt("oak_door", 1);
         manifest.putInt("chest", 1);
@@ -117,7 +120,7 @@ public final class WaifuAxoluthuStage5Journal {
 
     private static String summary(CompoundTag m) {
         java.util.List<String> entries = new java.util.ArrayList<>();
-        for (String key : java.util.List.of("oak_planks", "spruce_stairs", "oak_logs", "glass_panes", "lanterns", "oak_door", "chest", "crafting_table"))
+        for (String key : java.util.List.of("oak_planks", "spruce_stairs", "oak_logs", "glass", "lanterns", "oak_door", "chest", "crafting_table"))
             entries.add(key.replace('_', ' ') + " x" + m.getInt(key));
         return String.join(", ", entries);
     }
@@ -190,7 +193,35 @@ public final class WaifuAxoluthuStage5Journal {
 
     public static String liveView(WaifuAxoluthuEntity axo) {
         CompoundTag memory=axo.getArchitecturalLearning();
-        if (!memory.contains(KEY,10)) return "No house planned yet.\nUse /tota axoluthu architecture plan to let me choose a design!";
+        StringBuilder journal = new StringBuilder("AXOLUTHU'S ARCHITECT'S JOURNAL\n\n");
+        journal.append("VILLAGE CONSTRUCTION\n");
+        CompoundTag active = memory.getCompound("phase35OwnerSuggestion");
+        if (active.contains("phase")) {
+            if (active.getBoolean("pending") && "PROPOSAL_READY".equals(active.getString("phase")))
+                journal.append("[CLAIMABLE_BLUEPRINT]\n");
+            journal.append("Building: ").append(active.getString("type").replace('_', ' ')).append("\n")
+                    .append("Phase: ").append(active.getString("phase").replace('_', ' ')).append("\n")
+                    .append("Site: ").append(BlockPos.of(active.getLong("target")).toShortString()).append("\n")
+                    .append("Owner approved: ").append(active.getBoolean("designApproved") ? "YES" : "NO").append("\n")
+                    .append("Construction authorized (legacy): ").append(active.getBoolean("constructionAllowed") ? "YES" : "NO").append("\n");
+            if (active.getBoolean("siteLocked")) {
+                journal.append("Cooperative stage: ").append(active.getString("coopStage")).append("\n")
+                        .append("Clear cursor: ").append(active.getInt("coopClearCursor")).append("\n")
+                        .append("Place cursor: ").append(active.getInt("coopPlaceCursor")).append("\n")
+                        .append("Verify cursor: ").append(active.getInt("coopVerifyCursor")).append("\n");
+            }
+            if (active.contains("blueprintPreview", 10)) {
+                CompoundTag blueprint = active.getCompound("blueprintPreview");
+                int total = blueprint.getList("blocks", 10).size();
+                journal.append("Shell progress: ").append(Math.min(total, active.getBoolean("siteLocked") ? active.getInt("coopPlaceCursor") : active.getInt("buildCursor")))
+                        .append(" / ").append(total).append(" blocks\n");
+            }
+            if (active.contains("pauseReason")) journal.append("Attention: ")
+                    .append(active.getString("pauseReason")).append("\n");
+        } else journal.append("No active village blueprint.\n");
+        // Ledger is its own page section, populated from permanent per-structure NBT.
+        // Preserve the active project report above; never include obsolete approval help.
+        if (!memory.contains(KEY,10)) return journal.append("\n[LEDGER]\n").append(WaifuAxoluthuVillageRegistry.ledgerView(axo)).toString();
         CompoundTag p=memory.getCompound(KEY);
         StringBuilder out=new StringBuilder("MY HOUSE PROJECT\n\n");
         out.append("Phase: ").append(p.getString("phase")).append("\n")
@@ -214,7 +245,8 @@ public final class WaifuAxoluthuStage5Journal {
         out.append("\nSITE: ").append(p.getBoolean("siteAuthorized")?"APPROVED":("AWAITING_SITE_APPROVAL".equals(p.getString("phase")) || "CONFIRM_TERRAIN_CHANGES".equals(p.getString("phase")) ? "AWAITING APPROVAL" : "NOT APPROVED"))
             .append("\nCONSTRUCTION: ").append(p.getBoolean("siteAuthorized")?p.getString("constructionPhase").replace('_',' '):"LOCKED")
             .append("\n\nNOTES\n").append(p.getString("notes"));
-        return out.substring(0,Math.min(11000,out.length()));
+        journal.append(out);
+        return journal.append("\n[LEDGER]\n").append(WaifuAxoluthuVillageRegistry.ledgerView(axo)).toString();
     }
     private static void appendMaterials(StringBuilder out,CompoundTag materials) {
         java.util.List<String> keys=new java.util.ArrayList<>(materials.getAllKeys());
@@ -251,7 +283,7 @@ public final class WaifuAxoluthuStage5Journal {
         if (p.contains("preliminaryManifest", 10)) {
             CompoundTag estimate = p.getCompound("preliminaryManifest");
             StringBuilder page = new StringBuilder("Preliminary supplies\nESTIMATE ONLY\n\n");
-            for (String key : java.util.List.of("oak_planks", "spruce_stairs", "oak_logs", "glass_panes", "lanterns", "oak_door", "chest", "crafting_table")) {
+            for (String key : java.util.List.of("oak_planks", "spruce_stairs", "oak_logs", "glass", "lanterns", "oak_door", "chest", "crafting_table")) {
                 String line = key.replace('_', ' ') + ": " + estimate.getInt(key) + "\n";
                 if (page.length() + line.length() > 230) {
                     pages.add(Filterable.passThrough(page.toString()));

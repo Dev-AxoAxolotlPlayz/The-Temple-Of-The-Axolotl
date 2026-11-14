@@ -34,14 +34,9 @@ public final class WaifuAxoluthuBrainCommands {
                 + " authorizedContainers=" + a.getAuthorizedContainers().size()
                 + " autoAcquire=" + a.isAutoAcquireEnabled()
                 + " acquisitionStatus=" + a.getAcquisitionStatus()
-                + " autoBuild=" + a.isAutoBuildEnabled()
-                + " workshopCrafts=" + a.getWorkshopCrafts()
-                + " workshopPlacements=" + a.getWorkshopPlacements()
-                + " workshopStatus=" + a.getWorkshopStatus()
-                + " lastWorkshopPos=" + a.getLastWorkshopPlacement()
-                + " navOwner=" + a.getNavigationOwner()
-                + " constructionPhase=" + a.getConstructionPhase()
-                + " stage4=[" + a.getStage4WorkshopDiagnostic() + "]"
+                + " unifiedProject=" + a.getArchitecturalLearning().getCompound("phase35OwnerSuggestion").getString("phase")
+                + " unifiedCursor=" + a.getArchitecturalLearning().getCompound("phase35OwnerSuggestion").getInt("buildCursor")
+                + " unifiedType=" + a.getArchitecturalLearning().getCompound("phase35OwnerSuggestion").getString("type")
                 + " architectureScans=" + a.getBuildingScanCount()
                 + " lastArchitecture=" + a.getLastBuildingScan()
                 + " resourceRoute=" + a.getResourceRoute()
@@ -298,6 +293,19 @@ public final class WaifuAxoluthuBrainCommands {
         source.sendSuccess(() -> Component.literal(homeMessage), false);
         return 1;
     }
+    /** Owner-only explicit project retirement. Does not touch placed blocks, items, or lessons. */
+    private static String resetHouseProject(WaifuAxoluthuEntity axo) {
+        var memory = axo.getArchitecturalLearning();
+        if (!memory.contains("stage5HousingProject", 10))
+            return "No saved house project. You can plan a new one already! :D";
+        var old = memory.getCompound("stage5HousingProject");
+        String oldPhase = old.getString("phase");
+        memory.remove("stage5HousingProject");
+        axo.updateNavigationOwner(WaifuAxoluthuEntity.NavigationOwner.NONE, "IDLE");
+        return "Retired old house project (" + oldPhase + "). Existing buildings and supplies are untouched."
+                + " Use /tota axoluthu architecture plan to start fresh! :D";
+    }
+
     private static int teach(net.minecraft.commands.CommandSourceStack source, String action)
             throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer player=source.getPlayerOrException();
@@ -320,8 +328,10 @@ public final class WaifuAxoluthuBrainCommands {
             case "approve" -> WaifuAxoluthuStage5SiteApproval.decide(axo,player,"approve");
             case "reject" -> WaifuAxoluthuStage5SiteApproval.decide(axo,player,"reject");
             case "suggest" -> WaifuAxoluthuStage5SiteApproval.suggest(axo,player);
+            case "rotate" -> WaifuAxoluthuStage5SiteApproval.rotateClockwise(axo,player);
             case "audit" -> WaifuAxoluthuStage5Journal.inventoryAudit(axo);
             case "book" -> WaifuAxoluthuStage5Journal.giveBook(axo,player);
+            case "newhouse" -> resetHouseProject(axo);
             default -> WaifuAxoluthuBuildingLessons.status(axo);
         };
         source.sendSuccess(()->Component.literal("[Axoluthu/Architecture] "+result),false);
@@ -378,8 +388,32 @@ public final class WaifuAxoluthuBrainCommands {
         return 1;
     }
 
+    private static int resetPostWorkshop(net.minecraft.commands.CommandSourceStack source)
+            throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
+        WaifuAxoluthuEntity axo = nearest(player);
+        if (axo == null || !player.getUUID().equals(axo.getBondedPlayer())) {
+            source.sendFailure(Component.literal("[Axoluthu/Dev] Stand within 32 blocks of your bonded Axothulu."));
+            return 0;
+        }
+        if (!axo.isStage4WorkshopComplete()) {
+            source.sendFailure(Component.literal("[Axoluthu/Dev] Workshop is not marked complete; refusing to invent completion."));
+            return 0;
+        }
+        axo.devResetToPostWorkshop();
+        source.sendSuccess(() -> Component.literal(
+                "[Axoluthu/Dev] Reset to JUST FINISHED WORKSHOP. Workshop/world/inventory/lessons kept; "
+                + "future village progress and pending proposals cleared. Storage Hut is next. "
+                + "This command is manual and will not run on world load."), false);
+        return 1;
+    }
+
     @SubscribeEvent public static void register(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("tota").then(Commands.literal("axoluthu")
+                .then(Commands.literal("dev")
+                        .then(Commands.literal("reset_after_workshop")
+                                .requires(source -> source.hasPermission(2))
+                                .executes(ctx -> resetPostWorkshop(ctx.getSource()))))
                 .then(Commands.literal("inventory").executes(ctx -> inventory(ctx.getSource())))
                 .then(Commands.literal("deposit").executes(ctx -> deposit(ctx.getSource())))
                 .then(Commands.literal("home")
@@ -399,6 +433,7 @@ public final class WaifuAxoluthuBrainCommands {
                         .then(Commands.literal("learn").executes(ctx -> teach(ctx.getSource(),"learn")))
                         .then(Commands.literal("envision").executes(ctx -> teach(ctx.getSource(),"envision")))
                         .then(Commands.literal("plan").executes(ctx -> teach(ctx.getSource(),"plan")))
+                        .then(Commands.literal("newhouse").executes(ctx -> teach(ctx.getSource(),"newhouse")))
                         .then(Commands.literal("journal").executes(ctx -> teach(ctx.getSource(),"journal")))
                         .then(Commands.literal("materials").executes(ctx -> teach(ctx.getSource(),"materials")))
                         .then(Commands.literal("blueprint").executes(ctx -> teach(ctx.getSource(),"blueprint")))
@@ -407,6 +442,7 @@ public final class WaifuAxoluthuBrainCommands {
                         .then(Commands.literal("approve").executes(ctx -> teach(ctx.getSource(),"approve")))
                         .then(Commands.literal("reject").executes(ctx -> teach(ctx.getSource(),"reject")))
                         .then(Commands.literal("suggest").executes(ctx -> teach(ctx.getSource(),"suggest")))
+                        .then(Commands.literal("rotate").executes(ctx -> teach(ctx.getSource(),"rotate")))
                         .then(Commands.literal("audit").executes(ctx -> teach(ctx.getSource(),"audit")))
                         .then(Commands.literal("book").executes(ctx -> teach(ctx.getSource(),"book")))
                         .then(Commands.literal("lessons").executes(ctx -> teach(ctx.getSource(),"lessons"))))

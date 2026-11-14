@@ -33,6 +33,7 @@ import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
+import net.minecraft.world.phys.AABB;
 
 /** Waifu Axoluthu: non-hostile integration foundation, separate from boss_axoluthu. */
 public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
@@ -41,12 +42,66 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
     private static final EntityDataAccessor<Integer> ACTION = SynchedEntityData.defineId(WaifuAxoluthuEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> ACTION_STARTED = SynchedEntityData.defineId(WaifuAxoluthuEntity.class, EntityDataSerializers.INT);
     public static final int ACTION_NONE=0, ACTION_FOCUSED=1, ACTION_WORKSTATION=2, ACTION_PLANT=3, ACTION_ATTACK=4, ACTION_CONSTRUCTION_POKE=5;
+    private static final EntityDataAccessor<Integer> RAIL_TARGET = SynchedEntityData.defineId(WaifuAxoluthuEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> RAIL_START = SynchedEntityData.defineId(WaifuAxoluthuEntity.class, EntityDataSerializers.INT);
+    public void beginRailBeam(net.minecraft.world.entity.LivingEntity target) {
+        if (level().isClientSide) return;
+        entityData.set(RAIL_TARGET, target.getId());
+        entityData.set(RAIL_START, tickCount);
+    }
+    public int railTargetId() { return entityData.get(RAIL_TARGET); }
+    public int railBeamStart() { return entityData.get(RAIL_START); }
     private int actionUntil;
     private BlockPos actionTarget;
     private boolean manualGoHome;
     private BlockPos lastFootstep;
     private int lastFootstepTick;
     private BlockPos autonomousSleepingBed;
+    private BlockPos registeredBed;
+    private long nextBedHomeScan;
+
+    /** Home is a walkable position beside the bed, never the bed block itself. */
+    private void updateBedHome(ServerLevel level, BlockPos bed) {
+        if (bed == null || !level.getBlockState(bed).getBlock().getClass().getSimpleName().contains("BedBlock")) return;
+        if (manuallyAssignedHome) return; // explicit owner commands take precedence
+        BlockPos best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (net.minecraft.core.Direction direction : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+            BlockPos feet = bed.relative(direction);
+            if (!level.getChunkSource().hasChunk(feet.getX() >> 4, feet.getZ() >> 4)) continue;
+            BlockPos below = feet.below();
+            if (!level.getBlockState(below).isFaceSturdy(level, below, net.minecraft.core.Direction.UP)) continue;
+            if (!level.noCollision(this, new AABB(feet.getX()+.1, feet.getY(), feet.getZ()+.1,
+                    feet.getX()+.9, feet.getY()+getBbHeight(), feet.getZ()+.9))) continue;
+            double distance = feet.distSqr(blockPosition());
+            if (distance < bestDistance) { best = feet.immutable(); bestDistance = distance; }
+        }
+        if (best != null) {
+            registeredBed = bed.immutable();
+            homePosition = best;
+        }
+    }
+
+    private void refreshBedHome(ServerLevel level) {
+        if (manuallyAssignedHome || tickCount < nextBedHomeScan) return;
+        nextBedHomeScan = tickCount + 200;
+        BlockPos center = registeredBed != null ? registeredBed : homePosition;
+        if (center == null || !level.getChunkSource().hasChunk(center.getX() >> 4, center.getZ() >> 4)) return;
+        BlockPos best = null;
+        double nearest = Double.MAX_VALUE;
+        for (BlockPos candidate : BlockPos.betweenClosed(center.offset(-6,-2,-6), center.offset(6,2,6))) {
+            if (!level.getChunkSource().hasChunk(candidate.getX() >> 4, candidate.getZ() >> 4)) continue;
+            BlockState state = level.getBlockState(candidate);
+            if (!(state.getBlock() instanceof net.minecraft.world.level.block.BedBlock)
+                    || state.getValue(net.minecraft.world.level.block.BedBlock.PART)
+                    != net.minecraft.world.level.block.state.properties.BedPart.HEAD) continue;
+            double d = candidate.distSqr(center);
+            if (d < nearest) { best = candidate.immutable(); nearest = d; }
+        }
+        if (best != null) updateBedHome(level, best);
+        else if (registeredBed != null && registeredBed.distSqr(center) <= 64) registeredBed = null;
+    }
+
     public void startAction(int action, int durationTicks, BlockPos target) {
         if(level().isClientSide)return;
         if(entityData.get(ACTION)==action && tickCount<actionUntil && java.util.Objects.equals(target,actionTarget))return;
@@ -152,6 +207,7 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
         }
         if(bed==null)return false; // Existing night return/wait fallback handles this.
         autonomousSleepingBed=bed;
+        updateBedHome(server,bed);
         if(distanceToSqr(bed.getX()+.5,bed.getY(),bed.getZ()+.5)>5.0) {
             if(tickCount%20==0)navigateToSavedLocation(bed,1.1);
             chooseGoal("APPROACH_BED","heading to an available bed");
@@ -192,6 +248,8 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
         super.defineSynchedData(builder);
         builder.define(ACTION,ACTION_NONE);
         builder.define(ACTION_STARTED,0);
+        builder.define(RAIL_TARGET,-1);
+        builder.define(RAIL_START,-1000);
     }
 
     private MovementMode movementMode = MovementMode.FREE;
@@ -227,6 +285,28 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
     public void advanceSettlementStorageStep() {settlementStorageStep++;}
     public boolean isSettlementStorageComplete() {return settlementStorageComplete;}
     public void finishSettlementStorage() {settlementStorageComplete=true;}
+    /** One-time, explicitly invoked dev rollback: keeps the completed workshop and world. */
+    public void devResetToPostWorkshop() {
+        settlementStorageOrigin = null;
+        settlementStorageStep = 0;
+        settlementStorageComplete = false;
+        settlementStatus = "NOT_STARTED";
+        settlementFurnished = false;
+        // Preserve the workshop's actual completion, position, and physical blocks.
+        // Clear only future village requests/proposals and non-workshop registry entries.
+        architecturalLearning.remove("phase35OwnerSuggestion");
+        architecturalLearning.remove("phase35VillageExpansionProposal");
+        net.minecraft.nbt.ListTag entries = architecturalLearning.getList(
+                "phase35VillageBuildings", net.minecraft.nbt.Tag.TAG_COMPOUND);
+        net.minecraft.nbt.ListTag kept = new net.minecraft.nbt.ListTag();
+        for (int i = 0; i < entries.size(); i++) {
+            net.minecraft.nbt.CompoundTag entry = entries.getCompound(i);
+            if ("workshop".equalsIgnoreCase(entry.getString("type")))
+                kept.add(entry.copy());
+        }
+        architecturalLearning.put("phase35VillageBuildings", kept);
+    }
+
     private boolean settlementFurnished;
     private String furnishingStatus="NOT_STARTED";
     private boolean shyFollow;
@@ -279,7 +359,7 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
     }
 
     // Stage 2B: explicit, bonded-player-authorized resource retrieval.
-    private final net.minecraft.world.SimpleContainer acquiredMaterials = new net.minecraft.world.SimpleContainer(9);
+    private final net.minecraft.world.SimpleContainer acquiredMaterials = new net.minecraft.world.SimpleContainer(36);
     private int acquisitions;
     private String lastAcquisition = "none";
     public net.minecraft.world.SimpleContainer getAcquiredMaterials() { return acquiredMaterials; }
@@ -391,7 +471,7 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
         if(!resourceRoute.equals(route)) diagnostic("GatheringPlan", route);
         resourceRoute = route;
     }
-    private void updateNavigationOwner(NavigationOwner owner, String phase) {
+    void updateNavigationOwner(NavigationOwner owner, String phase) {
         if(navigationOwner != owner || !constructionPhase.equals(phase)) {
             diagnostic("NavigationOwner", navigationOwner+" -> "+owner+" phase="+phase);
             if(navigationOwner != owner) getNavigation().stop();
@@ -557,9 +637,21 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
     @Override protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (level().isClientSide || hand != InteractionHand.MAIN_HAND) return InteractionResult.SUCCESS;
         if (bondedPlayer == null) {
+            if (!player.getItemInHand(hand).is(com.devaxo.templeoftheaxolotl.item.ModItems.ABYSSAL_RING.get())) {
+                player.displayClientMessage(Component.literal("Axoluthu looks curiously at you. Perhaps an Abyssal Ring would help..."), false);
+                return InteractionResult.CONSUME;
+            }
+            if (!player.getAbilities().instabuild) player.getItemInHand(hand).shrink(1);
             bondedPlayer = player.getUUID();
+            addTag("tamed");
+            getPersistentData().putBoolean("tota_axoluthu_tamed", true);
+            movementMode = MovementMode.FOLLOW;
+            decisionCooldown = 0;
             if (homePosition == null) homePosition = blockPosition();
             diagnostic("Bond", "Bond established with player=" + bondedPlayer);
+            player.sendSystemMessage(Component.literal("F-for me? You made this.. for me?"));
+            player.sendSystemMessage(Component.literal("Hmph.. took you long enough.."));
+            player.sendSystemMessage(Component.literal("i-i mean, not that i was waiting or anything"));
             player.displayClientMessage(Component.literal("Axoluthu recognizes you as her companion. Use /tota axoluthu mode <stay|follow|free>."), false);
         } else if (bondedPlayer.equals(player.getUUID())) {
             player.displayClientMessage(Component.literal("Axoluthu: " + movementMode + " | goal=" + currentGoal
@@ -619,8 +711,11 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
     @Override public void tick() {
         super.tick();
         if (level().isClientSide || !(level() instanceof ServerLevel server)) return;
+
         if(entityData.get(ACTION)!=ACTION_NONE && tickCount>=actionUntil)finishAction();
+        if (WaifuAxoluthuCombat.tick(this, server)) return;
         refreshForestryOnHomeReturn(server);
+        refreshBedHome(server);
         if(tickAutonomousBedtime(server))return;
         footprint(server);
         WaifuAxoluthuStorageManager.tickChestAnimation(this);
@@ -647,6 +742,40 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
             }
         }
         if (movementMode != MovementMode.FREE || manualGoHome) shyFollow=false;
+        // COOPERATIVE CONSTRUCTION: a bonded Axoluthu never starts autonomous
+        // workshop, resource, site-search, or village planning from this tick.
+        // Navigation is cheap and only refreshed once per 20 ticks.
+        if (bondedPlayer != null) {
+            if (tickCount % 20 == 0) {
+                ServerPlayer owner = server.getServer().getPlayerList().getPlayer(bondedPlayer);
+                if (owner != null) AbyssalCompanionRegistry.checkAxoluthuLoaded(owner, this);
+                if (isRemoved()) return;
+            }
+            if (movementMode == MovementMode.FREE && !getArchitecturalLearning().getCompound("phase35OwnerSuggestion").getBoolean("pending") && WaifuAxoluthuMaintenance.step(this,server)) return;
+            if (movementMode == MovementMode.FOLLOW && tickCount % 20 == 0) {
+                ServerPlayer companion = server.getServer().getPlayerList().getPlayer(bondedPlayer);
+                if (companion != null && companion.level() == level()) {
+                    if (distanceToSqr(companion) > 16.0)
+                        getNavigation().moveTo(companion, distanceToSqr(companion) > 144 ? 1.35 : 1.1);
+                    else getNavigation().stop();
+                }
+            }
+            return;
+        }
+        // The exact-site builder is scheduled by the owner's tick. It owns
+        // construction exclusively while an approved or reviewable job exists.
+        // Do not run background architecture scans, resource hunts, or competing
+        // settlement/workshop planners while she is reviewing/building/paused.
+        WaifuAxoluthuTransmission.Gear transmissionGear = WaifuAxoluthuTransmission.gear(this);
+        if (transmissionGear != WaifuAxoluthuTransmission.Gear.IDLE) {
+            if (decisionCooldown > 20) decisionCooldown = 20;
+            if (--decisionCooldown <= 0) {
+                decisionCooldown = 20;
+                // The owner project owns expensive planning, not the entity's
+                // saved movement goal. Do not overwrite it on every tick.
+            }
+            return;
+        }
         if (--decisionCooldown > 0) return;
         decisionCooldown = 40; // decisions at most every two seconds
         goalTicks += 40;
@@ -762,6 +891,10 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
         // Stage 5: the saved, owner-approved house project must be driven by the
         // autonomous scheduler. A prior regression left Stage5Build.step() orphaned,
         // so the normal explore/observe planner silently took over instead.
+        // Phase 3.5: independent proposals, never independent authorization.
+        if (!level().isClientSide && tickCount % 100 == 0)
+            WaifuAxoluthuAutonomousProposals.tick(this);
+
         // Keep the saved blueprint, cursor, materials and authorization unchanged.
         if (bondedPlayer != null && movementMode == MovementMode.FREE
                 && stage4WorkshopComplete && settlementStorageComplete
@@ -1115,6 +1248,7 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
         tag.putBoolean("WaifuAxoluthuManualGoHome",manualGoHome);
         tag.putBoolean("WaifuAxoluthuManualHome", manuallyAssignedHome);
         tag.putString("WaifuAxoluthuHomeDimension", assignedHomeDimension);
+        if (registeredBed != null) tag.putLong("WaifuAxoluthuRegisteredBed", registeredBed.asLong());
         if (homePosition != null) {
             tag.putLong("WaifuAxoluthuHome", homePosition.asLong());
         }
@@ -1170,8 +1304,14 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
         resourceRoute = tag.contains("WaifuAxoluthuResourceRoute")
                 ? tag.getString("WaifuAxoluthuResourceRoute") : "none";
         if (tag.hasUUID("WaifuAxoluthuBond")) bondedPlayer = tag.getUUID("WaifuAxoluthuBond");
+        // Upgrade previously bonded Axoluthus without resetting saved movement commands.
+        if (bondedPlayer != null) {
+            addTag("tamed");
+            getPersistentData().putBoolean("tota_axoluthu_tamed", true);
+        }
         try { movementMode = MovementMode.valueOf(tag.getString("WaifuAxoluthuMode")); }
         catch (IllegalArgumentException ignored) { movementMode = MovementMode.FREE; }
+        // Preserve the saved movement mode. FOLLOW is initialized only on first bond in mobInteract.
         currentGoal = tag.contains("WaifuAxoluthuGoal") ? tag.getString("WaifuAxoluthuGoal") : "EXPLORE";
         decisionsMade = tag.getLong("WaifuAxoluthuDecisions");
         goalsCompleted = tag.getLong("WaifuAxoluthuCompleted");
@@ -1231,6 +1371,7 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
         manuallyAssignedHome = tag.getBoolean("WaifuAxoluthuManualHome");
         assignedHomeDimension = tag.getString("WaifuAxoluthuHomeDimension");
         if (tag.contains("WaifuAxoluthuHome")) homePosition = BlockPos.of(tag.getLong("WaifuAxoluthuHome"));
+        registeredBed = tag.contains("WaifuAxoluthuRegisteredBed") ? BlockPos.of(tag.getLong("WaifuAxoluthuRegisteredBed")) : null;
         if (manuallyAssignedHome && !assignedHomeDimension.equals(level().dimension().location().toString())) {
             // Avoid navigating to same-numbered coordinates in the wrong dimension.
             manuallyAssignedHome = false;
@@ -1252,7 +1393,7 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
                     :action==ACTION_PLANT?"animation.waifu_axoluthu.pickup"
                     :action==ACTION_ATTACK?"animation.waifu_axoluthu.trident_attack"
                     :state.isMoving()?"animation.waifu_axoluthu.walk":"animation.waifu_axoluthu.idle";
-            state.getController().setAnimationSpeed(action==ACTION_CONSTRUCTION_POKE ? 2.0 : 1.0);
+            state.getController().setAnimationSpeed((action==ACTION_CONSTRUCTION_POKE || action==ACTION_WORKSTATION || action==ACTION_FOCUSED) ? 2.0 : 1.0);
             state.setAnimation(RawAnimation.begin().thenLoop(name));
             return PlayState.CONTINUE;
         }));

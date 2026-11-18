@@ -174,7 +174,7 @@ public final class OriginSanctumRescue {
         ServerLevel origin = player.serverLevel();
         List<TamableAnimal> companions = origin.getEntitiesOfClass(TamableAnimal.class,
                 player.getBoundingBox().inflate(160), pet -> pet.isTame() && player.getUUID().equals(pet.getOwnerUUID()));
-        if (!OriginTempleTravel.devExit(player)) return false;
+        if (!OriginTempleTravel.rescueExit(player)) return false;
         ServerLevel destination = player.serverLevel();
         int i = 0;
         for (TamableAnimal pet : companions) {
@@ -186,6 +186,8 @@ public final class OriginSanctumRescue {
             pet.teleportTo(destination, surface.getX() + .5, surface.getY(), surface.getZ() + .5,
                     Set.of(), pet.getYRot(), pet.getXRot());
         }
+        var rescueAdvancement = player.server.getAdvancements().get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("temple_of_the_axolotl", "origin/above_all"));
+        if (rescueAdvancement != null) player.getAdvancements().award(rescueAdvancement, "completed");
         player.sendSystemMessage(Component.literal("Origin rescue complete. Your tamed companions have been brought home."));
         return true;
     }

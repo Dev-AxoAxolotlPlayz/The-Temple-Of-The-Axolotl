@@ -5,7 +5,8 @@
   "sortnum": 0,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "minecraft:axolotl_bucket",
       "text": "Above All and Wrath have distinct companion behaviors. Learn their movement and equipment controls before taking them into dangerous environments."
     }
   ]

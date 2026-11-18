@@ -1,0 +1,21 @@
+{
+  "description": {
+    "translate": "enchantment.temple_of_the_axolotl.eternal_void"
+  },
+  "supported_items": "#minecraft:enchantable/trident",
+  "weight": 2,
+  "max_level": 4,
+  "min_cost": {
+    "base": 12,
+    "per_level_above_first": 10
+  },
+  "max_cost": {
+    "base": 40,
+    "per_level_above_first": 10
+  },
+  "anvil_cost": 6,
+  "slots": [
+    "mainhand"
+  ],
+  "effects": {}
+}

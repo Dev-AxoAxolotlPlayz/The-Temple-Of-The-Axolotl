@@ -1,11 +1,12 @@
 {
-  "name": "Ingredients and Sushi",
+  "name": "Sushi Ingredients",
   "category": "temple_of_the_axolotl:sushi",
   "icon": "minecraft:tropical_fish",
   "sortnum": 0,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "minecraft:tropical_fish",
       "text": "Begin with fish preparation and sushi rice. The following recipes are shown from the start; none require discovery or advancement unlocks."
     },
     {

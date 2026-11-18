@@ -1,0 +1,28 @@
+{
+  "name": "Hydraulic Press",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:handheld_hydraulic_press",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:handheld_hydraulic_press",
+      "text": "Used as an ingredient in crafting-table material processing. The following recipes are the registered press applications."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:handheld_hydraulic_press"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:gold_paper"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:reinforced_iron_plating"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:malleable_sheetmetal"
+    }
+  ]
+}

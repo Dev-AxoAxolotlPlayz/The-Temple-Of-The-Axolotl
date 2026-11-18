@@ -1,0 +1,16 @@
+{
+  "name": "Yin Singularity",
+  "category": "temple_of_the_axolotl:sushi",
+  "icon": "temple_of_the_axolotl:yin_singularity",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:yin_singularity",
+      "text": "A crafted sushi ingredient."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:yin_singularity"
+    }
+  ]
+}

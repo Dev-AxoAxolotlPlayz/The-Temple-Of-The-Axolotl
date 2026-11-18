@@ -1,0 +1,12 @@
+{
+  "name": "Celestial Magnet",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:celestial_magnet",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:celestial_magnet",
+      "text": "Slot 4: Toggle the magnet through the rack or radial wheel. Found in floor 3 and 4 treasure chests and sanctum boss reward loot."
+    }
+  ]
+}

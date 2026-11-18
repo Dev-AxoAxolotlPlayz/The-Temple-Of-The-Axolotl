@@ -1,0 +1,16 @@
+{
+  "name": "Koji",
+  "category": "temple_of_the_axolotl:sushi",
+  "icon": "temple_of_the_axolotl:koji",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:koji",
+      "text": "Koji is used in sushi preparation."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:koji_propagation"
+    }
+  ]
+}

@@ -5,7 +5,8 @@
   "sortnum": 0,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "minecraft:book",
       "text": "Lost guide? Craft one with a Book and Tropical Fish. Need sushi? Open The Art of Sushi Cuisine. Preparing for the Temple? Start with enchanted diamond equipment. All chapters and recipes remain visible from day one."
     },
     {

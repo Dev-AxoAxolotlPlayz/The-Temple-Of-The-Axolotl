@@ -1,0 +1,44 @@
+{
+  "components": [
+    {
+      "type": "patchouli:text",
+      "text": "Use cracked stones to redeem random tier loot. Sneak-use redeems the stack. Each redemption has a 1 in 1000 chance of an extra Shard of Divinity.",
+      "x": 2,
+      "y": 2,
+      "maxWidth": 112
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Crack Tier I",
+      "x": 2,
+      "y": 95,
+      "maxWidth": 112
+    },
+    {
+      "type": "patchouli:image",
+      "image": "temple_of_the_axolotl:textures/gui/field_guide/stonecutting_guide.png",
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 128,
+      "textureWidth": 128,
+      "textureHeight": 128
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_1_ominous_trap_stone",
+      "x": 12,
+      "y": 110,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_1_cracked_ominous_trap_stone",
+      "x": 84,
+      "y": 110,
+      "framed": false,
+      "linkedRecipe": true
+    }
+  ]
+}

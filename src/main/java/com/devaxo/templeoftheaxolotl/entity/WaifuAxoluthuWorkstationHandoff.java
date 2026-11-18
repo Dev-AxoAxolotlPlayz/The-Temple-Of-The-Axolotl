@@ -53,7 +53,7 @@ public final class WaifuAxoluthuWorkstationHandoff {
             for(int k=0;k<turns;k++){int next=-z;z=x;x=next;}
             BlockPos pos=BlockPos.of(request.getLong("target")).offset(x,item.getInt("dy"),z);
             if(!WaifuAxoluthuVillageRegistry.withinPreview(request,pos)||!level.getChunkSource().hasChunk(pos.getX()>>4,pos.getZ()>>4))break;
-            var state=net.minecraft.nbt.NbtUtils.readBlockState(level.holderLookup(net.minecraft.core.registries.Registries.BLOCK),item.getCompound("fullState")).rotate(net.minecraft.world.level.block.Rotation.values()[turns]);
+            var state=net.minecraft.nbt.NbtUtils.readBlockState(level.holderLookup(net.minecraft.core.registries.Registries.BLOCK),item.getCompound("fullState")).rotate(level, pos, net.minecraft.world.level.block.Rotation.values()[turns]);
             if(!state.is(block)||!level.getBlockState(pos).isAir()||!state.canSurvive(level,pos))break;
             if(WaifuAxoluthuBuildNavigation.approach(axo,level,pos,1.5)!=null)return "MOVING";
             if(!level.setBlock(pos,state,3))break;

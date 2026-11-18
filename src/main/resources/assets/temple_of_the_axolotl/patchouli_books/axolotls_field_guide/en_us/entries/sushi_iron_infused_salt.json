@@ -1,0 +1,16 @@
+{
+  "name": "Iron-Infused Salt",
+  "category": "temple_of_the_axolotl:sushi",
+  "icon": "temple_of_the_axolotl:salt",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:salt",
+      "text": "Blast one Saltwater Bucket to produce six Iron-Infused Salt. This ingredient is used in the sushi preparation chain."
+    },
+    {
+      "type": "patchouli:blasting",
+      "recipe": "temple_of_the_axolotl:salt_from_saltwater"
+    }
+  ]
+}

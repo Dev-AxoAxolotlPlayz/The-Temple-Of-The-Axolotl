@@ -1,0 +1,16 @@
+{
+  "name": "Bolt",
+  "category": "temple_of_the_axolotl:glass_and_metals",
+  "icon": "temple_of_the_axolotl:bolt",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:bolt",
+      "text": "Manufacturing component for the submarine or shipyard equipment."
+    },
+    {
+      "type": "patchouli:stonecutting",
+      "recipe": "temple_of_the_axolotl:metal_rod_to_bolt"
+    }
+  ]
+}

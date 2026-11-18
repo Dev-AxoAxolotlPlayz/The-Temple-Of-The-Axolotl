@@ -1,0 +1,16 @@
+{
+  "name": "Shipyard Crane",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:shipyard_crane",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:shipyard_crane",
+      "text": "Assemble submarine components at the Shipyard Crane."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:shipyard_crane"
+    }
+  ]
+}

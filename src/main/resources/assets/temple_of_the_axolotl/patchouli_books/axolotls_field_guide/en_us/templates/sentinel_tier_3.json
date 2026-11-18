@@ -1,0 +1,116 @@
+{
+  "components": [
+    {
+      "type": "patchouli:image",
+      "image": "temple_of_the_axolotl:textures/gui/field_guide/sentinel_upgrade_guide.png",
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 128,
+      "textureWidth": 128,
+      "textureHeight": 128
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Tier 3 upgrade",
+      "x": 2,
+      "y": 2,
+      "maxWidth": 112
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Crack Tier 3",
+      "x": 2,
+      "y": 87,
+      "maxWidth": 112
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_2_ominous_trap_stone",
+      "x": 6,
+      "y": 18,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_2_ominous_trap_stone",
+      "x": 24,
+      "y": 18,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_2_ominous_trap_stone",
+      "x": 42,
+      "y": 18,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_2_ominous_trap_stone",
+      "x": 6,
+      "y": 36,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_2_ominous_trap_stone",
+      "x": 42,
+      "y": 36,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_2_ominous_trap_stone",
+      "x": 6,
+      "y": 54,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_2_ominous_trap_stone",
+      "x": 24,
+      "y": 54,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_2_ominous_trap_stone",
+      "x": 42,
+      "y": 54,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_3_ominous_trap_stone",
+      "x": 92,
+      "y": 36,
+      "framed": false,
+      "linkedRecipe": true
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_3_ominous_trap_stone",
+      "x": 12,
+      "y": 105,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:tier_3_cracked_ominous_trap_stone",
+      "x": 84,
+      "y": 105,
+      "framed": false,
+      "linkedRecipe": true
+    }
+  ]
+}

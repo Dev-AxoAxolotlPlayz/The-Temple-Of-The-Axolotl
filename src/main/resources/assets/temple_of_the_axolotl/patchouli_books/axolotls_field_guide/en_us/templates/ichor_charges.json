@@ -1,0 +1,68 @@
+{
+  "components": [
+    {
+      "type": "patchouli:image",
+      "image": "temple_of_the_axolotl:textures/gui/field_guide/ichor_guide.png",
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 128,
+      "textureWidth": 128,
+      "textureHeight": 128
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Ichor production",
+      "x": 2,
+      "y": 2,
+      "maxWidth": 112
+    },
+    {
+      "type": "patchouli:item",
+      "item": "minecraft:soul_campfire",
+      "x": 5,
+      "y": 22,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "minecraft:water_bucket",
+      "x": 30,
+      "y": 22,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:shard_of_divinity",
+      "x": 55,
+      "y": 22,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:diluted_ichor_bucket",
+      "x": 95,
+      "y": 22,
+      "framed": false,
+      "linkedRecipe": true
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Heat 2 + water 1 + catalyst 1 = 1000 stored Ichor. A shard supplies 10 catalyst charges. Withdraw with an empty bucket.",
+      "x": 2,
+      "y": 48,
+      "maxWidth": 112
+    },
+    {
+      "type": "patchouli:item",
+      "item": "minecraft:bucket",
+      "x": 49,
+      "y": 124,
+      "framed": false,
+      "linkedRecipe": false
+    }
+  ]
+}

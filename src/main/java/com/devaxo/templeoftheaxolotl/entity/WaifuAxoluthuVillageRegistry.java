@@ -211,7 +211,7 @@ public final class WaifuAxoluthuVillageRegistry {
                 for(int r=0;r<Math.floorMod(request.getInt("quarterTurns"),4);r++){int next=z;z=-x;x=next;}
                 item.putInt("dx",x); item.putInt("dy",pos.getY()-origin.getY()); item.putInt("dz",z);
                 item.putString("state",level.getBlockState(pos).toString());
-                item.put("fullState",net.minecraft.nbt.NbtUtils.writeBlockState(level.getBlockState(pos).rotate(net.minecraft.world.level.block.Rotation.values()[Math.floorMod(-request.getInt("quarterTurns"),4)])));
+                item.put("fullState",net.minecraft.nbt.NbtUtils.writeBlockState(level.getBlockState(pos).rotate(level, pos, net.minecraft.world.level.block.Rotation.values()[Math.floorMod(-request.getInt("quarterTurns"),4)])));
                 learned.add(item);
             }
             plot.put("workstations",learned.copy());

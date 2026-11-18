@@ -1,0 +1,18 @@
+{
+  "name": "Molten Glass Mold",
+  "category": "temple_of_the_axolotl:glass_and_metals",
+  "icon": "temple_of_the_axolotl:molten_glass_in_a_mold",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:molten_glass_in_a_mold",
+      "text": "Combine one Molten Sand (left slot) and one Glass Mold (right slot) in an anvil for 1 XP level. Cool the resulting mold in the Annealing Kiln to obtain a pressure-treated acrylic panel."
+    },
+    {
+      "type": "temple_of_the_axolotl:glass_molding_anvil"
+    },
+    {
+      "type": "temple_of_the_axolotl:kiln_cooling"
+    }
+  ]
+}

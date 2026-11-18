@@ -1,0 +1,16 @@
+{
+  "name": "Abyssal Ring",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:abyssal_ring",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:abyssal_ring",
+      "text": "A crafted Abyssal Ring."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:abyssal_ring"
+    }
+  ]
+}

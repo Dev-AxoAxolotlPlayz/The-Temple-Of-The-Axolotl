@@ -1,0 +1,24 @@
+{
+  "name": "Sentinels",
+  "category": "temple_of_the_axolotl:expeditions",
+  "icon": "temple_of_the_axolotl:tier_1_ominous_trap_stone",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:tier_1_ominous_trap_stone",
+      "text": "Sentinels emerge from temple trial traps. Defeat them to receive the Ominous Trap Stone belonging to the trap tier. Upgrade intact stones before cracking them to access higher-tier treasure."
+    },
+    {
+      "type": "temple_of_the_axolotl:sentinel_tier_1"
+    },
+    {
+      "type": "temple_of_the_axolotl:sentinel_tier_2"
+    },
+    {
+      "type": "temple_of_the_axolotl:sentinel_tier_3"
+    },
+    {
+      "type": "temple_of_the_axolotl:sentinel_tier_4"
+    }
+  ]
+}

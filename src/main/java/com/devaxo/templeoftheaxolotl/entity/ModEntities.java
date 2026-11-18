@@ -16,6 +16,14 @@ public class ModEntities {
                     TempleOfTheAxolotl.MODID
             );
 
+    public static final DeferredHolder<EntityType<?>, EntityType<AttackTentacleEntity>> ATTACK_TENTACLE =
+            ENTITY_TYPES.register("attack_tentacle", () -> EntityType.Builder.of(AttackTentacleEntity::new, MobCategory.MONSTER)
+                    .sized(1.6F, 7.5F).clientTrackingRange(24).updateInterval(1).build("attack_tentacle"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<AxoCthuluEntity>> AXOCTHULU =
+            ENTITY_TYPES.register("axocthulu", () -> EntityType.Builder.of(AxoCthuluEntity::new, MobCategory.MONSTER)
+                    .sized(15.0F, 15.0F).clientTrackingRange(32).updateInterval(1).build("axocthulu"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<WaifuAxoluthuEntity>> WAIFU_AXOLUTHU =
             ENTITY_TYPES.register("waifu_axoluthu", () -> EntityType.Builder
                     .of(WaifuAxoluthuEntity::new, MobCategory.CREATURE)

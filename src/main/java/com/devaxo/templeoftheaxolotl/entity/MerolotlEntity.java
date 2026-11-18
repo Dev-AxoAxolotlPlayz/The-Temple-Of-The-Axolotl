@@ -1,6 +1,19 @@
 package com.devaxo.templeoftheaxolotl.entity;
 
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.server.level.ServerLevelAccessor;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.item.Items;
+import com.devaxo.templeoftheaxolotl.item.ModItems;
+import net.minecraft.world.item.ArmorItem;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -17,7 +30,7 @@ import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /** Abyss village resident. Independent aquatic resident with no Drowned behavior. */
-public class MerolotlEntity extends PathfinderMob implements GeoEntity {
+public class MerolotlEntity extends PathfinderMob implements GeoEntity, RangedAttackMob {
     // Abyss inhabitants persist across player-distance despawn checks.
     @Override
     public boolean removeWhenFarAway(double distanceToClosestPlayer) {
@@ -68,12 +81,65 @@ public class MerolotlEntity extends PathfinderMob implements GeoEntity {
     }
 
     @Override protected int decreaseAirSupply(int currentAir) { return currentAir; }
+    @Override @Nullable
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty,
+                                        MobSpawnType reason, @Nullable SpawnGroupData data) {
+        SpawnGroupData result = super.finalizeSpawn(world, difficulty, reason, data);
+        if (reason == MobSpawnType.NATURAL || reason == MobSpawnType.CHUNK_GENERATION || reason == MobSpawnType.SPAWNER) {
+            float roll = random.nextFloat();
+            if (roll < .01F) setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.NETHERITE_SWORD));
+            else if (roll < .03F) setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.DIAMOND_AXE));
+            else if (roll < .06F) setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.TRIDENT));
+            else if (roll < .07F) setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(ModItems.AXOLITE_TRIDENT.get()));
+            for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+                if (random.nextFloat() < .05F) {
+                    boolean axolite = random.nextFloat() < .20F;
+                    var armor = switch (slot) {
+                        case HEAD -> axolite ? ModItems.AXOLITE_HELMET.get() : Items.DIAMOND_HELMET;
+                        case CHEST -> axolite ? ModItems.AXOLITE_CHESTPLATE.get() : Items.DIAMOND_CHESTPLATE;
+                        case LEGS -> axolite ? ModItems.AXOLITE_LEGGINGS.get() : Items.DIAMOND_LEGGINGS;
+                        case FEET -> axolite ? ModItems.AXOLITE_BOOTS.get() : Items.DIAMOND_BOOTS;
+                        default -> Items.AIR;
+                    };
+                    setItemSlot(slot, new ItemStack(armor));
+                }
+            }
+        }
+        return result;
+    }
+    @Override public void performRangedAttack(LivingEntity target, float distanceFactor) {
+        ItemStack weapon = getMainHandItem();
+        if (!(weapon.is(Items.TRIDENT) || weapon.is(ModItems.AXOLITE_TRIDENT.get()))) return;
+        if (!(level() instanceof net.minecraft.server.level.ServerLevel server)) return;
+        ThrownTrident projectile = new ThrownTrident(level(), this, weapon.copy());
+        double dx = target.getX() - getX();
+        double dy = target.getY(0.5) - projectile.getY();
+        double dz = target.getZ() - getZ();
+        double horizontal = Math.sqrt(dx * dx + dz * dz);
+        projectile.shoot(dx, dy + horizontal * .12, dz, 1.6F, 3.0F);
+        server.addFreshEntity(projectile);
+        playSound(net.minecraft.sounds.SoundEvents.DROWNED_SHOOT, 1.0F, 1.0F);
+    }
     @Override protected void registerGoals() {
-        goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.15, true));
+        goalSelector.addGoal(1, new RangedAttackGoal(this, 1.0, 40, 14.0F) {
+            @Override public boolean canUse() {
+                ItemStack hand = getMainHandItem();
+                return (hand.is(Items.TRIDENT) || hand.is(ModItems.AXOLITE_TRIDENT.get())) && super.canUse();
+            }
+            @Override public boolean canContinueToUse() { return canUse(); }
+        });
+        goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.15, true) {
+            @Override public boolean canUse() {
+                ItemStack hand = getMainHandItem();
+                return !hand.is(Items.TRIDENT) && !hand.is(ModItems.AXOLITE_TRIDENT.get()) && super.canUse();
+            }
+        });
         goalSelector.addGoal(2, new VillageWaterPatrolGoal());
         goalSelector.addGoal(2, new LookAtPlayerGoal(this, Player.class, 8));
         goalSelector.addGoal(3, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true,
+                player -> !player.isCreative() && !player.isSpectator()));
     }
     @Override public void tick() {
         super.tick();
@@ -88,14 +154,11 @@ public class MerolotlEntity extends PathfinderMob implements GeoEntity {
                 villageAlarmTarget = null;
                 setTarget(null);
             }
-            // No vanilla drowned weapons, even when its spawn equipment is initialized.
-            if (!getMainHandItem().isEmpty()) setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-            if (!getOffhandItem().isEmpty()) setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
             if (!cosmeticHelmetChosen) {
                 cosmeticHelmetChosen = true;
                 cosmeticHelmet = random.nextFloat() < 0.12F;
             }
-            setDropChance(EquipmentSlot.HEAD, 0);
+
             // Helmet is visual-only: do not equip a non-helmet item as armor.
         }
     }

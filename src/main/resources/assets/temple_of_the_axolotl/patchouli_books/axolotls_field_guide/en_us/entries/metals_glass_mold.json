@@ -1,0 +1,16 @@
+{
+  "name": "Glass Mold",
+  "category": "temple_of_the_axolotl:glass_and_metals",
+  "icon": "temple_of_the_axolotl:glass_mold",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:glass_mold",
+      "text": "Manufacturing component for the submarine or shipyard equipment."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:glass_mold"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Fillet Knife",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:fillet_knife",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:fillet_knife",
+      "text": "A preparation tool used in sushi crafting."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:fillet_knife"
+    }
+  ]
+}

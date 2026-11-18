@@ -1,0 +1,16 @@
+{
+  "name": "Diary",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:diary_of_an_axolotl",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:diary_of_an_axolotl",
+      "text": "Slot 15: Opens the diary."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:diary_of_an_axolotl"
+    }
+  ]
+}

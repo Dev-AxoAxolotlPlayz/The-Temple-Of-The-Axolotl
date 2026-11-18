@@ -47,8 +47,8 @@ public final class RingOreVeinMining {
     public static void onBreak(BlockEvent.BreakEvent event) {
         if (ACTIVE.get() || event.isCanceled() || !(event.getPlayer() instanceof ServerPlayer player)
                 || !(player.level() instanceof ServerLevel level)
-                || !player.getMainHandItem().is(ModItems.RING_OF_THE_ONE.get())
-                || !RingMiningMode.isMining(player)) return;
+                || !(ModItems.isAxolitePickaxe(player.getMainHandItem())
+                    || (player.getMainHandItem().is(ModItems.RING_OF_THE_ONE.get()) && RingMiningMode.isMining(player)))) return;
         String target = family(event.getState());
         if (target == null) return;
         BlockPos origin = event.getPos();
@@ -74,7 +74,8 @@ public final class RingOreVeinMining {
         try {
             for (BlockPos pos : matched) {
                 if (pos.equals(origin)) continue; // Minecraft handles the initial break.
-                if (!player.getMainHandItem().is(ModItems.RING_OF_THE_ONE.get()) || !RingMiningMode.isMining(player)) break;
+                if (!(ModItems.isAxolitePickaxe(player.getMainHandItem())
+                        || (player.getMainHandItem().is(ModItems.RING_OF_THE_ONE.get()) && RingMiningMode.isMining(player)))) break;
                 if (level.hasChunk(pos.getX() >> 4, pos.getZ() >> 4) && target.equals(family(level.getBlockState(pos)))) {
                     player.gameMode.destroyBlock(pos);
                 }

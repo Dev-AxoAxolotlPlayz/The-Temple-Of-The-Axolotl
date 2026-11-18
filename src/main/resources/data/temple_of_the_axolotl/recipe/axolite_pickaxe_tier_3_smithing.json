@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "temple_of_the_axolotl:axolite_ingot"
+  },
+  "base": {
+    "item": "temple_of_the_axolotl:axolite_pickaxe_tier_2"
+  },
+  "addition": {
+    "item": "minecraft:diamond_block"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:axolite_pickaxe_tier_3",
+    "count": 1
+  }
+}

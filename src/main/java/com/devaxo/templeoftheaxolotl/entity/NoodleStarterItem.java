@@ -21,7 +21,6 @@ public class NoodleStarterItem extends Item {
             ItemStack book = new ItemStack(ModItems.NOODLE_COMMAND_BOOK.get());
             NoodleTraining.setCommands(book, NoodleCommandLibrary.load(owner.getUUID()));
             give(owner, book);
-            give(owner, new ItemStack(ModItems.NOODLE_TRAINING_MEDAL.get()));
             if (!owner.getAbilities().instabuild) held.shrink(1);
         }
         return InteractionResultHolder.consume(held);

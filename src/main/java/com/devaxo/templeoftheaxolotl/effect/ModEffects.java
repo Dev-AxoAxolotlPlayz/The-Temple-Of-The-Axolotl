@@ -27,5 +27,7 @@ public final class ModEffects {
                     new TempleMarkerEffect(MobEffectCategory.BENEFICIAL, 0xE7C96B));
     public static final DeferredHolder<MobEffect, MobEffect> THE_BENDS =
             EFFECTS.register("the_bends", () -> new TempleMarkerEffect(MobEffectCategory.HARMFUL, 0xE7A1B3));
+    public static final DeferredHolder<MobEffect, MobEffect> SHELL_SHOCKED =
+            EFFECTS.register("shell_shocked", () -> new ShellShockedEffect());
     private ModEffects() {}
 }

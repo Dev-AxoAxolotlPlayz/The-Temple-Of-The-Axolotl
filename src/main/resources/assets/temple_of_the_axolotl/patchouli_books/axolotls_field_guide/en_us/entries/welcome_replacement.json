@@ -5,7 +5,8 @@
   "sortnum": 1,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "minecraft:book",
       "text": "Each player receives one guide on their first login to a world. If you lose it, craft another with a Book and a Tropical Fish."
     },
     {

@@ -1,0 +1,16 @@
+{
+  "name": "Field Guide",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:axolotls_field_guide",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:axolotls_field_guide",
+      "text": "Slot 16: Opens this guide."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:axolotls_field_guide"
+    }
+  ]
+}

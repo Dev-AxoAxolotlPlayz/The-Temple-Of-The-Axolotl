@@ -1,0 +1,16 @@
+{
+  "name": "Molten Sand",
+  "category": "temple_of_the_axolotl:glass_and_metals",
+  "icon": "temple_of_the_axolotl:molten_sand",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:molten_sand",
+      "text": "Manufacturing component for the submarine or shipyard equipment."
+    },
+    {
+      "type": "patchouli:blasting",
+      "recipe": "temple_of_the_axolotl:molten_sand"
+    }
+  ]
+}

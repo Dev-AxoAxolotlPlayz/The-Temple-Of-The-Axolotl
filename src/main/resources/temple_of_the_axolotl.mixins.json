@@ -5,7 +5,12 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BoatWaveMixin",
-    "AxoliteSmithingMixin"
+    "AxoliteSmithingMixin",
+    "AxoliteArrowStackAccessor",
+    "AxoliteTridentSyncMixin",
+    "ShellShockedMobMixin",
+    "ShellShockedEndermanMixin",
+    "ShellShockedCreeperMixin"
   ],
   "client": [
     "BoatRendererWaveMixin",
@@ -22,7 +27,11 @@
     "TitleLogoOnlyMixin",
     "TitleSplashOnlyMixin",
     "CelestialAuroraSkyMixin",
-    "CelestialSkyPassMixin"
+    "CelestialSkyPassMixin",
+    "DiaryLandingRevealMixin",
+    "AxoliteTridentItemRenderMixin",
+    "AxoliteTridentFlightRenderMixin",
+    "TridentChargeHandLayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

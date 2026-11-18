@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GWG",
+    "PBP",
+    "GAG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "W": {
+      "tag": "minecraft:logs"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "B": {
+      "item": "minecraft:axolotl_bucket"
+    },
+    "A": {
+      "item": "temple_of_the_axolotl:axolite_ingot"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:abyssal_companion_registry",
+    "count": 1
+  }
+}

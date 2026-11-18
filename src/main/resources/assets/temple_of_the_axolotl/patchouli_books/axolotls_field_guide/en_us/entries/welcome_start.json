@@ -5,7 +5,8 @@
   "sortnum": 0,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "minecraft:diamond_chestplate",
       "text": "Welcome to the Field Guide! Every chapter and recipe is readable immediately. For a full Temple expedition, bring at least enchanted diamond armor and weapons, plus food, healing, and spare supplies. This is a recommendation, not an equipment lock."
     },
     {

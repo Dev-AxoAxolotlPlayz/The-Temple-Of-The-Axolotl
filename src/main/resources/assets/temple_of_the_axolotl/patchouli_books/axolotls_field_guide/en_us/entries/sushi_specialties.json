@@ -5,7 +5,8 @@
   "sortnum": 1,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:golden_tropical_fish_sushi",
       "text": "Prepare specialty sushi and bentos for the trophy crafting chain."
     },
     {

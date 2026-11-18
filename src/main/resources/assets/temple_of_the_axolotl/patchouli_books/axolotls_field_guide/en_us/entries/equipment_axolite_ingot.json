@@ -1,0 +1,24 @@
+{
+  "name": "Axolite Ingot",
+  "category": "temple_of_the_axolotl:equipment",
+  "icon": "temple_of_the_axolotl:axolite_ingot",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:axolite_ingot",
+      "text": "Axolite is a post-Iron material. Equipment is still work in progress; existing smithing recipes are not a guarantee of completed bonuses."
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "temple_of_the_axolotl:refine_axolite_smelting"
+    },
+    {
+      "type": "patchouli:blasting",
+      "recipe": "temple_of_the_axolotl:refine_axolite_blasting"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:axolite_ingot"
+    }
+  ]
+}

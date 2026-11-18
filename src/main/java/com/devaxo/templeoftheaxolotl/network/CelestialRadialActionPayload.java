@@ -22,6 +22,7 @@ public record CelestialRadialActionPayload(int index) implements CustomPacketPay
             if (!(context.player() instanceof ServerPlayer p)) return;
             if (packet.index() == -1) { sendState(p); return; }
             switch (packet.index()) {
+                case 9 -> com.devaxo.templeoftheaxolotl.item.AxoliteTridentMode.toggle(p);
                 case 0 -> { if (hasHelmet(p)) com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.toggleHelmetNightVision(p); }
                 case 1 -> { if (hasHelmet(p)) com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.toggleHelmetConduit(p); }
                 case 2 -> { if (hasRing(p)) com.devaxo.templeoftheaxolotl.combat.RingMiningMode.toggle(p); }
@@ -29,14 +30,19 @@ public record CelestialRadialActionPayload(int index) implements CustomPacketPay
                     com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.cycleMagnet(p); }
                 case 8 -> { if (TempleHudModules.getSlot(p,11).is(ModItems.ABYSSAL_LANTERN.get()))
                     com.devaxo.templeoftheaxolotl.event.AbyssalLanternEvents.toggle(p); }
-                case 7 -> { if (TempleHudModules.getSlot(p,14).is(ModItems.ARCHITECTS_JOURNAL.get()))
-                    com.devaxo.templeoftheaxolotl.network.AxoluthuJournalPayload.send(p); }
+                case 7 -> { if (TempleHudModules.getSlot(p,14).is(ModItems.ABYSSAL_COMPANION_REGISTRY.get())
+                        || TempleHudModules.getSlot(p,17).is(ModItems.ABYSSAL_COMPANION_REGISTRY.get()))
+                    PacketDistributor.sendToPlayer(p,new CelestialRadialOpenBookPayload(2)); }
                 case 4 -> { if (TempleHudModules.getSlot(p,15).is(ModBlocks.DIARY_ITEM.get()))
                     PacketDistributor.sendToPlayer(p,new CelestialRadialOpenBookPayload(0)); }
                 case 5 -> { if (TempleHudModules.getSlot(p,16).is(ModBlocks.FIELD_GUIDE_ITEM.get()))
                     PacketDistributor.sendToPlayer(p,new CelestialRadialOpenBookPayload(1)); }
-                case 6 -> { if ((TempleHudModules.getSlot(p,17).is(ModItems.NOODLE_COMMAND_BOOK.get()) || TempleHudModules.getSlot(p,17).is(ModItems.ABYSSAL_COMPANION_REGISTRY.get())))
-                    PacketDistributor.sendToPlayer(p,new CelestialRadialOpenBookPayload(2)); }
+                case 6 -> {
+                    if (TempleHudModules.getSlot(p,17).is(ModItems.NOODLE_COMMAND_BOOK.get()))
+                        PacketDistributor.sendToPlayer(p,new CelestialRadialOpenBookPayload(3));
+                    else if (TempleHudModules.getSlot(p,17).is(ModItems.ABYSSAL_COMPANION_REGISTRY.get()))
+                        PacketDistributor.sendToPlayer(p,new CelestialRadialOpenBookPayload(2));
+                }
                 default -> { }
             }
             sendState(p);
@@ -56,8 +62,9 @@ public record CelestialRadialActionPayload(int index) implements CustomPacketPay
         if (com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.magnetMode(p) != 2) flags |= 8;
         if (TempleHudModules.getSlot(p,15).is(ModBlocks.DIARY_ITEM.get())) flags |= 16;
         if (TempleHudModules.getSlot(p,16).is(ModBlocks.FIELD_GUIDE_ITEM.get())) flags |= 32;
-        if ((TempleHudModules.getSlot(p,17).is(ModItems.NOODLE_COMMAND_BOOK.get()) || TempleHudModules.getSlot(p,17).is(ModItems.ABYSSAL_COMPANION_REGISTRY.get()))) flags |= 64;
-        if (TempleHudModules.getSlot(p,14).is(ModItems.ARCHITECTS_JOURNAL.get())) flags |= 128;
+        if (TempleHudModules.getSlot(p,17).is(ModItems.NOODLE_COMMAND_BOOK.get())) flags |= 64;
+        if (TempleHudModules.getSlot(p,14).is(ModItems.ABYSSAL_COMPANION_REGISTRY.get())
+                || TempleHudModules.getSlot(p,17).is(ModItems.ABYSSAL_COMPANION_REGISTRY.get())) flags |= 128;
         if (TempleHudModules.getSlot(p,11).is(ModItems.ABYSSAL_LANTERN.get())) {
             flags |= 512; // equipped, independent of ON/OFF state
             if (com.devaxo.templeoftheaxolotl.event.AbyssalLanternEvents.moduleEnabled(p)) flags |= 256;
@@ -65,6 +72,8 @@ public record CelestialRadialActionPayload(int index) implements CustomPacketPay
         if (hasHelmet(p)) flags |= (1 << 10) | (1 << 11);
         if (hasRing(p)) flags |= (1 << 12);
         if (TempleHudModules.getSlot(p,4).is(ModItems.CELESTIAL_MAGNET.get())) flags |= (1 << 13);
+        if (com.devaxo.templeoftheaxolotl.item.AxoliteTridentMode.state(p)!=0) flags |= 1 << 14;
+        if (com.devaxo.templeoftheaxolotl.item.AxoliteTridentMode.state(p)==2) flags |= 1 << 15;
         PacketDistributor.sendToPlayer(p, new CelestialRadialStatePayload(flags));
     }
 }

@@ -1,0 +1,16 @@
+{
+  "name": "Stardust",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:stardust",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:stardust",
+      "text": "Megolotls drop 1–2 Stardust, with additional drops possible through Looting."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:nether_star_from_stardust"
+    }
+  ]
+}

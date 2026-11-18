@@ -30,7 +30,8 @@ public class AxoleviathanRenderer extends GeoEntityRenderer<AxoleviathanEntity> 
         // existing 3x3x3 hitbox sits higher, nearer the skull instead of the chin.
         // This does not change the physics box or water navigation origin.
         poseStack.translate(0.0D, -4.0D, 0.0D);
-        poseStack.scale(8.0F, 8.0F, 8.0F);
+        float variantScale = entity.isEldritchVariant() ? 0.7F : 1.0F;
+        poseStack.scale(8.0F * variantScale, 8.0F * variantScale, 8.0F * variantScale);
         super.render(entity, entityYaw, partialTick, poseStack, buffers, packedLight);
         poseStack.popPose();
     }

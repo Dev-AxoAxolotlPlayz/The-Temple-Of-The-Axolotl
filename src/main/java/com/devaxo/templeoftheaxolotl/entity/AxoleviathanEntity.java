@@ -31,6 +31,33 @@ import java.util.List;
 
 /** Patch 5: persistent abyssal titan, 3D swimming and knockback protection. */
 public class AxoleviathanEntity extends PathfinderMob implements GeoEntity {
+    private static final net.minecraft.network.syncher.EntityDataAccessor<Boolean> ELDRITCH_VARIANT =
+            net.minecraft.network.syncher.SynchedEntityData.defineId(AxoleviathanEntity.class,
+                    net.minecraft.network.syncher.EntityDataSerializers.BOOLEAN);
+
+    @Override protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ELDRITCH_VARIANT, false);
+    }
+
+    public boolean isEldritchVariant() { return entityData.get(ELDRITCH_VARIANT); }
+
+    public void setEldritchVariant(boolean enabled) {
+        if (level().isClientSide) return;
+        entityData.set(ELDRITCH_VARIANT, enabled);
+        var health = getAttribute(Attributes.MAX_HEALTH);
+        var attack = getAttribute(Attributes.ATTACK_DAMAGE);
+        if (health != null) health.setBaseValue(enabled ? 716.8 : 1024.0);
+        if (attack != null) attack.setBaseValue(enabled ? 14.0 : 20.0);
+        setHealth(getMaxHealth());
+        refreshDimensions();
+    }
+
+    @Override public void onSyncedDataUpdated(net.minecraft.network.syncher.EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (ELDRITCH_VARIANT.equals(key)) refreshDimensions();
+    }
+
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("idle_float");
     private static final RawAnimation SWIM = RawAnimation.begin().thenLoop("normal_swimming");
@@ -287,7 +314,7 @@ public class AxoleviathanEntity extends PathfinderMob implements GeoEntity {
                     }
                 }
                 else if (prey instanceof LivingEntity living)
-                    living.hurt(randomNomDamage(), 20);
+                    living.hurt(randomNomDamage(), isEldritchVariant() ? 14 : 20);
             }
         }
         // The pitch tracks physical motion, not the target's altitude.
@@ -496,6 +523,7 @@ public class AxoleviathanEntity extends PathfinderMob implements GeoEntity {
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }
     @Override public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        if (tag.getBoolean("TotaEldritchVariant")) setEldritchVariant(true);
         attackCooldown = tag.getInt("AttackCooldown");
         ambushPhase = tag.getInt("AmbushPhase");
         ambushTicks = tag.getInt("AmbushTicks");
@@ -508,6 +536,7 @@ public class AxoleviathanEntity extends PathfinderMob implements GeoEntity {
     }
     @Override public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        tag.putBoolean("TotaEldritchVariant", isEldritchVariant());
         tag.putInt("AttackCooldown", attackCooldown);
         tag.putInt("AmbushPhase", ambushPhase);
         tag.putInt("AmbushTicks", ambushTicks);

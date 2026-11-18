@@ -43,7 +43,63 @@ public final class ModItems {
     public static final DeferredItem<Item> NOODLE_TRAINING_MEDAL = basic("training_medal", 1);
 
     // Axolite metal: future smithing-template ingredient.
+    public static final DeferredItem<Item> STARDUST = basic("stardust", 64);
+    public static final DeferredItem<net.minecraft.world.item.TridentItem> AXOLITE_TRIDENT = ITEMS.register("axolite_trident", () -> new net.minecraft.world.item.TridentItem(new Item.Properties().durability(250).attributes(
+            net.minecraft.world.item.component.ItemAttributeModifiers.builder()
+                .add(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE,
+                    new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("temple_of_the_axolotl", "axolite_trident_damage"),
+                        12.0, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
+                    net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND)
+                .add(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_SPEED,
+                    new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("temple_of_the_axolotl", "axolite_trident_speed"),
+                        -2.9, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
+                    net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND)
+                .build())));
+    // Cosmic Trident: inherits vanilla TridentItem behavior and Axolite combat hooks.
+    public static final DeferredItem<net.minecraft.world.item.TridentItem> COSMIC_TRIDENT = ITEMS.register("cosmic_trident", () -> new net.minecraft.world.item.TridentItem(new Item.Properties().durability(250).attributes(
+            net.minecraft.world.item.component.ItemAttributeModifiers.builder()
+                .add(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE,
+                    new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("temple_of_the_axolotl", "cosmic_trident_damage"),
+                        15.0, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
+                    net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND)
+                .add(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_SPEED,
+                    new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("temple_of_the_axolotl", "cosmic_trident_speed"),
+                        -2.9, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
+                    net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND).build())));
+    public static final DeferredItem<Item> AXOLITE_PRONGS = basic("axolite_prongs", 64);
+    public static final DeferredItem<Item> AXOLITE_HILT = basic("axolite_hilt", 64);
+    public static final DeferredItem<Item> AXOLITE_POMMEL = basic("axolite_pommel", 64);
     public static final DeferredItem<Item> AXOLITE_INGOT = basic("axolite_ingot", 64);
+
+    // Axolite tools: iron harvest restriction, 9 mining speed, 1561 durability.
+    public static final DeferredItem<net.minecraft.world.item.PickaxeItem> AXOLITE_PICKAXE = ITEMS.register("axolite_pickaxe", () ->
+            new net.minecraft.world.item.PickaxeItem(AxoliteTier.INSTANCE, new Item.Properties().attributes(
+                    net.minecraft.world.item.PickaxeItem.createAttributes(AxoliteTier.INSTANCE, 1.0F, -2.8F))));
+    public static final DeferredItem<net.minecraft.world.item.PickaxeItem> AXOLITE_PICKAXE_TIER_2 = ITEMS.register("axolite_pickaxe_tier_2", () ->
+            new net.minecraft.world.item.PickaxeItem(AxolitePickaxeTier.SECOND, new Item.Properties().attributes(
+                    net.minecraft.world.item.PickaxeItem.createAttributes(AxolitePickaxeTier.SECOND, 1.0F, -2.8F))));
+    public static final DeferredItem<net.minecraft.world.item.PickaxeItem> AXOLITE_PICKAXE_TIER_3 = ITEMS.register("axolite_pickaxe_tier_3", () ->
+            new net.minecraft.world.item.PickaxeItem(AxolitePickaxeTier.THIRD, new Item.Properties().attributes(
+                    net.minecraft.world.item.PickaxeItem.createAttributes(AxolitePickaxeTier.THIRD, 1.0F, -2.8F))));
+    public static boolean isAxolitePickaxe(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(AXOLITE_PICKAXE.get()) || stack.is(AXOLITE_PICKAXE_TIER_2.get()) || stack.is(AXOLITE_PICKAXE_TIER_3.get());
+    }
+    public static final DeferredItem<net.minecraft.world.item.AxeItem> AXOLITE_AXE = ITEMS.register("axolite_axe", () ->
+            new net.minecraft.world.item.AxeItem(AxoliteTier.INSTANCE, new Item.Properties().attributes(
+                    net.minecraft.world.item.AxeItem.createAttributes(AxoliteTier.INSTANCE, 6.0F, -3.1F))));
+    public static final DeferredItem<net.minecraft.world.item.ShovelItem> AXOLITE_SHOVEL = ITEMS.register("axolite_shovel", () ->
+            new net.minecraft.world.item.ShovelItem(AxoliteTier.INSTANCE, new Item.Properties().attributes(
+                    net.minecraft.world.item.ShovelItem.createAttributes(AxoliteTier.INSTANCE, 1.5F, -3.0F))));
+    public static final DeferredItem<net.minecraft.world.item.HoeItem> AXOLITE_HOE = ITEMS.register("axolite_hoe", () ->
+            new net.minecraft.world.item.HoeItem(AxoliteTier.INSTANCE, new Item.Properties().attributes(
+                    net.minecraft.world.item.HoeItem.createAttributes(AxoliteTier.INSTANCE, -2.0F, -1.0F))));
+    public static final DeferredItem<net.minecraft.world.item.SwordItem> AXOLITE_SWORD = ITEMS.register("axolite_sword", () ->
+            new net.minecraft.world.item.SwordItem(AxoliteTier.INSTANCE, new Item.Properties().attributes(
+                    net.minecraft.world.item.SwordItem.createAttributes(AxoliteTier.INSTANCE, 3, -2.4F))));
 
     // Axolite stage 1: pink raw dust becomes cyan after smelting.
     public static final DeferredItem<Item> RAW_AXOLITE_DUST = basic("raw_axolite_dust", 64);
@@ -89,6 +145,7 @@ public final class ModItems {
 
     // 08-D1.5.5.1 celestial soundtrack and collectible materials.
     public static final DeferredItem<Item> COSMIC_ESSENCE = basic("cosmic_essence", 64);
+    public static final DeferredItem<Item> EYE_OF_THE_ABYSS = basic("eye_of_the_abyss", 64);
     public static final DeferredItem<Item> CELESTIAL_JUKEBOX = basic("celestial_jukebox", 1);
     public static final DeferredItem<Item> DISC_COSMIC_SEAS = ITEMS.register("disc_cosmic_seas", () -> new Item(new Item.Properties().stacksTo(1).jukeboxPlayable(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.JUKEBOX_SONG, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, "disc_cosmic_seas")))));
     public static final DeferredItem<Item> DISC_BENEATH_SURFACE = ITEMS.register("disc_beneath_surface", () -> new Item(new Item.Properties().stacksTo(1).jukeboxPlayable(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.JUKEBOX_SONG, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, "disc_beneath_surface")))));
@@ -491,6 +548,9 @@ public final class ModItems {
             "ghostfish_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.GHOSTFISH, 0xFFFFFF, 0xFFFFFF, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> ABYSSAL_ANGLER_SPAWN_EGG = ITEMS.register(
             "abyssal_angler_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.ABYSSAL_ANGLER, 0xFFFFFF, 0xFFFFFF, new Item.Properties()));
+    public static final DeferredItem<DeferredSpawnEggItem> AXOCTHULU_SPAWN_EGG = ITEMS.register(
+            "axocthulu_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.AXOCTHULU,
+                    0x211033, 0xB56BDF, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> AXOLEVIATHAN_SPAWN_EGG = ITEMS.register(
             "axoleviathan_spawn_egg", () -> new DeferredSpawnEggItem(ModEntities.AXOLEVIATHAN, 0xFFFFFF, 0xFFFFFF, new Item.Properties()));
     public static final DeferredItem<DeferredSpawnEggItem> AXOKRAKEN_SPAWN_EGG = ITEMS.register(
@@ -514,6 +574,19 @@ public final class ModItems {
         output.accept(RAW_AXOLITE_DUST.get());
         output.accept(REFINED_AXOLITE_DUST.get());
         output.accept(AXOLITE_INGOT.get());
+        output.accept(AXOLITE_PRONGS.get());
+        output.accept(AXOLITE_HILT.get());
+        output.accept(AXOLITE_POMMEL.get());
+        output.accept(AXOLITE_TRIDENT.get());
+        output.accept(COSMIC_TRIDENT.get());
+        output.accept(AXOLITE_PICKAXE.get());
+        output.accept(AXOLITE_PICKAXE_TIER_2.get());
+        output.accept(AXOLITE_PICKAXE_TIER_3.get());
+        output.accept(AXOLITE_AXE.get());
+        output.accept(AXOLITE_SHOVEL.get());
+        output.accept(AXOLITE_HOE.get());
+        output.accept(AXOLITE_SWORD.get());
+
         output.accept(GRAIN.get());
         output.accept(UNCOOKED_RICE.get());
         output.accept(KOJI.get());
@@ -593,10 +666,11 @@ public final class ModItems {
         output.accept(NOODLE_COMMAND_BOOK.get());
         output.accept(ABYSSAL_RING.get());
         output.accept(ABYSSAL_COMPANION_REGISTRY.get());
-        output.accept(NOODLE_TRAINING_MEDAL.get());
+        output.accept(STARDUST.get());
         output.accept(LOGISTICS_MAESTRO.get());
         output.accept(CELESTIAL_ANVIL.get());
         output.accept(COSMIC_ESSENCE.get());
+        output.accept(EYE_OF_THE_ABYSS.get());
         output.accept(CELESTIAL_JUKEBOX.get());
         output.accept(DISC_COSMIC_SEAS.get());
         output.accept(DISC_BENEATH_SURFACE.get());
@@ -614,6 +688,7 @@ public final class ModItems {
         output.accept(GHOSTFISH_SPAWN_EGG.get());
         output.accept(ABYSSAL_ANGLER_SPAWN_EGG.get());
         output.accept(AXOLEVIATHAN_SPAWN_EGG.get());
+        output.accept(AXOCTHULU_SPAWN_EGG.get());
         output.accept(AXOKRAKEN_SPAWN_EGG.get());
         output.accept(CLUCKLES_SPAWN_EGG.get());
         output.accept(WAIFU_AXOLUTHU_SPAWN_EGG.get());

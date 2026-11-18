@@ -1,0 +1,16 @@
+{
+  "name": "Abyssal Lantern",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:abyssal_lantern",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:abyssal_lantern",
+      "text": "Slot 11: Toggleable hands-free dynamic light."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:abyssal_lantern"
+    }
+  ]
+}

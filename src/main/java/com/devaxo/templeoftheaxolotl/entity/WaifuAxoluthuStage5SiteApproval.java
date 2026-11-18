@@ -231,7 +231,7 @@ public final class WaifuAxoluthuStage5SiteApproval {
             p.putString("notes","I found a new candidate after the last one was rejected! It still needs player approval. No terrain changed.");
             ServerPlayer owner = level.getServer().getPlayerList().getPlayer(axo.getBondedPlayer());
             if (owner != null && owner.serverLevel() == level)
-                owner.sendSystemMessage(Component.literal("[Axoluthu] I found another possible spot! >:3 Come see it and use /tota axoluthu architecture propose when you're ready."));
+                owner.sendSystemMessage(Component.literal("[Axoluthu] I found another possible spot! >:3 Come see it when you're ready."));
             return;
         }
     }

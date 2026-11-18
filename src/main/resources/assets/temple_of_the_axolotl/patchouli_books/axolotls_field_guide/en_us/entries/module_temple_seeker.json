@@ -1,0 +1,16 @@
+{
+  "name": "Temple Seeker",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:temple_seeker",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:temple_seeker",
+      "text": "Slot 0: Temple locator."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:temple_seeker"
+    }
+  ]
+}

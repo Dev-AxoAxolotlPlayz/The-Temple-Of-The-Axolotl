@@ -1,0 +1,15 @@
+{
+  "name": "Shorkolotl-100",
+  "category": "temple_of_the_axolotl:equipment",
+  "icon": "temple_of_the_axolotl:shorkolotl_100_item",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:shorkolotl_100_item",
+      "text": "Assemble in the Shipyard Crane using the exact 9 x 9 pattern. Put one ingredient in each marked slot. Deploy the submarine in water."
+    },
+    {
+      "type": "temple_of_the_axolotl:shipyard_shorkolotl_100_item"
+    }
+  ]
+}

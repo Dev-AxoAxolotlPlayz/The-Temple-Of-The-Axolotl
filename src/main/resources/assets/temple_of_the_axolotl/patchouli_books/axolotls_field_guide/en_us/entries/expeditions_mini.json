@@ -5,7 +5,8 @@
   "sortnum": 0,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "minecraft:mossy_stone_bricks",
       "text": "The Shallows Temple is a smaller introductory expedition, separate from the regular and Origin Temples. Find its entrance among land-based Overworld ruins. The expedition contains three floors, each arranged as a 5 by 5 maze of familiar Temple modules."
     },
     {

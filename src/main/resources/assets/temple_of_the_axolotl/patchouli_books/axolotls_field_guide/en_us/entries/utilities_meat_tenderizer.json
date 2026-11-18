@@ -1,0 +1,16 @@
+{
+  "name": "Meat Tenderizer",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:meat_tenderizer",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:meat_tenderizer",
+      "text": "A preparation tool used in food crafting."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:meat_tenderizer"
+    }
+  ]
+}

@@ -56,6 +56,15 @@ public final class OriginTempleTravel {
     }
     /** Developer-only emergency return; never triggers regular Temple cleanup. */
     public static boolean devExit(ServerPlayer player) {
+        return exit(player, true);
+    }
+
+    /** Normal rescue extraction, without the developer escape announcement. */
+    public static boolean rescueExit(ServerPlayer player) {
+        return exit(player, false);
+    }
+
+    private static boolean exit(ServerPlayer player, boolean developerEscape) {
         if (!player.serverLevel().dimension().equals(OriginTempleState.DIMENSION)) return false;
         ServerLevel overworld = player.getServer().overworld();
         if (overworld == null) return false;
@@ -73,7 +82,9 @@ public final class OriginTempleTravel {
             player.setGameMode(GameType.byId(data.getInt("tota_origin_previous_mode")));
             data.remove("tota_origin_previous_mode");
         }
-        player.displayClientMessage(Component.literal("Exited Fractured Origin (developer escape)."), false);
+        if (developerEscape) {
+            player.displayClientMessage(Component.literal("Exited Fractured Origin (developer escape)."), false);
+        }
         return true;
     }
 

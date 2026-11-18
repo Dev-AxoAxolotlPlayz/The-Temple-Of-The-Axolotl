@@ -5,8 +5,9 @@
   "sortnum": 0,
   "pages": [
     {
-      "type": "patchouli:text",
-      "text": "Deep water brings pressure hazards. Use the Abyss Pressure Gauge to track risk as you descend. Plan your route and equipment before exploring extreme depths."
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:abyss_pressure_gauge",
+      "text": "Deep water brings pressure hazards. Use the Abyss Pressure Gauge to track risk as you descend. Plan your route and equipment before exploring extreme depths. The gauge is found in floor 4 treasure chests and sanctum boss reward loot."
     }
   ]
 }

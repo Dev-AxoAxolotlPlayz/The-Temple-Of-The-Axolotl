@@ -1,0 +1,23 @@
+{
+  "name": "Cosmic Brewing",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:cosmic_brewing_stand",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:cosmic_brewing_stand",
+      "text": "Supply heat, water and Shards of Divinity to create Ichor. The stand can recycle supported celestial modules, selected music discs and enchanted books for a 10% chance of a Shard of Divinity."
+    },
+    {
+      "type": "patchouli:smithing",
+      "recipe": "temple_of_the_axolotl:cosmic_brewing_stand_smithing"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Heat: lava bucket 10, two magma blocks 1, soul campfire 2, campfire 1. Water: water bucket or two blue ice = 1. One shard supplies 10 catalyst charges. Two heat, one catalyst and one water create 1,000 Ichor."
+    },
+    {
+      "type": "temple_of_the_axolotl:ichor_charges"
+    }
+  ]
+}

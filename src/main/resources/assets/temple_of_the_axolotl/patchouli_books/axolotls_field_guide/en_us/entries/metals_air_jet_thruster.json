@@ -1,0 +1,15 @@
+{
+  "name": "Air Jet Thruster",
+  "category": "temple_of_the_axolotl:glass_and_metals",
+  "icon": "temple_of_the_axolotl:air_jet_thruster",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:air_jet_thruster",
+      "text": "Assemble in the Shipyard Crane using the exact 9 x 9 pattern. Put one ingredient in each marked slot."
+    },
+    {
+      "type": "temple_of_the_axolotl:shipyard_air_jet_thruster"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "components": [
+    {
+      "type": "patchouli:custom",
+      "assembly": "shorkolotl_tail",
+      "x": 3,
+      "y": 3,
+      "class": "com.devaxo.templeoftheaxolotl.client.guide.ShipyardGuideComponent"
+    }
+  ]
+}

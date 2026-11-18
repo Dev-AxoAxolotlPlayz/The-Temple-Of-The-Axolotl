@@ -1,0 +1,12 @@
+{
+  "name": "Cosmic Essence",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:cosmic_essence",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:cosmic_essence",
+      "text": "Rare mineshaft chest loot (3.5% modifier chance). Used in celestial smithing recipes. Also found in floor 3–4 treasure chests, phase 6.2 sanctum rewards and tier 3–4 Merolotl village loot."
+    }
+  ]
+}

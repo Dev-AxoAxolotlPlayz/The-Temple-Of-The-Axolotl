@@ -1,11 +1,12 @@
 {
-  "name": "Black and White Trophies",
+  "name": "Axolotl Trophies",
   "category": "temple_of_the_axolotl:sushi",
   "icon": "temple_of_the_axolotl:black_axolotl_trophy",
   "sortnum": 3,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:black_axolotl_trophy",
       "text": "Each trophy is crafted from nine matching bento boxes. Both trophies are used in the Allfather helmet recipe."
     },
     {

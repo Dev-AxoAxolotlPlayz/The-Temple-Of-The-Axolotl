@@ -5,8 +5,17 @@
   "sortnum": 1,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:celestial_magnet",
       "text": "Celestial Modules add tools and utilities to your equipment interface. Explore the available slots, toggles, and item tooltips to learn their functions."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The C key opens the radial wheel. Only valid, equipped actions are shown, evenly spaced around the center. The wheel includes helmet powers and Ring mining where equipped. Open the full module rack with /tota modules."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The following entries describe the individual rack slots. Empty or reserved slots do not supply radial actions."
     }
   ]
 }

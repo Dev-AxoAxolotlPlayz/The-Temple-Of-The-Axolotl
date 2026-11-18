@@ -25,6 +25,10 @@ public final class RepositoryJeiPlugin implements IModPlugin {
     @Override public ResourceLocation getPluginUid() {
         return ResourceLocation.fromNamespaceAndPath("temple_of_the_axolotl", "repository_jei");
     }
+    @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
+        runtime.getIngredientManager().removeIngredientsAtRuntime(mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
+                java.util.List.of(new net.minecraft.world.item.ItemStack(com.devaxo.templeoftheaxolotl.item.ModItems.NOODLE_TRAINING_MEDAL.get())));
+    }
     @Override public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addRecipeTransferHandler(new IRecipeTransferHandler<CelestialRepositoryMenu, RecipeHolder<CraftingRecipe>>() {
             @Override public Class<? extends CelestialRepositoryMenu> getContainerClass() {

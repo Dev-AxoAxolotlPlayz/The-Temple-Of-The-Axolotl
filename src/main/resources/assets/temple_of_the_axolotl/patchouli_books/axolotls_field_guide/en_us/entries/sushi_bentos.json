@@ -5,7 +5,8 @@
   "sortnum": 2,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:oasis_bento_box",
       "text": "The two bento boxes are important trophy ingredients."
     },
     {

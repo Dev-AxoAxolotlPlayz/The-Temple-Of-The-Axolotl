@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "temple_of_the_axolotl:axolite_pickaxe",
+    "temple_of_the_axolotl:axolite_axe",
+    "temple_of_the_axolotl:axolite_shovel",
+    "temple_of_the_axolotl:axolite_hoe"
+  ]
+}

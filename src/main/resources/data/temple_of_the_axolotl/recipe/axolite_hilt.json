@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " GS",
+    "GSG",
+    "SG "
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glow_ink_sac"
+    },
+    "S": {
+      "item": "minecraft:amethyst_shard"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:axolite_hilt",
+    "count": 1
+  }
+}

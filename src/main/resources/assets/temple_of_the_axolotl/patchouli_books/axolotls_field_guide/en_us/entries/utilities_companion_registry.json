@@ -1,0 +1,16 @@
+{
+  "name": "Companion Registry",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:abyssal_companion_registry",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:abyssal_companion_registry",
+      "text": "Browse companions by Normal, Celestial and Abyssal category. Use /hey to issue commands. Equip in module slot 14 to open from the wheel."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:abyssal_companion_registry"
+    }
+  ]
+}

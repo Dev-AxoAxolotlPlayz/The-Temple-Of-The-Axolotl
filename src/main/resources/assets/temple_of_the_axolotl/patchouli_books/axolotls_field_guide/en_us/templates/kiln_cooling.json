@@ -1,0 +1,52 @@
+{
+  "components": [
+    {
+      "type": "patchouli:image",
+      "image": "temple_of_the_axolotl:textures/gui/field_guide/kiln_cooling_guide.png",
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 128,
+      "textureWidth": 128,
+      "textureHeight": 128
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Annealing Kiln",
+      "x": 2,
+      "y": 2,
+      "maxWidth": 112
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:molten_glass_in_a_mold",
+      "x": 12,
+      "y": 22,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "minecraft:blue_ice",
+      "x": 12,
+      "y": 58,
+      "framed": false,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:pressure_treated_acrylic_panel",
+      "x": 84,
+      "y": 40,
+      "framed": false,
+      "linkedRecipe": true
+    },
+    {
+      "type": "patchouli:text",
+      "text": "1 mold: 8 coolant units. Blue ice supplies 24. Batch: 10 seconds. Unused coolant stays banked.",
+      "x": 2,
+      "y": 82,
+      "maxWidth": 112
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " A ",
+    "ASA",
+    "SDS"
+  ],
+  "key": {
+    "A": {
+      "item": "temple_of_the_axolotl:axolite_ingot"
+    },
+    "S": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:axolite_prongs",
+    "count": 1
+  }
+}

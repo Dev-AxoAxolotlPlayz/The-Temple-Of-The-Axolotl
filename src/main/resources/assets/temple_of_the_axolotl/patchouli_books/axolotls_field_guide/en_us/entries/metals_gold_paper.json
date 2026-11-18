@@ -1,0 +1,16 @@
+{
+  "name": "Gold Paper",
+  "category": "temple_of_the_axolotl:glass_and_metals",
+  "icon": "temple_of_the_axolotl:gold_paper",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:gold_paper",
+      "text": "A thin gold processing intermediate. Prepare it using the registered recipe below."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:gold_paper"
+    }
+  ]
+}

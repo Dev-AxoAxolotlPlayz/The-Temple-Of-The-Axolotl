@@ -1,0 +1,12 @@
+{
+  "name": "Abyss Pressure Gauge",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:abyss_pressure_gauge",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:abyss_pressure_gauge",
+      "text": "Slot 9: Pressure information for Abyss exploration. Found in floor 4 treasure chests and sanctum boss reward loot."
+    }
+  ]
+}

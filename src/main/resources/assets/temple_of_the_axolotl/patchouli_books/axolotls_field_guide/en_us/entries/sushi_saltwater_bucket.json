@@ -1,0 +1,20 @@
+{
+  "name": "Saltwater Bucket",
+  "category": "temple_of_the_axolotl:sushi",
+  "icon": "temple_of_the_axolotl:saltwater_bucket",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:saltwater_bucket",
+      "text": "Process saltwater in a blast furnace to obtain salt."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:saltwater_bucket"
+    },
+    {
+      "type": "patchouli:blasting",
+      "recipe": "temple_of_the_axolotl:salt_from_saltwater"
+    }
+  ]
+}

@@ -5,7 +5,8 @@
   "sortnum": 0,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:ring_of_the_one",
       "text": "The Ring of the One is an important celestial item and an ingredient in the Allfather helmet."
     },
     {

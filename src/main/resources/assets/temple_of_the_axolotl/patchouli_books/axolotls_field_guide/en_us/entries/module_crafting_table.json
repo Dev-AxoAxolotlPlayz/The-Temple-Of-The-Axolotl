@@ -1,0 +1,22 @@
+{
+  "name": "Modular Vanilla",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "minecraft:crafting_table",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "minecraft:compass",
+      "text": "Slot 1: Vanilla compass HUD utility."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "minecraft:clock",
+      "text": "Slot 2: Vanilla time HUD utility."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "minecraft:crafting_table",
+      "text": "Slot 5: Portable crafting access."
+    }
+  ]
+}

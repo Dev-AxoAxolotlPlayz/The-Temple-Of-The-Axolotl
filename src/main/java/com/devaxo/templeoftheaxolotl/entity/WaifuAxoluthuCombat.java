@@ -44,7 +44,12 @@ public final class WaifuAxoluthuCombat {
             if (axo.tickCount >= state.impactTick) {
                 LivingEntity target = state.target;
                 if (valid(axo, owner, target) && axo.distanceToSqr(target) <= RANGE_SQR) {
-                    target.hurt(level.damageSources().sonicBoom(axo), 10.0F);
+                    if (target.hurt(level.damageSources().sonicBoom(axo), 10.0F)) {
+                        double y = target.getY() + target.getBbHeight() * 0.5;
+                        level.sendParticles(new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.15F, 0.95F, 1.0F), 1.4F), target.getX(), y, target.getZ(), 45, 0.55, 0.55, 0.55, 0.15);
+                        level.sendParticles(net.minecraft.core.particles.ParticleTypes.FIREWORK, target.getX(), y, target.getZ(), 20, 0.3, 0.3, 0.3, 0.25);
+                        level.playSound(null, target.blockPosition(), net.minecraft.sounds.SoundEvents.FIREWORK_ROCKET_BLAST, net.minecraft.sounds.SoundSource.NEUTRAL, 1.0F, 1.0F);
+                    }
                     axo.beginRailBeam(target);
                     // Deliberately no push, no explosion, no AoE.
                 }

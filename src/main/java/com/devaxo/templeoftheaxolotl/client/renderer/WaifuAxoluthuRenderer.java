@@ -18,6 +18,15 @@ public class WaifuAxoluthuRenderer extends GeoEntityRenderer<WaifuAxoluthuEntity
         poseStack.popPose();
     }
 
+    @Override
+    protected void renderNameTag(WaifuAxoluthuEntity entity, net.minecraft.network.chat.Component name,
+            PoseStack poseStack, MultiBufferSource buffers, int light, float partialTick) {
+        poseStack.pushPose();
+        poseStack.translate(0.0, 0.65, 0.0);
+        super.renderNameTag(entity, name, poseStack, buffers, light, partialTick);
+        poseStack.popPose();
+    }
+
     public WaifuAxoluthuRenderer(EntityRendererProvider.Context context) {
         super(context, new WaifuAxoluthuModel());
     }

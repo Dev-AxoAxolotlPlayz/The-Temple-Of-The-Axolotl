@@ -30,11 +30,13 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
         addIcon("R", 12, 196, 25, "Repeat: off / all / one");
         addIcon("", 14, 228, 25, "Magnet on / off");
         addIcon("⛏", 16, 228, 48, "Mining mode: on / off");
+        tridentButton = addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.literal("L"), b -> clickControl(24)).bounds(leftPos+248,topPos+48,18,18).build());
         addIcon("", 17, 228, 71, "Helmet Night Vision: on / off");
         addIcon("", 18, 207, 71, "Helmet Conduit Power: on / off");
         addIcon("G", 19, 186, 71, "Abyssal Gills: pressure protection up to 75% (on / off)");
         addIcon("L", 23, 165, 71, "Abyssal Lantern: cyan light on / off");
     }
+    private net.minecraft.client.gui.components.Button tridentButton;
     protected void addIcon(String glyph, int id, int x, int y, String tooltip) {
         addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.literal(glyph), b -> clickControl(id))
                 .bounds(leftPos + x, topPos + y, 18, 18)
@@ -81,7 +83,6 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
         for (int i = 0; i < 4; i++) {
             int sy = topPos + 16 + (5 + i) * 18;
             g.renderOutline(leftPos + 63, sy, 18, 18, 0xFF70E7D6);
-            g.drawString(font, new String[]{"J", "D", "F", "R"}[i], leftPos + 84, sy + 5, 0xFF8EF1E1, false);
         }
         // Draw controls as icon-only, with illuminated state indicated by a colored outline.
         if (menu.jukeboxInstalled()) {
@@ -154,6 +155,11 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
         g.drawString(font, this.playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFF777777, false);
     }
     @Override public void render(GuiGraphics g, int mx, int my, float tick) {
+        if (tridentButton != null) {
+            tridentButton.active = menu.tridentMode() != 0;
+            tridentButton.setMessage(Component.literal(menu.tridentMode()==2?"R":"L"));
+            tridentButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(menu.tridentMode()==0?"Hold an Axolite Trident":menu.tridentMode()==2?"Riptide X — switch to Loyalty V + Homing":"Loyalty V + Homing — switch to Riptide X")));
+        }
         renderBackground(g, mx, my, tick);
         super.render(g, mx, my, tick);
         // Draw icon silhouettes AFTER buttons so the button faces cannot cover them.

@@ -1,0 +1,19 @@
+{
+  "name": "Annealing Kiln",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:annealing_kiln",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:annealing_kiln",
+      "text": "Cools molten glass molds into pressure-treated panels."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:annealing_kiln"
+    },
+    {
+      "type": "temple_of_the_axolotl:kiln_cooling"
+    }
+  ]
+}

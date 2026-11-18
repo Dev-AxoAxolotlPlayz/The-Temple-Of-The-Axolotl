@@ -66,6 +66,8 @@ public class TempleOfTheAxolotlClient {
         event.registerEntityRenderer(ModEntities.ABYSSAL_ANGLER.get(), com.devaxo.templeoftheaxolotl.client.renderer.AbyssalAnglerRenderer::new);
         event.registerEntityRenderer(ModEntities.AXOKRAKEN.get(), com.devaxo.templeoftheaxolotl.client.renderer.AxokrakenRenderer::new);
         event.registerEntityRenderer(ModEntities.MEROLOTL.get(), com.devaxo.templeoftheaxolotl.client.renderer.MerolotlRenderer::new);
+        event.registerEntityRenderer(ModEntities.ATTACK_TENTACLE.get(), com.devaxo.templeoftheaxolotl.client.renderer.AttackTentacleRenderer::new);
+        event.registerEntityRenderer(ModEntities.AXOCTHULU.get(), com.devaxo.templeoftheaxolotl.client.renderer.AxoCthuluRenderer::new);
         event.registerEntityRenderer(ModEntities.AXOLEVIATHAN.get(),com.devaxo.templeoftheaxolotl.client.renderer.AxoleviathanRenderer::new);
         event.registerEntityRenderer(ModEntities.SHORKOLOTL_100.get(),
                 com.devaxo.templeoftheaxolotl.client.renderer.Shorkolotl100Renderer::new);

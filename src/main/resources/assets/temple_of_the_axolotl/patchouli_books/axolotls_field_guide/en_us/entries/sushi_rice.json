@@ -1,0 +1,20 @@
+{
+  "name": "Bowl of Rice",
+  "category": "temple_of_the_axolotl:sushi",
+  "icon": "temple_of_the_axolotl:bowl_of_rice",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:bowl_of_rice",
+      "text": "Prepare uncooked rice and cook the bowl of rice. Other cooking options include smoking and campfire cooking."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:uncooked_rice_bowl"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "temple_of_the_axolotl:bowl_of_rice_smelting"
+    }
+  ]
+}

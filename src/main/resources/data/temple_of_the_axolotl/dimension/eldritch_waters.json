@@ -1,0 +1,26 @@
+{
+  "type": "temple_of_the_axolotl:eldritch_waters",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "minecraft:deep_ocean",
+      "features": false,
+      "lakes": false,
+      "layers": [
+        {
+          "block": "minecraft:bedrock",
+          "height": 1
+        },
+        {
+          "block": "minecraft:stone",
+          "height": 4
+        },
+        {
+          "block": "minecraft:water",
+          "height": 84
+        }
+      ],
+      "structure_overrides": []
+    }
+  }
+}

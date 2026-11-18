@@ -122,8 +122,7 @@ public final class WaifuAxoluthuExactSiteBuilder {
                     request.remove("supplyBatchTarget");
                     request.remove("buildWaitReason");
                     memory.put(KEY, request);
-                    player.sendSystemMessage(Component.literal(
-                            "[Axoluthu] Updated legacy windows to full glass blocks! :D"));
+
                 }
                 request.putBoolean("trial3BlueprintNormalized", true);
                 memory.put(KEY, request);
@@ -561,7 +560,7 @@ public final class WaifuAxoluthuExactSiteBuilder {
         request.putString("buildWaitReason", reason);
         if (!reason.equals(old) || level.getGameTime() - last >= 200) {
             request.putLong("buildWaitNoticeTick", level.getGameTime());
-            player.sendSystemMessage(Component.literal("[Axoluthu] Workshop construction: " + reason));
+            // Wait reason remains available in the journal; no unsolicited chat.
         }
         memory.put(KEY, request);
     }

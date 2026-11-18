@@ -1,0 +1,46 @@
+{
+  "name": "Repository",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:celestial_repository_module",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:celestial_repository_module",
+      "text": "Slot 3 accepts all four Repository tiers. Base: 2 pages, 56 entries each, 32 native stacks per entry. Found in floor 3 and 4 treasure chests and sanctum boss rewards."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The Repository supports crafting and integrated recipe transfer."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:iron_repository_module",
+      "text": "3 pages; 56 entries per page. Base and Iron hold 32 native stacks per entry. Repository supports crafting and integrated recipe transfer.",
+      "title": "Iron Repository"
+    },
+    {
+      "type": "patchouli:smithing",
+      "recipe": "temple_of_the_axolotl:iron_repository_upgrade"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:gold_repository_module",
+      "text": "3 pages and 64 native stacks per entry; 56 entries per page. Base and Iron hold 32 native stacks per entry. Repository supports crafting and integrated recipe transfer.",
+      "title": "Gold Repository"
+    },
+    {
+      "type": "patchouli:smithing",
+      "recipe": "temple_of_the_axolotl:gold_repository_upgrade"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:diamond_repository_module",
+      "text": "3 pages and 64 native stacks per entry; 56 entries per page. Base and Iron hold 32 native stacks per entry. Repository supports crafting and integrated recipe transfer. Automatic sorting spans all storage pages.",
+      "title": "Diamond Repository"
+    },
+    {
+      "type": "patchouli:smithing",
+      "recipe": "temple_of_the_axolotl:diamond_repository_upgrade"
+    }
+  ]
+}

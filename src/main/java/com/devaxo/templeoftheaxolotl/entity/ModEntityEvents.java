@@ -11,6 +11,11 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 public class ModEntityEvents {
     @SubscribeEvent
     public static void registerWaterSpawnPlacements(net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent event) {
+        event.register(ModEntities.ABYSSAL_AXOLOTL.get(), net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER,
+                net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, reason, pos, random) -> level.getLevel().dimension().equals(net.minecraft.world.level.Level.OVERWORLD)
+                        && pos.getY() <= 45 && level.getFluidState(pos).is(net.minecraft.tags.FluidTags.WATER),
+                net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(ModEntities.MEGOLOTL.get(), net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER,
                 net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (type, level, reason, pos, random) -> level.getFluidState(pos).is(net.minecraft.tags.FluidTags.WATER)
@@ -24,22 +29,27 @@ public class ModEntityEvents {
         event.register(ModEntities.GHOSTFISH.get(), net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER,
                 net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (type, level, reason, pos, random) -> level.getFluidState(pos).is(net.minecraft.tags.FluidTags.WATER)
+                        && level.getLevel().dimension().location().equals(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, "ethereal_abyss"))
                         && pos.getY() <= 100,
                 net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(ModEntities.ABYSSAL_ANGLER.get(), net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER,
                 net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (type, level, reason, pos, random) -> level.getFluidState(pos).is(net.minecraft.tags.FluidTags.WATER)
+                        && level.getLevel().dimension().location().equals(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, "ethereal_abyss"))
                         && pos.getY() <= 100,
                 net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(ModEntities.AXOBLOOP.get(), net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER,
                 net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (type, level, reason, pos, random) -> level.getFluidState(pos).is(net.minecraft.tags.FluidTags.WATER)
+                        && level.getLevel().dimension().location().equals(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, "ethereal_abyss"))
                         && pos.getY() <= 100,
                 net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
+        event.put(ModEntities.ATTACK_TENTACLE.get(), AttackTentacleEntity.attributes().build());
+        event.put(ModEntities.AXOCTHULU.get(), AxoCthuluEntity.attributes().build());
         event.put(ModEntities.WAIFU_AXOLUTHU.get(), Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 80)
                 .add(Attributes.MOVEMENT_SPEED, 0.25)

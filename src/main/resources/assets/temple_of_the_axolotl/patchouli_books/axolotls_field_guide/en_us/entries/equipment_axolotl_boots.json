@@ -1,0 +1,16 @@
+{
+  "name": "Axolotl Boots",
+  "category": "temple_of_the_axolotl:equipment",
+  "icon": "temple_of_the_axolotl:axolotl_boots",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:axolotl_boots",
+      "text": "Celestial equipment for the feet."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:axolotl_boots"
+    }
+  ]
+}

@@ -24,6 +24,9 @@ public final class AbyssalCommandBookScreen extends Screen {
     private static int loreMask;
     private int loreSelected = -1;
     private int lorePage;
+    private int detailPage;
+    private static final int DETAIL_LINES = 10;
+    private int detailPages() { return Math.max(1, (font.split(pirateText(com.devaxo.templeoftheaxolotl.lore.AbyssalLoreText.text(loreSelected)), W - 48).size() + DETAIL_LINES - 1) / DETAIL_LINES); }
     public static void updateLore(int mask) {
         loreMask = mask;
         if (Minecraft.getInstance().screen instanceof AbyssalCommandBookScreen screen) screen.rebuildWidgets();
@@ -39,7 +42,6 @@ public final class AbyssalCommandBookScreen extends Screen {
     private int companionPage;
     private int companionTab = 0;
     private static final String[] COMPANION_TABS = {"Abyssal", "Celestial", "Normal"};
-    private int scrollTab = 0; // 0 = roster, 1 = requests; independent of category selection
     private java.util.List<String> visibleCompanionIds() {
         String category = COMPANION_TABS[companionTab];
         java.util.List<String> ids = new java.util.ArrayList<>();
@@ -160,12 +162,12 @@ public final class AbyssalCommandBookScreen extends Screen {
                 .bounds(x + 125, y + 31, 190, 18).build());
         }
         if (registryScroll) {
-            String[] ribbons = {"Registry", "Requests"};
+            String[] ribbons = {"Registry"};
             for (int i = 0; i < ribbons.length; i++) {
                 final int next = i;
                 addRenderableWidget(new RibbonButton(x + W - 3, y + 58 + i * 40, 91, 22,
                         pirateButton(ribbons[i]), () -> {
-                    scrollTab = next; section = next == 0 ? 1 : 2;
+                    section = 1;
                     selected = null; page = 0; scroll = 0; companionPage = 0; rebuildWidgets();
                 }));
             }
@@ -188,15 +190,17 @@ public final class AbyssalCommandBookScreen extends Screen {
                 section = target; companionPage = 0; rosterRequested = false; selected = null; loreSelected = -1; page = 0; scroll = 0; rebuildWidgets();
             }).bounds(x + 13 + index * 105, y + 31, 103, 18).build());
         }
-        if (section != 0 || loreSelected < 0) addRenderableWidget(Button.builder(pirateButton("<"), b -> {
-            if (section == 0) lorePage = Math.max(0,lorePage-1);
+        addRenderableWidget(Button.builder(pirateButton("<"), b -> {
+            if (section == 0 && loreSelected >= 0) detailPage = Math.max(0, detailPage - 1);
+            else if (section == 0) lorePage = Math.max(0,lorePage-1);
             else if (selected != null) scroll = Math.max(0, scroll - 5);
             else if (section == 1) companionPage = Math.max(0, companionPage - 1);
             else page = Math.max(0, page - 1);
             rebuildWidgets();
         }).bounds(x + 16, y + 196, 26, 20).build());
-        if (section != 0 || loreSelected < 0) addRenderableWidget(Button.builder(pirateButton(">"), b -> {
-            if (section == 0) lorePage = Math.min((com.devaxo.templeoftheaxolotl.lore.AbyssalLoreIndex.ENTRIES.length-1)/5,lorePage+1);
+        addRenderableWidget(Button.builder(pirateButton(">"), b -> {
+            if (section == 0 && loreSelected >= 0) detailPage = Math.min(detailPages() - 1, detailPage + 1);
+            else if (section == 0) lorePage = Math.min((com.devaxo.templeoftheaxolotl.lore.AbyssalLoreIndex.visibleCount()-1)/5,lorePage+1);
             else if (selected != null) scroll = Math.min(Math.max(0, commands.getOrDefault(selected, List.of()).size() - 5), scroll + 5);
             else if (section == 1) companionPage = Math.min(Math.max(0, (visibleCompanionIds().size() - 1) / 5), companionPage + 1);
             else page = Math.min(pageCount() - 1, page + 1);
@@ -211,11 +215,11 @@ public final class AbyssalCommandBookScreen extends Screen {
         }
         if (section == 0 && loreSelected < 0) {
             var names = com.devaxo.templeoftheaxolotl.lore.AbyssalLoreIndex.ENTRIES;
-            for (int i=0;i<5 && lorePage*5+i<names.length;i++) {
-                final int idx=lorePage*5+i;
+            for (int i=0;i<5 && lorePage*5+i<com.devaxo.templeoftheaxolotl.lore.AbyssalLoreIndex.visibleCount();i++) {
+                final int idx=com.devaxo.templeoftheaxolotl.lore.AbyssalLoreIndex.visibleId(lorePage*5+i);
                 boolean discovered=(loreMask & (1<<idx))!=0;
                 addRenderableWidget(Button.builder(pirateButton(discovered?names[idx]:"??? Locked"),b->{
-                    if (discovered) { loreSelected=idx; rebuildWidgets(); }
+                    if (discovered) { loreSelected=idx; detailPage=0; rebuildWidgets(); }
                 }).bounds(x+22,y+70+i*23,290,20).build());
             }
         }
@@ -299,10 +303,10 @@ public final class AbyssalCommandBookScreen extends Screen {
                 }
             }
             // Deep crimson ribbon tabs, gold trim, protruding beyond the writing area.
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 1; i++) {
                 int ry = y + 58 + i * 40;
                 int rx = x + W - 6;
-                g.fill(rx, ry - 3, rx + 94, ry + 22, i == scrollTab ? 0xFF9E293B : 0xFF671A2B);
+                g.fill(rx, ry - 3, rx + 94, ry + 22, 0xFF9E293B);
                 g.fill(rx, ry - 3, rx + 94, ry - 1, 0xFFD6AC63);
                 g.fill(rx, ry + 20, rx + 94, ry + 22, 0xFFD6AC63);
                 // Pointed velvet tail, framed by a fine gold stitch.
@@ -330,8 +334,10 @@ public final class AbyssalCommandBookScreen extends Screen {
                 var names = com.devaxo.templeoftheaxolotl.lore.AbyssalLoreIndex.ENTRIES;
                 Component entryTitle = pirateText(names[loreSelected]);
                 g.drawString(font, entryTitle, x + (W - font.width(entryTitle)) / 2, y + 58, 0xFF533B27, false);
-                wrapped(g, com.devaxo.templeoftheaxolotl.lore.AbyssalLoreText.text(loreSelected),
-                        x + 24, y + 85, W - 48, 0xFF60452D, 9);
+                var detail = font.split(pirateText(com.devaxo.templeoftheaxolotl.lore.AbyssalLoreText.text(loreSelected)), W - 48);
+                for (int i = 0; i < DETAIL_LINES && detailPage * DETAIL_LINES + i < detail.size(); i++)
+                    drawInk(g, detail.get(detailPage * DETAIL_LINES + i), x + 24, y + 82 + i * 10, 0xFF60452D, false);
+                drawInk(g, (detailPage + 1) + " / " + detailPages(), x + 150, y + 184, 0xFF765B42, false);
             } else {
                 drawInk(g, pirateText("Abyssal Field Guide"), x + 24, y + 55, 0xFF533B27, false);
                 // Keep the hint centered and below the last entry button.

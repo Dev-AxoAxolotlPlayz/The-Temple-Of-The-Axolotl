@@ -1,0 +1,16 @@
+{
+  "name": "Yang Singularity",
+  "category": "temple_of_the_axolotl:sushi",
+  "icon": "temple_of_the_axolotl:yang_singularity",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:yang_singularity",
+      "text": "A crafted sushi ingredient."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:yang_singularity"
+    }
+  ]
+}

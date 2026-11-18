@@ -1,0 +1,12 @@
+{
+  "name": "Abyssal Gills",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:abyssal_gills",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:abyssal_gills",
+      "text": "Slot 10: Toggleable protection rated for pressure up to 75%. Does not protect beyond that threshold. Found in floor 4 treasure chests and sanctum boss reward loot."
+    }
+  ]
+}

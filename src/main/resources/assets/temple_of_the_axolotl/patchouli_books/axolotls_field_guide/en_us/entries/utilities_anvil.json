@@ -5,8 +5,13 @@
   "sortnum": 0,
   "pages": [
     {
-      "type": "patchouli:text",
-      "text": "The Celestial Anvil supports advanced equipment combining without the vanilla Too Expensive cap. Valid operations cost at least one level, rounded up from half the normal level cost."
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:celestial_anvil",
+      "text": "The Celestial Anvil supports advanced equipment combining without the vanilla Too Expensive cap. Valid operations cost at least one level, rounded up from half the normal level cost. Equip in slot 6 for portable access."
+    },
+    {
+      "type": "patchouli:smithing",
+      "recipe": "temple_of_the_axolotl:celestial_anvil_smithing"
     },
     {
       "type": "patchouli:text",

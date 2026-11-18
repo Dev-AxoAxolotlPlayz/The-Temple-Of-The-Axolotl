@@ -1,11 +1,12 @@
 {
-  "name": "The Thermocline Layer",
+  "name": "Thermocline Layer",
   "category": "temple_of_the_axolotl:abyss",
   "icon": "minecraft:cyan_stained_glass",
   "sortnum": 1,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "minecraft:cyan_stained_glass",
       "text": "Far beneath the upper waters of the Ethereal Abyss lies the Thermocline Layer: a ten-block sea of milky, drifting clouds spanning depths Y=101 through Y=110. Though it resembles water, most travelers encounter it as an impassable floor. It can be approached safely; touching it does not crush or freeze you."
     },
     {

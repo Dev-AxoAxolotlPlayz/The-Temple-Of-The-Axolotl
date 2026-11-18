@@ -1,0 +1,15 @@
+{
+  "name": "Pressure-Treated Panel",
+  "category": "temple_of_the_axolotl:glass_and_metals",
+  "icon": "temple_of_the_axolotl:pressure_treated_acrylic_panel",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:pressure_treated_acrylic_panel",
+      "text": "Cool molten glass molds in the Annealing Kiln. Each batch runs for 200 ticks; blue ice supplies coolant."
+    },
+    {
+      "type": "temple_of_the_axolotl:kiln_cooling"
+    }
+  ]
+}

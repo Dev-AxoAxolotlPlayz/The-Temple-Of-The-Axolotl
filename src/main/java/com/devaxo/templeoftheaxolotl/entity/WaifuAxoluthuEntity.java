@@ -612,7 +612,7 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
 
     private void diagnostic(String subsystem, String detail) {
         lastDiagnostic = subsystem + ": " + detail;
-        TempleOfTheAxolotl.LOGGER.info("[Axoluthu/{}] entity={} dimension={} pos={} {}",
+        TempleOfTheAxolotl.LOGGER.debug("[Axoluthu/{}] entity={} dimension={} pos={} {}",
                 subsystem, getUUID(), level().dimension().location(), blockPosition().toShortString(), detail);
     }
 
@@ -652,10 +652,9 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
             player.sendSystemMessage(Component.literal("F-for me? You made this.. for me?"));
             player.sendSystemMessage(Component.literal("Hmph.. took you long enough.."));
             player.sendSystemMessage(Component.literal("i-i mean, not that i was waiting or anything"));
-            player.displayClientMessage(Component.literal("Axoluthu recognizes you as her companion. Use /tota axoluthu mode <stay|follow|free>."), false);
+            player.displayClientMessage(Component.literal("Axoluthu recognizes you as her companion."), false);
         } else if (bondedPlayer.equals(player.getUUID())) {
-            player.displayClientMessage(Component.literal("Axoluthu: " + movementMode + " | goal=" + currentGoal
-                    + " | /tota axoluthu mode <stay|follow|free>"), false);
+            // Bonded interaction deliberately has no diagnostic chat.
         } else {
             player.displayClientMessage(Component.literal("Axoluthu is already bonded to another companion."), false);
         }

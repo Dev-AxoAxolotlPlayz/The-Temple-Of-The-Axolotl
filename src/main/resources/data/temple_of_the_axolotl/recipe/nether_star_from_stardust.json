@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "temple_of_the_axolotl:stardust"
+    },
+    {
+      "item": "temple_of_the_axolotl:stardust"
+    },
+    {
+      "item": "temple_of_the_axolotl:stardust"
+    },
+    {
+      "item": "temple_of_the_axolotl:stardust"
+    }
+  ],
+  "result": {
+    "id": "minecraft:nether_star",
+    "count": 1
+  }
+}

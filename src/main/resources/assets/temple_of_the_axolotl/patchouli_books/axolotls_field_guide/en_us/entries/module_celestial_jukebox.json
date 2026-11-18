@@ -1,0 +1,16 @@
+{
+  "name": "Celestial Jukebox",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:celestial_jukebox",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:celestial_jukebox",
+      "text": "Slot 8: Enables the disc rack and music playback controls."
+    },
+    {
+      "type": "patchouli:smithing",
+      "recipe": "temple_of_the_axolotl:celestial_jukebox_smithing"
+    }
+  ]
+}

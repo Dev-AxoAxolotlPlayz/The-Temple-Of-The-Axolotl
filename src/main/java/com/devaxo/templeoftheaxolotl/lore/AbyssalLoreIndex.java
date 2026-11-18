@@ -10,7 +10,10 @@ public final class AbyssalLoreIndex {
     public static final String[] CREATURES = {"Axoleviathan", "Axokraken", "Axothulu", "Abyssal Axolotl", "Merolotls"};
     public static final String[] STRUCTURES = {"Watergate", "Merolotl Ruins", "Merolotl Villages"};
     public static final String[] BIOMES = {"Abyssal Plateaus", "Abyssal Coral Shelves", "Abyssal Kelp Seas", "Abyssal Ravines", "Abyssal Seafloor", "Abyssal Sandbars"};
-    public static final String[] ENTRIES = java.util.stream.Stream.of(CREATURES, STRUCTURES, BIOMES, new String[]{"The Thermocline Layer"}).flatMap(Arrays::stream).toArray(String[]::new);
+    public static final String[] ENTRIES = java.util.stream.Stream.of(CREATURES, STRUCTURES, BIOMES, new String[]{"The Thermocline Layer", "AxoCthulu", "Axobloops", "Megolotls", "Abyssal Anglers", "Abyssal Jellyfish", "Ghostfish"}).flatMap(Arrays::stream).toArray(String[]::new);
+    public static final int RETIRED = 14;
+    public static int visibleCount() { return ENTRIES.length - 1; }
+    public static int visibleId(int index) { return index >= RETIRED ? index + 1 : index; }
     private static final String KEY = "tota_abyssal_lore_discoveries";
     public static boolean has(ServerPlayer player, int id) { return player.getPersistentData().getCompound(KEY).getBoolean("entry_" + id); }
     public static void sync(ServerPlayer player) {
@@ -21,7 +24,7 @@ public final class AbyssalLoreIndex {
     }
     public static int unlockNext(ServerPlayer player) {
         CompoundTag tag = player.getPersistentData().getCompound(KEY);
-        for (int i = 0; i < ENTRIES.length; i++) if (!tag.getBoolean("entry_" + i)) {
+        for (int i = 0; i < ENTRIES.length; i++) if (i != RETIRED && !tag.getBoolean("entry_" + i)) {
             tag.putBoolean("entry_" + i, true); player.getPersistentData().put(KEY, tag); sync(player); return i;
         }
         return -1;

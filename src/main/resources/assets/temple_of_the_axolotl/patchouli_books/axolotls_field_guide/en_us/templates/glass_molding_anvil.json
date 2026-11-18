@@ -1,0 +1,71 @@
+{
+  "components": [
+    {
+      "type": "patchouli:text",
+      "text": "Anvil",
+      "x": 2,
+      "y": 2,
+      "maxWidth": 112
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:molten_sand",
+      "x": 4,
+      "y": 34,
+      "framed": true,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:glass_mold",
+      "x": 42,
+      "y": 34,
+      "framed": true,
+      "linkedRecipe": false
+    },
+    {
+      "type": "patchouli:item",
+      "item": "temple_of_the_axolotl:molten_glass_in_a_mold",
+      "x": 88,
+      "y": 34,
+      "framed": true,
+      "linkedRecipe": true
+    },
+    {
+      "type": "patchouli:text",
+      "text": "+",
+      "x": 25,
+      "y": 38,
+      "maxWidth": 15
+    },
+    {
+      "type": "patchouli:text",
+      "text": "→",
+      "x": 65,
+      "y": 38,
+      "maxWidth": 20
+    },
+    {
+      "type": "patchouli:text",
+      "text": "1 XP level",
+      "x": 32,
+      "y": 58,
+      "maxWidth": 90
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Place exactly one Molten Sand in the left slot. The operation consumes one Glass Mold.",
+      "x": 2,
+      "y": 78,
+      "maxWidth": 112
+    },
+    {
+      "type": "patchouli:item",
+      "item": "minecraft:anvil",
+      "x": 48,
+      "y": 12,
+      "framed": false,
+      "linkedRecipe": false
+    }
+  ]
+}

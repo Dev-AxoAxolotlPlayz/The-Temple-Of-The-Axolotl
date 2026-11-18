@@ -5,7 +5,8 @@
   "sortnum": 4,
   "pages": [
     {
-      "type": "patchouli:text",
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:axolotl_absolute",
       "text": "The Allfather helmet is a later crafting goal, not required before entering the Temple. The current in-game recipe uses three gold blocks, the White Trophy, Ring of the One, Black Trophy, and three beacons. Check the recipe below; it reflects the source currently installed."
     },
     {

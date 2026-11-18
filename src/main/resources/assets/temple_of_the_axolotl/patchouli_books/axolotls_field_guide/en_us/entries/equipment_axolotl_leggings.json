@@ -1,0 +1,16 @@
+{
+  "name": "Axolotl Leggings",
+  "category": "temple_of_the_axolotl:equipment",
+  "icon": "temple_of_the_axolotl:axolotl_leggings",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:axolotl_leggings",
+      "text": "Celestial equipment for the legs."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:axolotl_leggings"
+    }
+  ]
+}

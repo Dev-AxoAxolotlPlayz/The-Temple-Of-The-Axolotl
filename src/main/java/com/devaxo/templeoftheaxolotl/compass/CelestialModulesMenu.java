@@ -14,8 +14,9 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
     private final SimpleContainer modules = new SimpleContainer(18);
     private final SimpleContainer discs = new SimpleContainer(9);
     private final Inventory playerInventory;
-    private final int[] control = new int[16];
+    private final int[] control = new int[17];
     private boolean loadingSlots = false;
+    public int tridentMode() { return control[16]; }
     public int playing() { return control[0] - 1; }
     public boolean paused() { return control[1] != 0; }
     public boolean shuffle() { return control[2] != 0; }
@@ -164,6 +165,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
             control[12] = com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.helmetNightVisionEnabled(server) ? 1 : 0;
             control[13] = com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.helmetConduitEnabled(server) ? 1 : 0;
             control[14] = com.devaxo.templeoftheaxolotl.event.AbyssalGillsProtection.enabled(server) ? 1 : 0;
+            control[16] = com.devaxo.templeoftheaxolotl.item.AxoliteTridentMode.state(server);
             control[15] = com.devaxo.templeoftheaxolotl.event.AbyssalLanternEvents.moduleEnabled(server) ? 1 : 0;
         }
         super.broadcastChanges();
@@ -179,6 +181,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
         else if (id == 15) CelestialMusicRack.previous(server);
         else if (id == 14 && TempleHudModules.getSlot(server, 4).is(com.devaxo.templeoftheaxolotl.item.ModItems.CELESTIAL_MAGNET.get()))
             com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.cycleMagnet(server);
+        else if (id == 24) { if (!com.devaxo.templeoftheaxolotl.item.AxoliteTridentMode.toggle(server)) return false; }
         else if (id == 16) com.devaxo.templeoftheaxolotl.combat.RingMiningMode.toggle(server);
         else if (id == 17) com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.toggleHelmetNightVision(server);
         else if (id == 18) com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.toggleHelmetConduit(server);

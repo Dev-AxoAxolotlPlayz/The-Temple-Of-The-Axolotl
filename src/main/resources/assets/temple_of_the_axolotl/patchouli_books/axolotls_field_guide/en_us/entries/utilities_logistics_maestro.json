@@ -1,0 +1,24 @@
+{
+  "name": "Logistics Maestro",
+  "category": "temple_of_the_axolotl:utilities",
+  "icon": "temple_of_the_axolotl:logistics_maestro",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "temple_of_the_axolotl:logistics_maestro",
+      "text": "Equip in slot 7 to enable Cluckles logistics."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:logistics_maestro"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Equip in module slot 7. A tamed, owned Cluckles that is not sitting can process loaded containers within 64 blocks of its owner. Configurable search radius: 8, 16, 24 or 32 blocks."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Outbound sorting transfers repository items to containers already holding an identical item and with available capacity. The scan runs every 40 ticks and checks a bounded set of positions without loading chunks."
+    }
+  ]
+}

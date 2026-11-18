@@ -9,21 +9,12 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import software.bernie.geckolib.animatable.GeoItem;
-import software.bernie.geckolib.animatable.client.GeoRenderProvider;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animation.AnimatableManager;
-import software.bernie.geckolib.util.GeckoLibUtil;
-import com.devaxo.templeoftheaxolotl.client.renderer.AxoliteArmorRenderer;
-import java.util.function.Consumer;
 
 /** Diamond durability; Netherite protection, toughness, and knockback resistance. */
-public final class AxoliteArmorItem extends ArmorItem implements GeoItem {
-    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+public final class AxoliteArmorItem extends ArmorItem {
     public AxoliteArmorItem(Holder<ArmorMaterial> material, Type type, Properties properties) {
         super(material, type, properties);
     }
@@ -45,16 +36,14 @@ public final class AxoliteArmorItem extends ArmorItem implements GeoItem {
                 .add(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(id, 0.1, AttributeModifier.Operation.ADD_VALUE), slot)
                 .build();
     }
-    @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) { }
-    @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }
-    @Override public void createGeoRenderer(Consumer<GeoRenderProvider> consumer) {
-        consumer.accept(new GeoRenderProvider() {
-            private AxoliteArmorRenderer renderer;
-            @Override public <T extends LivingEntity> HumanoidModel<?> getGeoArmorRenderer(
-                T entity, ItemStack stack, EquipmentSlot slot, HumanoidModel<T> original) {
-                if (renderer == null) renderer = new AxoliteArmorRenderer();
-                return renderer;
-            }
-        });
+    private static final ResourceLocation OUTER = ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID,
+            "textures/models/armor/axolite_celestial_layer_1.png");
+    private static final ResourceLocation INNER = ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID,
+            "textures/models/armor/axolite_celestial_layer_2.png");
+
+    @Override
+    public ResourceLocation getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot,
+                                            ArmorMaterial.Layer layer, boolean innerModel) {
+        return slot == EquipmentSlot.LEGS ? INNER : OUTER;
     }
 }

@@ -20,7 +20,7 @@ import org.lwjgl.glfw.GLFW;
 public final class CelestialRadialWheel extends Screen {
     public static final KeyMapping OPEN = new KeyMapping("key.temple_of_the_axolotl.celestial_radial", InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_C,"key.categories.temple_of_the_axolotl");
-    private static final String[] NAMES = {"Night Vision", "Conduit Power", "Mining", "Magnet", "Diary", "Field Guide", "Companion Registry", "Architect Journal", "Abyssal Lantern"};
+    private static final String[] NAMES = {"Night Vision", "Conduit Power", "Mining", "Magnet", "Diary", "Field Guide", "Book of Axoluthu", "Companion Registry", "Abyssal Lantern", "Trident Mode"};
     private int selected = -1;
     private static int moduleFlags = 0;
     public static void receiveState(int flags) { moduleFlags = flags; }
@@ -43,6 +43,7 @@ public final class CelestialRadialWheel extends Screen {
         for (int i = 0; i < 4; i++) if ((moduleFlags & (1 << (10 + i))) != 0) result.add(i);
         for (int i = 4; i <= 7; i++) if ((moduleFlags & (1 << i)) != 0) result.add(i);
         if ((moduleFlags & 512) != 0) result.add(8);
+        if ((moduleFlags & (1 << 14)) != 0) result.add(9);
         return result;
     }
     @Override public void render(GuiGraphics g, int mx, int my, float partial) {
@@ -67,7 +68,7 @@ public final class CelestialRadialWheel extends Screen {
             g.fill(x - 38, y - 18, x + 38, y + 18, selected == index ? 0xDD287F9E : 0xBB1D354F);
             g.renderOutline(x - 38, y - 18, 76, 36, enabled ? 0xFF6CF1CB : 0xFF5D8199);
             g.drawCenteredString(font, NAMES[index], x, y - 9, selected == index ? 0xFFFFFFFF : 0xFFB4DDEB);
-            g.drawCenteredString(font, index < 4 || index == 8 ? (enabled ? "ON" : "OFF") : "READY", x, y + 3,
+            g.drawCenteredString(font, index == 9 ? ((moduleFlags & (1 << 15)) != 0 ? "Riptide X" : "Loyalty V") : index < 4 || index == 8 ? (enabled ? "ON" : "OFF") : "READY", x, y + 3,
                     enabled ? 0xFF79FFD4 : 0xFFB3B9C4);
         }
         g.fill(cx - 27, cy - 18, cx + 27, cy + 18, 0xCC142638);

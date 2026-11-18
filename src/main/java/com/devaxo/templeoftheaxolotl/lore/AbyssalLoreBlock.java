@@ -39,6 +39,10 @@ public final class AbyssalLoreBlock extends BaseEntityBlock {
     @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide) return InteractionResult.SUCCESS;
         if (!(player instanceof ServerPlayer server)) return InteractionResult.PASS;
+        if (broken) {
+            server.sendSystemMessage(Component.literal("The Depths hide more than this can hold"));
+            return InteractionResult.SUCCESS;
+        }
         int id = AbyssalLoreIndex.unlockNext(server);
         if (id < 0) server.sendSystemMessage(Component.literal("All Abyssal lore entries are already discovered."));
         else {

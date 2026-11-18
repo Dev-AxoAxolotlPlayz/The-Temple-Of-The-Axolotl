@@ -27,6 +27,7 @@ public final class ModBlocks {
             event.accept(TEMPLE_PORTAL_ITEM.get());
             event.accept(ABYSSAL_CHEST_ITEM.get());
             event.accept(SHALLOWS_PORTAL_ITEM.get());
+            event.accept(ELDRITCH_WATERS_PORTAL_ITEM.get());
             event.accept(SHALLOWS_EXIT_PORTAL_ITEM.get());
             event.accept(LORE_BLOCK_ITEM.get());
             event.accept(BROKEN_LORE_BLOCK_ITEM.get());
@@ -77,6 +78,13 @@ public final class ModBlocks {
                     BlockBehaviour.Properties.ofFullCopy(Blocks.EMERALD_BLOCK)
                             .strength(-1.0F, 3600000.0F)
                             .noLootTable()));
+
+    /** Luminous sea-lantern-style entrance to Eldritch Waters. */
+    public static final DeferredBlock<com.devaxo.templeoftheaxolotl.block.EldritchWatersPortalBlock> ELDRITCH_WATERS_PORTAL =
+            BLOCKS.register("eldritch_waters_portal", () -> new com.devaxo.templeoftheaxolotl.block.EldritchWatersPortalBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.SEA_LANTERN).lightLevel(state -> 15).strength(-1.0F, 3600000.0F).noLootTable()));
+    public static final DeferredItem<BlockItem> ELDRITCH_WATERS_PORTAL_ITEM = ITEMS.register("eldritch_waters_portal",
+            () -> new BlockItem(ELDRITCH_WATERS_PORTAL.get(), new Item.Properties()));
 
     public static final DeferredBlock<com.devaxo.templeoftheaxolotl.block.ShallowsPortalBlock> SHALLOWS_PORTAL =
             BLOCKS.register("shallows_portal", () -> new com.devaxo.templeoftheaxolotl.block.ShallowsPortalBlock(

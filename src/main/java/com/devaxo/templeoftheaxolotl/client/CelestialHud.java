@@ -121,193 +121,133 @@ public final class CelestialHud {
         var curse = player.getEffect(ModEffects.RNGESUS_CURSE);
 
         var navigation = TempleNavigationClient.current();
-        if (!boots && !chestplate && curse == null && !navigation.equipped() && !navigation.compass() && !navigation.clock() && !navigation.pressureGauge()) {
+        if (!boots && !chestplate && curse == null && !navigation.equipped() && !navigation.compass() && !navigation.clock() && !navigation.pressureGauge() && navigation.oxygenTier()==0) {
             return;
         }
 
         var graphics = event.getGuiGraphics();
 
-        int width = 190; // Shared backing trimmed to the repositioned pressure gauge.
-
-        int height = 12
-                + (boots ? 12 : 0)
-                + (chestplate ? 12 : 0)
-                + (curse != null ? 12 : 0)
-                + (navigation.equipped() ? 44 : 0)
-                + (navigation.compass() ? 48 : 0)
-                + (navigation.clock() ? 24 : 0);
-
-        if (navigation.pressureGauge()) height = Math.max(height, 150);
-
-        int x = right
-                ? graphics.guiWidth() - width - offsetX
-                : offsetX;
-
-        int y = offsetY;
-
-        graphics.fill(
-                x, y,
-                x + width, y + height,
-                0x990B0918
-        );
-
-        graphics.fill(
-                x, y,
-                x + width, y + 1,
-                0xFFAD77DA
-        );
-
-        int line = y + 4;
-
-        graphics.drawString(
-                minecraft.font,
-                "CELESTIAL",
-                x + 5,
-                line,
-                0xFFE1C5FF,
-                false
-        );
-
-        line += 12;
-
-        if (boots) {
-            int max = CelestialDoubleJumpInput.hudMaxAirJumps();
-
-            int remaining = Math.max(
-                    0,
-                    max - CelestialDoubleJumpInput.hudUsedAirJumps()
-            );
-
-            graphics.drawString(
-                    minecraft.font,
-                    "Pounce: " + remaining + "/" + max,
-                    x + 5,
-                    line,
-                    0xFFB6E8FF,
-                    false
-            );
-
-            line += 12;
+        boolean showGauge = navigation.pressureGauge() && !com.devaxo.templeoftheaxolotl.event.TemplePressureScale.exempt(player.level());
+        // Ability status is independent of the information sidebar.
+        if (!player.getAbilities().instabuild && !player.isSpectator() && !player.isPassenger()) {
+            int abilityX = graphics.guiWidth() / 2 + 95;
+            int abilityY = graphics.guiHeight() - 7 - minecraft.font.lineHeight;
+            int abilityWidth = minecraft.font.width("Eternal Guard: equipped");
+            // Narrow screens: keep text on screen, above the hotbar if necessary.
+            if (abilityX + abilityWidth > graphics.guiWidth() - 4) {
+                abilityX = Math.max(4, graphics.guiWidth() - abilityWidth - 4);
+                abilityY = graphics.guiHeight() - 49;
+                if (player.isUnderWater() || player.getAirSupply() < player.getMaxAirSupply()) abilityY -= 10;
+            }
+            if (chestplate) {
+                graphics.drawString(minecraft.font, "Eternal Guard: equipped", abilityX, abilityY, 0xFFFFD4A5, true);
+                abilityY -= 10;
+            }
+            if (boots) {
+                int max = CelestialDoubleJumpInput.hudMaxAirJumps();
+                int remaining = Math.max(0, max - CelestialDoubleJumpInput.hudUsedAirJumps());
+                graphics.drawString(minecraft.font, "Pounce: " + remaining + "/" + max, abilityX, abilityY, 0xFFB6E8FF, true);
+            }
         }
-
-        if (chestplate) {
-            graphics.drawString(
-                    minecraft.font,
-                    "Eternal Guard: equipped",
-                    x + 5,
-                    line,
-                    0xFFFFD4A5,
-                    false
-            );
-
-            line += 12;
-        }
-
-        if (curse != null) {
-            graphics.drawString(
-                    minecraft.font,
-                    "RNGesus Curse: " + (curse.getAmplifier() + 1),
-                    x + 5,
-                    line,
-                    0xFFFF9CA7,
-                    false
-            );
-            line += 12;
-        }
+        record HudLine(String text, int color) {}
+        var lines = new java.util.ArrayList<HudLine>();
+        if (curse != null) lines.add(new HudLine("RNGesus Curse: " + (curse.getAmplifier() + 1), 0xFFFF9CA7));
         if (navigation.equipped()) {
-            graphics.drawString(minecraft.font, "TEMPLE NAVIGATION", x + 5, line, 0xFFE1C5FF, false);
-            line += 12;
+            lines.add(new HudLine(navigation.heading(), 0xFFE1C5FF));
             if (navigation.arrived()) {
-                graphics.drawString(minecraft.font, "Temple Arrived.", x + 5, line, 0xFF9BE5DC, false);
-                line += 12;
-                graphics.drawString(minecraft.font, "The Axolotl Absolute Watches", x + 5, line, 0xFFE1C5FF, false);
-            } else if (navigation.unavailable()) {
-                graphics.drawString(minecraft.font, "Target unavailable - right-click seeker", x + 5, line, 0xFFFFB5A5, false);
-            } else if (navigation.valid()) {
+                lines.add(new HudLine("Temple Arrived.", 0xFF9BE5DC));
+                lines.add(new HudLine("The Axolotl Absolute Watches", 0xFFE1C5FF));
+            } else if (!navigation.valid() || navigation.unavailable()) {
+                lines.add(new HudLine(navigation.label().isEmpty() ? "No target" : navigation.label(), 0xFF9BE5DC));
+            } else {
+                if (!navigation.label().isEmpty()) lines.add(new HudLine(navigation.label(), 0xFF9BE5DC));
                 double dx = navigation.x() + 0.5 - player.getX();
                 double dz = navigation.z() + 0.5 - player.getZ();
                 long distance = Math.round(Math.hypot(dx, dz));
-                // Minecraft yaw: 0 faces south (+Z), 90 faces west (-X).
-                double targetAngle = Math.toDegrees(Math.atan2(-dx, dz));
-                double relative = Math.toRadians(targetAngle - player.getYRot());
-
-                String arrow = Math.cos(relative) > 0.707 ? "^" :
-                        Math.cos(relative) < -0.707 ? "v" :
-                                Math.sin(relative) > 0 ? "<" : ">";
-
-                graphics.drawString(minecraft.font, "Compass: " + arrow + "  " + distance + " blocks", x + 5, line, 0xFF9BE5DC, false);
-                line += 12;
-                graphics.drawString(minecraft.font, "X: " + navigation.x() + "  Z: " + navigation.z(), x + 5, line, 0xFFD3D9F1, false);
-            } else {
-                graphics.drawString(minecraft.font, "No temple target / wrong dimension", x + 5, line, 0xFFFFB5A5, false);
+                double relative = Math.toRadians(Math.toDegrees(Math.atan2(-dx, dz)) - player.getYRot());
+                String arrow = Math.cos(relative) > 0.707 ? "^" : Math.cos(relative) < -0.707 ? "v" : Math.sin(relative) > 0 ? "<" : ">";
+                lines.add(new HudLine("Compass: " + arrow + "  " + distance + " blocks", 0xFF9BE5DC));
+                lines.add(new HudLine("X: " + navigation.x() + "  Z: " + navigation.z(), 0xFFD3D9F1));
             }
         }
         if (navigation.compass()) {
-            line += 14;
-            graphics.drawString(minecraft.font, "POSITION", x + 5, line, 0xFFE1C5FF, false);
-            line += 12;
-            graphics.drawString(minecraft.font, "X: " + player.blockPosition().getX() +
-                    " Y: " + player.blockPosition().getY() + " Z: " + player.blockPosition().getZ(),
-                    x + 5, line, 0xFFD3D9F1, false);
-            line += 12;
-            String biome = player.level().getBiome(player.blockPosition()).unwrapKey()
-                    .map(key -> key.location().getPath().replace('_', ' ')).orElse("Unknown");
-            // Keep biome and facing on their own lines, before the chronometer.
-            // Leave the pressure instrument its own column to prevent overlap.
-            int textWidth = navigation.pressureGauge() ? 143 : width - 10;
-            graphics.drawString(minecraft.font, minecraft.font.plainSubstrByWidth(biome, textWidth),
-                    x + 5, line, 0xFF9BE5DC, false);
-            line += 12;
-            graphics.drawString(minecraft.font, "Facing: " + player.getDirection().getName().toUpperCase(),
-                    x + 5, line, 0xFF9BE5DC, false);
+            lines.add(new HudLine("POSITION", 0xFFE1C5FF));
+            lines.add(new HudLine("X: " + player.blockPosition().getX() + " Y: " + player.blockPosition().getY() + " Z: " + player.blockPosition().getZ(), 0xFFD3D9F1));
+            String biome = player.level().getBiome(player.blockPosition()).unwrapKey().map(key -> key.location().getPath().replace('_', ' ')).orElse("Unknown");
+            lines.add(new HudLine(biome, 0xFF9BE5DC));
+            lines.add(new HudLine("Facing: " + player.getDirection().getName().toUpperCase(java.util.Locale.ROOT), 0xFF9BE5DC));
         }
         if (navigation.clock()) {
-            line += 14;
             long dayTime = player.level().getDayTime();
             long day = Math.floorDiv(dayTime, 24000L) + 1;
             long ticks = Math.floorMod(dayTime, 24000L);
             int minutes = (int)((ticks * 1440L / 24000L + 360) % 1440);
             int hour24 = minutes / 60;
             int hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
-            String time = String.format(java.util.Locale.ROOT, "%02d:%02d %s",
-                    hour12, minutes % 60, hour24 < 12 ? "AM" : "PM");
-            graphics.drawString(minecraft.font, "CHRONOMETER", x + 5, line, 0xFFE1C5FF, false);
-            line += 12;
-            graphics.drawString(minecraft.font, "Day " + day + "  |  " + time,
-                    x + 5, line, 0xFFF5D797, false);
+            String time = String.format(java.util.Locale.ROOT, "%02d:%02d %s", hour12, minutes % 60, hour24 < 12 ? "AM" : "PM");
+            lines.add(new HudLine("CHRONOMETER", 0xFFE1C5FF));
+            lines.add(new HudLine("Day " + day + "  |  " + time, 0xFFF5D797));
         }
-        if (navigation.pressureGauge()) {
-            // Keep the dial on the shared HUD backing, closer to the navigation text.
-            // Position is relative to the HUD origin, not the bottom/right screen edges.
-            int cx = x + 135;
-            int cy = y + 94;
+        boolean tank= navigation.oxygenTier()>0;
+        boolean instruments=showGauge||tank;
+        int minHalf=tank?166:132;
+        if (instruments && graphics.guiWidth() / 2 >= minHalf) {
             boolean submerged = player.isUnderWater();
             double pressure = submerged ? com.devaxo.templeoftheaxolotl.event.TemplePressureScale.pressure(player) : 0.0;
-            drawPressureDial(graphics, minecraft, cx, cy, pressure, submerged);
+            if(showGauge) drawPressureDial(graphics, minecraft, graphics.guiWidth() / 2 - 113, graphics.guiHeight() - 35, pressure, submerged);
+            if(tank) drawTank(graphics,minecraft,graphics.guiWidth()/2-151,graphics.guiHeight()-35,navigation.oxygenTier(),navigation.oxygenPercent());
         }
+        boolean gaugeInSidebar = instruments && graphics.guiWidth() / 2 < minHalf;
+        if (lines.isEmpty() && !gaugeInSidebar) return;
+        int contentWidth = gaugeInSidebar ? (tank?71:33) : 0;
+        for (HudLine entry : lines) contentWidth = Math.max(contentWidth, minecraft.font.width(entry.text()));
+        int width = Math.min(contentWidth + 10, Math.max(44, graphics.guiWidth() - offsetX - 5));
+        int height = 8 + lines.size() * 12 + (gaugeInSidebar ? 48 : 0);
+        int x = right ? graphics.guiWidth() - width - offsetX : offsetX;
+        int y = offsetY;
+        graphics.fill(x, y, x + width, y + height, 0x990B0918);
+        graphics.fill(x, y, x + width, y + 1, 0xFFAD77DA);
+        int line = y + 4;
+        for (HudLine entry : lines) {
+            graphics.drawString(minecraft.font, minecraft.font.plainSubstrByWidth(entry.text(), width - 10), x + 5, line, entry.color(), false);
+            line += 12;
+        }
+        if (gaugeInSidebar) {
+            boolean submerged = player.isUnderWater();
+            if(tank) drawTank(graphics,minecraft,x+21,line+17,navigation.oxygenTier(),navigation.oxygenPercent());
+            if(showGauge) drawPressureDial(graphics, minecraft, x + (tank?59:21), line + 17, submerged ? com.devaxo.templeoftheaxolotl.event.TemplePressureScale.pressure(player) : 0.0, submerged);
+        }
+
+    }
+    private static void drawTank(net.minecraft.client.gui.GuiGraphics g,Minecraft mc,int cx,int cy,int tier,int percent){
+        int outline=0xFF8CB6C8; int color=switch(tier){case 2->0xFFD3D3D3;case 3->0xFFE8BC38;case 4->0xFF46D8DE;case 5->0xFF51434F;default->0xFF647D91;};
+        g.fill(cx-6,cy-16,cx+7,cy+10,outline);g.fill(cx-5,cy-15,cx+6,cy+9,0xFF101C32);
+        int fill=Math.round(24*Math.max(0,Math.min(100,percent))/100f);
+        if(fill>0)g.fill(cx-5,cy+9-fill,cx+6,cy+9,0xFF0054EE);
+        g.fill(cx-10,cy+10,cx+11,cy+17,outline);g.fill(cx-9,cy+11,cx+10,cy+16,color);
+        String label=percent+"%";g.drawString(mc.font,label,cx-mc.font.width(label)/2,cy+19,0xFF5BF5FF,false);
     }
     private static void drawPressureDial(net.minecraft.client.gui.GuiGraphics g, Minecraft mc,
                                          int cx, int cy, double pressure, boolean submerged) {
         // Pixel-drawn analog instrument: no font glyphs or external image dependencies.
-        g.drawString(mc.font, "ABYSS PRESSURE", cx - 38, cy - 49, 0xFFB6F6FF, false);
-        for (int dy = -35; dy <= 35; dy++) for (int dx = -35; dx <= 35; dx++) {
+        for (int dy = -16; dy <= 16; dy++) for (int dx = -16; dx <= 16; dx++) {
             int d = dx * dx + dy * dy;
-            int color = d <= 29 * 29 ? 0xFF101C32 : d <= 33 * 33 ? 0xFF8CB6C8 : 0;
+            int color = d <= 14 * 14 ? 0xFF101C32 : d <= 16 * 16 ? 0xFF8CB6C8 : 0;
             if (color != 0) g.fill(cx + dx, cy + dy, cx + dx + 1, cy + dy + 1, color);
         }
         // The dial sweeps 270 degrees from 0 (lower-left) to 100 (lower-right).
         for (int n = 0; n <= 20; n++) {
             double a = Math.toRadians(135.0 + 270.0 * n / 20.0);
-            int r1 = n % 4 == 0 ? 23 : 26;
+            int r1 = n % 4 == 0 ? 11 : 13;
             drawPixelLine(g, cx + (int)Math.round(Math.cos(a) * r1), cy + (int)Math.round(Math.sin(a) * r1),
-                    cx + (int)Math.round(Math.cos(a) * 29), cy + (int)Math.round(Math.sin(a) * 29), 0xFFBCEBFF);
+                    cx + (int)Math.round(Math.cos(a) * 14), cy + (int)Math.round(Math.sin(a) * 14), 0xFFBCEBFF);
         }
         double angle = Math.toRadians(135.0 + 270.0 * pressure / 100.0);
-        drawPixelLine(g, cx, cy, cx + (int)Math.round(Math.cos(angle) * 22),
-                cy + (int)Math.round(Math.sin(angle) * 22), 0xFF51F5FF);
-        g.fill(cx - 2, cy - 2, cx + 3, cy + 3, 0xFFE8FFFF);
+        drawPixelLine(g, cx, cy, cx + (int)Math.round(Math.cos(angle) * 11),
+                cy + (int)Math.round(Math.sin(angle) * 11), 0xFF51F5FF);
+        g.fill(cx - 1, cy - 1, cx + 2, cy + 2, 0xFFE8FFFF);
         String readout = String.format(java.util.Locale.ROOT, "%03d", (int)Math.round(pressure));
-        g.drawString(mc.font, readout, cx - mc.font.width(readout)/2, cy + 36,
+        g.drawString(mc.font, readout, cx - mc.font.width(readout)/2, cy + 19,
                 submerged ? 0xFF5BF5FF : 0xFF99AAB9, false);
     }
 

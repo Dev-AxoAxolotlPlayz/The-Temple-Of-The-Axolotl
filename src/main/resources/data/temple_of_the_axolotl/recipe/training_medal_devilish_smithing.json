@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "minecraft:magma_block"
+  },
+  "base": {
+    "item": "temple_of_the_axolotl:training_medal"
+  },
+  "addition": {
+    "item": "minecraft:blaze_rod"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:training_medal",
+    "count": 1
+  }
+}

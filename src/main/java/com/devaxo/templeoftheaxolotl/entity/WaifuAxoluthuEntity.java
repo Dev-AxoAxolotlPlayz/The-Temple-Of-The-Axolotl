@@ -643,6 +643,7 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
             }
             if (!player.getAbilities().instabuild) player.getItemInHand(hand).shrink(1);
             bondedPlayer = player.getUUID();
+            if (player instanceof ServerPlayer recipient) com.devaxo.templeoftheaxolotl.promise.PromiseState.gift(recipient);
             addTag("tamed");
             getPersistentData().putBoolean("tota_axoluthu_tamed", true);
             movementMode = MovementMode.FOLLOW;
@@ -713,6 +714,7 @@ public class WaifuAxoluthuEntity extends PathfinderMob implements GeoEntity {
 
         if(entityData.get(ACTION)!=ACTION_NONE && tickCount>=actionUntil)finishAction();
         if (WaifuAxoluthuCombat.tick(this, server)) return;
+        if (com.devaxo.templeoftheaxolotl.promise.PromiseState.deliveryTick(this, server)) return;
         refreshForestryOnHomeReturn(server);
         refreshBedHome(server);
         if(tickAutonomousBedtime(server))return;

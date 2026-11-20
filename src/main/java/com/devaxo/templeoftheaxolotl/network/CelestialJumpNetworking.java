@@ -30,6 +30,7 @@ public final class CelestialJumpNetworking {
                     ShorkolotlPilotInputPayload.STREAM_CODEC,
                     ShorkolotlPilotInputPayload::handle
             );
+            event.registrar("1").playToClient(RingFlightStatePayload.TYPE,RingFlightStatePayload.STREAM_CODEC,RingFlightStatePayload::handle);
             event.registrar("1").playToServer(
                     RingAttackInputPayload.TYPE,
                     RingAttackInputPayload.STREAM_CODEC,

@@ -1,0 +1,11 @@
+{
+  "name": "William George (BillBodkin)",
+  "category": "temple_of_the_axolotl:special_thanks",
+  "icon": "minecraft:book",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Special thanks to BillBodkin, creator of F-Tech Equipment. Studying his openly shared locomotion implementation inspired the movement architecture of Axoluthu's Promise. Thank you for sharing your work and helping fellow mod developers learn. $(br2)\u2014 DevAxo"
+    }
+  ]
+}

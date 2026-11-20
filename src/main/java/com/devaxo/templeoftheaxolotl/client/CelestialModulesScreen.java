@@ -28,17 +28,18 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
         addIcon(">|", 13, 148, 25, "Next disc");
         addIcon("S", 11, 176, 25, "Shuffle on / off");
         addIcon("R", 12, 196, 25, "Repeat: off / all / one");
-        addIcon("", 14, 228, 25, "Magnet on / off");
+        addIcon("", 14, 168, 71, "Magnet on / off");
         addIcon("⛏", 16, 228, 48, "Mining mode: on / off");
-        tridentButton = addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.literal("L"), b -> clickControl(24)).bounds(leftPos+248,topPos+48,18,18).build());
-        addIcon("", 17, 228, 71, "Helmet Night Vision: on / off");
-        addIcon("", 18, 207, 71, "Helmet Conduit Power: on / off");
-        addIcon("G", 19, 186, 71, "Abyssal Gills: pressure protection up to 75% (on / off)");
-        addIcon("L", 23, 165, 71, "Abyssal Lantern: cyan light on / off");
+        addIcon("F", 25, 208, 48, "Sustainable Farming: preserve bamboo and sugarcane roots (held Ring)");
+        tridentButton = addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.empty(), b -> clickControl(24)).bounds(leftPos+248,topPos+48,18,18).build());
+        addIcon("", 17, 248, 71, "Helmet Night Vision: on / off");
+        addIcon("", 18, 228, 71, "Helmet Conduit Power: on / off");
+        addIcon("G", 19, 208, 71, "Abyssal Gills: pressure protection up to 75% (on / off)");
+        addIcon("L", 23, 188, 71, "Abyssal Lantern: cyan light on / off");
     }
     private net.minecraft.client.gui.components.Button tridentButton;
     protected void addIcon(String glyph, int id, int x, int y, String tooltip) {
-        addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.literal(glyph), b -> clickControl(id))
+        addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.empty(), b -> clickControl(id))
                 .bounds(leftPos + x, topPos + y, 18, 18)
                 .tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(tooltip))).build());
     }
@@ -77,7 +78,7 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
         g.fill(leftPos + 99, topPos + 3, leftPos + 267, topPos + 93, 0xE00B1528);
         g.renderOutline(leftPos + 99, topPos + 3, 168, 90, 0xFF6CACC4);
         // Four rightmost module slots are dedicated to the book shortcuts.
-        g.drawString(font, "BOOK MODULES", leftPos + 103, topPos + 84, 0xFFB6F6FF, false);
+
         // The last four module slots are book shortcuts; mark their actual
         // slot positions instead of placing a long label over the controls.
         for (int i = 0; i < 4; i++) {
@@ -89,7 +90,7 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
             g.drawString(font, "JUKEBOX", leftPos + 108, topPos + 8, 0xFFB6F6FF, false);
             String current = menu.playing() < 0 ? "None" : "Slot " + (menu.playing() + 1);
             String next = menu.nextUp() == -2 ? "Random" : menu.nextUp() < 0 ? "None" : "Slot " + (menu.nextUp() + 1);
-            g.drawString(font, "Now: " + current + (menu.paused() ? " (paused)" : ""), leftPos + 108, topPos + 54, 0xFFE9E5FF, false);
+            g.drawString(font, "Now: " + current + (menu.paused() ? " II" : ""), leftPos + 108, topPos + 54, 0xFFE9E5FF, false);
             g.drawString(font, "Next: " + next, leftPos + 108, topPos + 69, 0xFFE9E5FF, false);
             if (menu.shuffle()) g.renderOutline(leftPos + 175, topPos + 24, 20, 20, 0xFF68F4CA);
             if (menu.repeat() != 0) g.renderOutline(leftPos + 195, topPos + 24, 20, 20, 0xFF68F4CA);
@@ -99,13 +100,13 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
         }
         AbyssalLanternVisuals.updateModule(menu.lanternEnabled());
         // Custom pixel-art icons, avoiding missing Unicode glyphs in Minecraft's font.
-        RingAttackInput.setMiningMode(menu.miningMode());
+        if (menu.sustainable()) g.renderOutline(leftPos + 207, topPos + 47, 20, 20, 0xFF68F4CA);
         if (menu.miningMode()) g.renderOutline(leftPos + 227, topPos + 47, 20, 20, 0xFF68F4CA);
-        if (menu.lanternEnabled()) g.renderOutline(leftPos + 164, topPos + 70, 20, 20, 0xFF68F4CA);
-        if (menu.abyssalGillsEnabled()) g.renderOutline(leftPos + 185, topPos + 70, 20, 20, 0xFF68F4CA);
-        if (menu.helmetConduitEnabled()) g.renderOutline(leftPos + 206, topPos + 70, 20, 20, 0xFF68F4CA);
-        if (menu.helmetNightVisionEnabled()) g.renderOutline(leftPos + 227, topPos + 70, 20, 20, 0xFF68F4CA);
-        if (menu.magnetMode() != 2) g.renderOutline(leftPos + 227, topPos + 24, 20, 20, 0xFF68F4CA);
+        if (menu.lanternEnabled()) g.renderOutline(leftPos + 187, topPos + 70, 20, 20, 0xFF68F4CA);
+        if (menu.abyssalGillsEnabled()) g.renderOutline(leftPos + 207, topPos + 70, 20, 20, 0xFF68F4CA);
+        if (menu.helmetConduitEnabled()) g.renderOutline(leftPos + 227, topPos + 70, 20, 20, 0xFF68F4CA);
+        if (menu.helmetNightVisionEnabled()) g.renderOutline(leftPos + 247, topPos + 70, 20, 20, 0xFF68F4CA);
+        if (menu.magnetMode() != 2) g.renderOutline(leftPos + 167, topPos + 70, 20, 20, 0xFF68F4CA);
         for (int i = 0; i < 36; i++) {
             int x = leftPos + 100 + (i % 9) * 18;
             int y = topPos + (i < 27 ? 103 + (i / 9) * 18 : 161);
@@ -152,20 +153,26 @@ public class CelestialModulesScreen extends AbstractContainerScreen<CelestialMod
     @Override protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
         // The custom panel renders its own heading. Never draw the inherited
         // menu title (which previously appeared outside the panel).
-        g.drawString(font, this.playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFF777777, false);
+        g.drawString(font, this.playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFFFFFFF, false);
     }
     @Override public void render(GuiGraphics g, int mx, int my, float tick) {
         if (tridentButton != null) {
             tridentButton.active = menu.tridentMode() != 0;
-            tridentButton.setMessage(Component.literal(menu.tridentMode()==2?"R":"L"));
+            
             tridentButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(menu.tridentMode()==0?"Hold an Axolite Trident":menu.tridentMode()==2?"Riptide X — switch to Loyalty V + Homing":"Loyalty V + Homing — switch to Riptide X")));
         }
         renderBackground(g, mx, my, tick);
         super.render(g, mx, my, tick);
         // Draw icon silhouettes AFTER buttons so the button faces cannot cover them.
-        drawMagnet(g, leftPos + 228, topPos + 25);
-        drawMoon(g, leftPos + 228, topPos + 71);
-        drawFish(g, leftPos + 207, topPos + 71);
+        if (!(this instanceof ClucklesControlsScreen)) {
+            ModuleIcons.glyph(g,leftPos+109,topPos+26,"prev");
+            ModuleIcons.glyph(g,leftPos+129,topPos+26,menu.paused()||menu.playing()<0?"play":"pause");
+            ModuleIcons.glyph(g,leftPos+149,topPos+26,"next");
+            ModuleIcons.glyph(g,leftPos+177,topPos+26,"shuffle");
+            ModuleIcons.glyph(g,leftPos+197,topPos+26,"repeat");
+            int[][] icons={{168,71,3},{228,48,2},{208,48,10},{248,48,9},{248,71,0},{228,71,1},{208,71,11},{188,71,8}};
+            for(int[] icon:icons) ModuleIcons.item(g,leftPos+icon[0]+1,topPos+icon[1]+1,icon[2]);
+        }
         renderTooltip(g, mx, my);
     }
 }

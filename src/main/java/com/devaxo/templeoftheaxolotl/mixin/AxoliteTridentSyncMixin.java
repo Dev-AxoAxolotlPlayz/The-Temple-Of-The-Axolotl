@@ -41,7 +41,7 @@ public abstract class AxoliteTridentSyncMixin implements AxoliteTridentVisualSta
     @Unique private final java.util.Set<java.util.UUID> tota$visited = new java.util.HashSet<>();
     @Unique private boolean tota$eligible(ThrownTrident e, Mob mob) {
         var owner=e.getOwner();
-        return mob.isAlive() && mob.isPickable() && mob != owner && !tota$visited.contains(mob.getUUID())
+        return !com.devaxo.templeoftheaxolotl.combat.InnateProtection.villager(mob) && !(mob instanceof com.devaxo.templeoftheaxolotl.entity.AxoCthuluEntity) && mob.isAlive() && mob.isPickable() && mob != owner && !tota$visited.contains(mob.getUUID())
             && (owner == null || (!owner.isAlliedTo(mob) && !mob.isAlliedTo(owner)))
             && !(mob instanceof net.minecraft.world.entity.TamableAnimal t && t.isTame());
     }
@@ -101,10 +101,10 @@ public abstract class AxoliteTridentSyncMixin implements AxoliteTridentVisualSta
     }
     @Unique private double tota$range = -1.0;
     @Unique private void tota$return(ThrownTrident e) {
-        if(tota$returning) return;
         tota$returning=true;
         dealtDamage=true;
         e.setNoGravity(true);
+        e.setNoPhysics(true);
         tota$cachedNearbyTarget=null;
     }
     @Unique private void tota$detonate(net.minecraft.server.level.ServerLevel level, net.minecraft.world.entity.Entity hit, Player owner) {
@@ -187,6 +187,7 @@ public abstract class AxoliteTridentSyncMixin implements AxoliteTridentVisualSta
             com.devaxo.templeoftheaxolotl.combat.ShellShockedLogic.apply(victim, attacker);
         }
         if(!tota$impactSucceeded || !(e.getOwner() instanceof Player owner)) return;
+        if (com.devaxo.templeoftheaxolotl.combat.InnateProtection.villager(hit.getEntity())) { tota$return(e); return; }
         if (((AxoliteArrowStackAccessor)e).tota$pickupStack().is(ModItems.COSMIC_TRIDENT.get())) {
             com.devaxo.templeoftheaxolotl.combat.StarfallBurst.doubleBurst(level,
                 hit.getEntity().getBoundingBox().getCenter(), owner, hit.getEntity(),
@@ -201,7 +202,7 @@ public abstract class AxoliteTridentSyncMixin implements AxoliteTridentVisualSta
             ((AxoliteArrowStackAccessor)e).tota$pickupStack());
 
     }
-    @Inject(method="tick",at=@At("HEAD"))
+    @Inject(method="tick",at=@At("HEAD"),cancellable=true)
     private void tota$sync(CallbackInfo ci) {
         ThrownTrident e=(ThrownTrident)(Object)this;
         if(!e.level().isClientSide) {
@@ -210,6 +211,11 @@ public abstract class AxoliteTridentSyncMixin implements AxoliteTridentVisualSta
             boolean cosmic = ((AxoliteArrowStackAccessor)e).tota$pickupStack().is(ModItems.COSMIC_TRIDENT.get());
             if (tota$isCosmic() != cosmic) e.getEntityData().set(TOTA_COSMIC, cosmic);
             var weapon = ((AxoliteArrowStackAccessor)e).tota$pickupStack();
+            boolean retained=com.devaxo.templeoftheaxolotl.trident.PersistentTridents.marked(e);
+            if(retained){
+                if(!(e.getOwner() instanceof Player owner)||!owner.isAlive()||!com.devaxo.templeoftheaxolotl.trident.PersistentTridents.valid(e,owner,weapon)) {e.discard();ci.cancel();return;}
+                if(dealtDamage || e.isNoPhysics() || e.getPersistentData().getBoolean(com.devaxo.templeoftheaxolotl.trident.PersistentTridents.RECALL))tota$return(e);
+            }
             int voidLevel = com.devaxo.templeoftheaxolotl.trident.EternalVoid.level(e.level(), weapon);
             if (voidLevel > 0 && e.getY() <= -63.0 && !tota$voidRescued) {
                 tota$voidRescued = true;
@@ -252,15 +258,25 @@ public abstract class AxoliteTridentSyncMixin implements AxoliteTridentVisualSta
                         }
                     }
                 }
-                boolean arrived=e.distanceToSqr(owner)<4;
+                boolean arrived=e.distanceToSqr(owner)<4 || (retained && tota$returning && owner.getEyePosition().distanceToSqr(e.position())<4);
                 var it=tota$cargo.iterator();
                 while(it.hasNext()) {
                     var cargo=level.getEntity(it.next());
                     if(cargo==null || !cargo.isAlive()) { it.remove(); continue; }
+                    if (cargo instanceof ItemEntity item && voidLevel>0 && owner instanceof net.minecraft.server.level.ServerPlayer sp) {
+                        var stack=item.getItem();
+                        if(item.getOwner()!=null && !item.getOwner().equals(owner)){it.remove();continue;}
+                        for(int page=0;page<com.devaxo.templeoftheaxolotl.repository.CelestialRepository.pages(sp)&&!stack.isEmpty();page++) {
+                            int moved=com.devaxo.templeoftheaxolotl.repository.CelestialRepository.insertPage(sp,page,stack);
+                            stack.shrink(moved);
+                        }
+                        if(stack.isEmpty())item.discard();else item.setItem(stack);
+                        it.remove();continue;
+                    }
                     if (arrived) {
                         if (cargo instanceof ExperienceOrb orb) {
-                            owner.giveExperiencePoints(orb.value);
-                            orb.discard();
+                            orb.setPos(owner.getX(),owner.getY()+0.2,owner.getZ());
+                            orb.setDeltaMovement(Vec3.ZERO);
                         } else if (cargo instanceof ItemEntity item) {
                             var stack=item.getItem();
                             owner.getInventory().add(stack);
@@ -283,14 +299,22 @@ public abstract class AxoliteTridentSyncMixin implements AxoliteTridentVisualSta
                 if(tota$returning) {
                     if(e.getOwner() instanceof Player owner && owner.isAlive()) {
                         Vec3 destination=owner.getEyePosition().subtract(e.position());
-                        if(destination.lengthSqr()<2.25) {
-                            var stack=((AxoliteArrowStackAccessor)e).tota$pickupStack().copy();
-                            if(!owner.getInventory().add(stack) && !stack.isEmpty()) owner.drop(stack,false);
+                        if(destination.lengthSqr()<2.25 || (retained && e.getBoundingBox().inflate(0.75).intersects(owner.getBoundingBox()))) {
+                            if(retained) com.devaxo.templeoftheaxolotl.trident.PersistentTridents.clear(e,owner,weapon);
+                            else {var stack=((AxoliteArrowStackAccessor)e).tota$pickupStack().copy();
+                            if(!owner.getInventory().add(stack) && !stack.isEmpty()) owner.drop(stack,false);}
                             e.discard();
-                            return;
+                            ci.cancel();return;
                         }
-                        e.setDeltaMovement(destination.normalize().scale(Math.min(2.0,Math.max(0.6,destination.length()*0.35))));
+                        Vec3 step=destination.normalize().scale(Math.min(2.0,Math.max(0.6,destination.length()*0.35)));
+                        e.setDeltaMovement(step);
                         e.hasImpulse=true;
+                        if(retained) {
+                            // Own the return movement; vanilla Loyalty must not steer or pick up this copy.
+                            e.setPos(e.getX()+step.x,e.getY()+step.y,e.getZ()+step.z);
+                            tota$orientFlight(ci);
+                            ci.cancel();return;
+                        }
                     } else {
                         e.setNoGravity(false);
                         tota$returning=false;
@@ -309,7 +333,7 @@ public abstract class AxoliteTridentSyncMixin implements AxoliteTridentVisualSta
                         double best=radius*radius;
                         for(Mob mob:e.level().getEntitiesOfClass(Mob.class,
                                 new net.minecraft.world.phys.AABB(pos,pos).inflate(radius),
-                                m->tota$eligible(e,m))) {
+                                m->tota$eligible(e,m) && com.devaxo.templeoftheaxolotl.network.TridentFovPayload.withinView(e.getOwner(),m))) {
                             double dist=mob.distanceToSqr(e);
                             if(dist<best) { best=dist; tota$cachedNearbyTarget=mob; }
                         }
@@ -340,6 +364,10 @@ public abstract class AxoliteTridentSyncMixin implements AxoliteTridentVisualSta
             e.level().addParticle(new DustParticleOptions(color,0.9f),e.getX(),e.getY(),e.getZ(),0,0,0);
             e.level().addParticle(new DustParticleOptions(color,0.5f),e.getX()+0.12,e.getY(),e.getZ()-0.12,0,0,0);
         }
+    }
+    @Inject(method="tryPickup",at=@At("HEAD"),cancellable=true)
+    private void tota$noRetainedPickup(Player p, org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Boolean> cir) {
+        if(com.devaxo.templeoftheaxolotl.trident.PersistentTridents.marked((ThrownTrident)(Object)this))cir.setReturnValue(false);
     }
     @Inject(method="tick", at=@At("TAIL"))
     private void tota$orientFlight(CallbackInfo ci) {

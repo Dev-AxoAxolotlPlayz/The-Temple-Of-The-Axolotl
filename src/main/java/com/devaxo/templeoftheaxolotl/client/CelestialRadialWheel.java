@@ -20,7 +20,7 @@ import org.lwjgl.glfw.GLFW;
 public final class CelestialRadialWheel extends Screen {
     public static final KeyMapping OPEN = new KeyMapping("key.temple_of_the_axolotl.celestial_radial", InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_C,"key.categories.temple_of_the_axolotl");
-    private static final String[] NAMES = {"Night Vision", "Conduit Power", "Mining", "Magnet", "Diary", "Field Guide", "Book of Axoluthu", "Companion Registry", "Abyssal Lantern", "Trident Mode"};
+    private static final String[] NAMES = {"Night Vision", "Conduit Power", "Mining", "Magnet", "Diary", "Field Guide", "Book of Axoluthu", "Companion Registry", "Abyssal Lantern", "Trident Mode", "Sustainable Farming", "Axoluthu’s Promise"};
     private int selected = -1;
     private static int moduleFlags = 0;
     public static void receiveState(int flags) { moduleFlags = flags; }
@@ -30,6 +30,7 @@ public final class CelestialRadialWheel extends Screen {
     }
     @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && mc.player.tickCount % 20 == 0) PacketDistributor.sendToServer(new com.devaxo.templeoftheaxolotl.network.TridentFovPayload(mc.options.fov().get()));
         if (mc.player != null && mc.screen == null && OPEN.consumeClick()) {
             mc.setScreen(new CelestialRadialWheel());
             PacketDistributor.sendToServer(new com.devaxo.templeoftheaxolotl.network.CelestialRadialActionPayload(-1));
@@ -44,6 +45,8 @@ public final class CelestialRadialWheel extends Screen {
         for (int i = 4; i <= 7; i++) if ((moduleFlags & (1 << i)) != 0) result.add(i);
         if ((moduleFlags & 512) != 0) result.add(8);
         if ((moduleFlags & (1 << 14)) != 0) result.add(9);
+        if ((moduleFlags & (1 << 16)) != 0) result.add(10);
+        if ((moduleFlags & (1 << 18)) != 0) result.add(11);
         return result;
     }
     @Override public void render(GuiGraphics g, int mx, int my, float partial) {
@@ -56,7 +59,8 @@ public final class CelestialRadialWheel extends Screen {
         if (count > 0 && distance >= 54 && distance <= 135) {
             double angle = (Math.atan2(dx, -dy) + Math.PI * 2) % (Math.PI * 2);
             int wedge = (int) Math.floor((angle + Math.PI / count) % (Math.PI * 2) / (Math.PI * 2 / count));
-            selected = actions.get(wedge);
+            double a=wedge*Math.PI*2/count;
+            if(Math.abs(mx-(cx+Math.round(Math.sin(a)*100)))<=16 && Math.abs(my-(cy-Math.round(Math.cos(a)*100)))<=16) selected = actions.get(wedge);
         }
         g.fill(cx - 140, cy - 140, cx + 140, cy + 140, 0x450E243B);
         for (int position = 0; position < count; position++) {
@@ -64,23 +68,27 @@ public final class CelestialRadialWheel extends Screen {
             double angle = position * Math.PI * 2 / count;
             int x = cx + (int) Math.round(Math.sin(angle) * 100);
             int y = cy - (int) Math.round(Math.cos(angle) * 100);
-            boolean enabled = (moduleFlags & (1 << index)) != 0;
-            g.fill(x - 38, y - 18, x + 38, y + 18, selected == index ? 0xDD287F9E : 0xBB1D354F);
-            g.renderOutline(x - 38, y - 18, 76, 36, enabled ? 0xFF6CF1CB : 0xFF5D8199);
-            g.drawCenteredString(font, NAMES[index], x, y - 9, selected == index ? 0xFFFFFFFF : 0xFFB4DDEB);
-            g.drawCenteredString(font, index == 9 ? ((moduleFlags & (1 << 15)) != 0 ? "Riptide X" : "Loyalty V") : index < 4 || index == 8 ? (enabled ? "ON" : "OFF") : "READY", x, y + 3,
-                    enabled ? 0xFF79FFD4 : 0xFFB3B9C4);
+            boolean enabled = index==10 ? (moduleFlags & (1<<17))!=0 : index==9 || index==11 || (moduleFlags & (1 << index)) != 0;
+            g.fill(x - 16, y - 16, x + 16, y + 16, selected == index ? 0xDD287F9E : 0xBB1D354F);
+            g.renderOutline(x - 16, y - 16, 32, 32, enabled ? 0xFF6CF1CB : 0xFF5D8199);
+            ModuleIcons.item(g,x-8,y-8,index==11?12:index);
+
         }
         g.fill(cx - 27, cy - 18, cx + 27, cy + 18, 0xCC142638);
-        g.drawCenteredString(font, "Cancel", cx, cy - 4, 0xFFE3ECFF);
+        ModuleIcons.glyph(g,cx-8,cy-8,"cancel");
         super.render(g, mx, my, partial);
+        if(selected>=0) {
+            boolean on=(moduleFlags & (1 << (selected==10?17:selected)))!=0;
+            String state=selected==9?((moduleFlags & (1<<15))!=0?"Riptide X":"Loyalty V"):selected<4||selected==8||selected==10?(on?"ON":"OFF"):"READY";
+            g.renderTooltip(font,Component.literal(NAMES[selected]+": "+state),mx,my);
+        }
     }
     @Override public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
             if (selected >= 0 && activeActions().contains(selected)) {
                 PacketDistributor.sendToServer(new com.devaxo.templeoftheaxolotl.network.CelestialRadialActionPayload(selected));
             }
-            onClose();
+            if(selected != 11) onClose();
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);

@@ -27,21 +27,23 @@ public final class CelestialRepository {
     private static final String KEY = "tota_celestial_repository_v1";
     private static final String SECOND_KEY = "tota_celestial_repository_page_two_prototype";
     private static final String THIRD_KEY = "tota_celestial_repository_page_three";
+    private static final String FOURTH_KEY = "tota_celestial_repository_page_four";
     private CelestialRepository() {}
     public record Entry(ItemStack sample, int quantity) {
         public int capacity() { return sample.getMaxStackSize() * STACK_MULTIPLIER; }
     }
     public static int tier(ServerPlayer player) {
         ItemStack module = com.devaxo.templeoftheaxolotl.compass.TempleHudModules.getSlot(player, 3);
+        if (module.is(com.devaxo.templeoftheaxolotl.item.ModItems.NETHERITE_REPOSITORY.get())) return 5;
         if (module.is(com.devaxo.templeoftheaxolotl.item.ModItems.DIAMOND_REPOSITORY.get())) return 4;
         if (module.is(com.devaxo.templeoftheaxolotl.item.ModItems.GOLD_REPOSITORY.get())) return 3;
         if (module.is(com.devaxo.templeoftheaxolotl.item.ModItems.IRON_REPOSITORY.get())) return 2;
         if (module.is(com.devaxo.templeoftheaxolotl.item.ModItems.CELESTIAL_REPOSITORY.get())) return 1;
         return 0;
     }
-    public static int pages(ServerPlayer player) { return tier(player) >= 2 ? 3 : tier(player) >= 1 ? 2 : 1; }
-    public static int multiplier(ServerPlayer player) { return tier(player) >= 3 ? 64 : 32; }
-    private static String key(int page) { return page == 0 ? KEY : page == 1 ? SECOND_KEY : THIRD_KEY; }
+    public static int pages(ServerPlayer player) { return tier(player) >= 5 ? 4 : tier(player) >= 2 ? 3 : tier(player) >= 1 ? 2 : 1; }
+    public static int multiplier(ServerPlayer player) { return tier(player) >= 5 ? 128 : tier(player) >= 3 ? 64 : 32; }
+    private static String key(int page) { return page == 0 ? KEY : page == 1 ? SECOND_KEY : page == 2 ? THIRD_KEY : FOURTH_KEY; }
     public static java.util.List<Entry> readPage(ServerPlayer player, int page) {
         java.util.ArrayList<Entry> result = new java.util.ArrayList<>();
         ListTag list = player.getPersistentData().getList(key(page), Tag.TAG_COMPOUND);
@@ -75,11 +77,11 @@ public final class CelestialRepository {
     public static ItemStack extractSecond(ServerPlayer p, int i, int n) { return extractPage(p, 1, i, n); }
     public static int insertPage(ServerPlayer player, int page, ItemStack offered) {
         if (offered.isEmpty() || page < 0 || page >= pages(player)) return 0;
-        if (tier(player) == 4) consolidate(player);
+        if (tier(player) >= 4) consolidate(player);
         int remaining = offered.getCount();
         int cap = offered.getMaxStackSize() * multiplier(player);
-        int start = tier(player) == 4 ? 0 : page;
-        int end = tier(player) == 4 ? pages(player) : page + 1;
+        int start = tier(player) >= 4 ? 0 : page;
+        int end = tier(player) >= 4 ? pages(player) : page + 1;
         for (int p = start; p < end && remaining > 0; p++) {
             var entries = readPage(player, p);
             for (int i = 0; i < entries.size() && remaining > 0; i++) {
@@ -110,9 +112,9 @@ public final class CelestialRepository {
     }
     /** Stable consolidation across all unlocked pages, respecting item components and cap. */
     public static void consolidate(ServerPlayer player) {
-        if (tier(player) != 4) return;
+        if (tier(player) < 4) return;
         java.util.List<Entry> all = new java.util.ArrayList<>();
-        for (int page = 0; page < 3; page++) all.addAll(readPage(player, page));
+        for (int page = 0; page < pages(player); page++) all.addAll(readPage(player, page));
         java.util.List<Entry> merged = new java.util.ArrayList<>();
         for (Entry incoming : all) {
             int remaining = incoming.quantity();
@@ -129,7 +131,7 @@ public final class CelestialRepository {
             }
         }
         // 3*56 input entries cannot require more than 3*56 output entries.
-        for (int page = 0; page < 3; page++) {
+        for (int page = 0; page < pages(player); page++) {
             int from = Math.min(page * TYPES, merged.size());
             int to = Math.min((page + 1) * TYPES, merged.size());
             writePage(player, page, new java.util.ArrayList<>(merged.subList(from, to)));
@@ -162,6 +164,8 @@ public final class CelestialRepository {
     @SubscribeEvent
     public static void clonePlayer(PlayerEvent.Clone event) {
         CompoundTag original = event.getOriginal().getPersistentData();
+        if (original.contains(FOURTH_KEY, Tag.TAG_LIST))
+            event.getEntity().getPersistentData().put(FOURTH_KEY, original.get(FOURTH_KEY).copy());
         if (original.contains(THIRD_KEY, Tag.TAG_LIST))
             event.getEntity().getPersistentData().put(THIRD_KEY, original.get(THIRD_KEY).copy());
         if (original.contains(SECOND_KEY, Tag.TAG_LIST))

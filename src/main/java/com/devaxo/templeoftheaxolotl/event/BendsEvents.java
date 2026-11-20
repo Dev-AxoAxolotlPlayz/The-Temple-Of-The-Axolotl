@@ -30,6 +30,7 @@ public final class BendsEvents {
 
     public static void onPressureTier(Player player, int tier, boolean protectedByGills) {
         CompoundTag tag = player.getPersistentData();
+        if (com.devaxo.templeoftheaxolotl.item.AxolitePlating.pieces(player)==4) { tag.putBoolean(INITIALIZED,true); tag.putInt(EXPOSURE,tier); return; }
         if (!tag.getBoolean(INITIALIZED)) {
             tag.putBoolean(INITIALIZED, true);
             tag.putInt(EXPOSURE, tier);
@@ -70,10 +71,11 @@ public final class BendsEvents {
     @SubscribeEvent
     public static void onTick(PlayerTickEvent.Post event) {
         Player player = event.getEntity();
-        if (player.level().isClientSide()) return;
+        if (player.level().isClientSide() || TemplePressureScale.exempt(player.level())) return;
         CompoundTag tag = player.getPersistentData();
         int bends = tag.getInt(BENDS);
         if (bends <= 0) return;
+        if (com.devaxo.templeoftheaxolotl.item.AxolitePlating.pieces(player)==4) { player.removeEffect(ModEffects.THE_BENDS); return; }
         // Short-lived penalties are refreshed periodically, so curing removes them promptly.
         if (player.tickCount % 20 == 0) {
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 45, bends - 1, false, false, true));

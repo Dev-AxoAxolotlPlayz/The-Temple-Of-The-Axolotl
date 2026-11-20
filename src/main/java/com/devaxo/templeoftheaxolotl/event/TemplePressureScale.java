@@ -11,6 +11,8 @@ import net.minecraft.world.level.Level;
 public final class TemplePressureScale {
     private TemplePressureScale() {}
 
+    public static boolean exempt(Level level) { return level.dimension().equals(com.devaxo.templeoftheaxolotl.block.EldritchWatersPortalBlock.DIMENSION); }
+
     public static boolean usesAbyssScale(Level level) {
         // Keep the established 6.6 behavior for other non-Overworld dimensions,
         // including the Ethereal Abyss, while explicitly supporting the Temple.
@@ -28,6 +30,7 @@ public final class TemplePressureScale {
 
     public static double pressure(Player player) {
         Level level = player.level();
+        if (exempt(level)) return 0;
         return Math.max(0.0, Math.min(100.0,
                 (surface(level) - player.getEyeY()) * 100.0 / depthRange(level)));
     }

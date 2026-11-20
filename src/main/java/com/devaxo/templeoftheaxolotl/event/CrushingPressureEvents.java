@@ -32,6 +32,11 @@ public final class CrushingPressureEvents {
         if (player.level().isClientSide() || !player.isAlive()
                 || player.isCreative() || player.isSpectator()) return;
 
+        if (TemplePressureScale.exempt(player.level())) {
+            BendsEvents.resetExposureForTempleElevator(player);
+            player.getPersistentData().putInt(LAST_TIER, 0);
+            return;
+        }
         // This also protects all existing boat/submarine movement handling.
         // Exposure tracking is separate from movement resistance.
         // Do not reset exposure when the player surfaces or enters a vehicle.

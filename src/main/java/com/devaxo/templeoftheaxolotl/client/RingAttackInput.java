@@ -14,12 +14,13 @@ import org.lwjgl.glfw.GLFW;
 
 @EventBusSubscriber(modid = TempleOfTheAxolotl.MODID, value = Dist.CLIENT)
 public final class RingAttackInput {
-    private static boolean miningMode = false;
+    private static boolean serverFlight;
+    public static void flightState(boolean active) { serverFlight=active; }
+    public static boolean hasFlight() { return serverFlight; }
     private static boolean lastHeld;
     private static int refreshTicks;
     private RingAttackInput() {}
 
-    public static void setMiningMode(boolean enabled) { miningMode = enabled; }
 
     public static boolean physicalMiningHeld(Minecraft mc) {
         return mc.screen == null && mc.isWindowActive() && physicalAttackDown(mc);
@@ -36,17 +37,24 @@ public final class RingAttackInput {
     }
 
     private static boolean ringCombat(Minecraft mc) {
-        return !miningMode && mc.player != null
+        return mc.player != null && !com.devaxo.templeoftheaxolotl.combat.RingMiningMode.isMining(mc.player.getMainHandItem())
                 && mc.player.getMainHandItem().is(ModItems.RING_OF_THE_ONE.get());
     }
 
+    @SubscribeEvent
+    public static void recall(net.neoforged.neoforge.client.event.InputEvent.InteractionKeyMappingTriggered event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!event.isUseItem() || mc.player == null || mc.level == null || !mc.player.isShiftKeyDown() || !serverFlight) return;
+        event.setCanceled(true); event.setSwingHand(false);
+        PacketDistributor.sendToServer(new RingAttackInputPayload(false,true));
+    }
     @SubscribeEvent
     public static void beforeTick(ClientTickEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         // Prevent the vanilla destroy-block loop from treating combat throws as mining.
         if (mc.player == null || mc.level == null || mc.screen != null) return;
         if (!mc.player.getMainHandItem().is(ModItems.RING_OF_THE_ONE.get())) return;
-        if (miningMode) {
+        if (com.devaxo.templeoftheaxolotl.combat.RingMiningMode.isMining(mc.player.getMainHandItem())) {
             // Restore the actual held button BEFORE vanilla processes block damage.
             mc.options.keyAttack.setDown(physicalAttackDown(mc));
         } else {
@@ -57,10 +65,11 @@ public final class RingAttackInput {
     @SubscribeEvent
     public static void tick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
+        if (mc.player==null || mc.level==null) serverFlight=false;
         boolean held = mc.player != null && mc.level != null && mc.screen == null
                 && mc.isWindowActive() && ringCombat(mc) && physicalAttackDown(mc);
         if (held != lastHeld || (held && ++refreshTicks >= 10)) {
-            if (mc.getConnection() != null) PacketDistributor.sendToServer(new RingAttackInputPayload(held));
+            if (mc.getConnection() != null) PacketDistributor.sendToServer(new RingAttackInputPayload(held, false));
             lastHeld = held;
             refreshTicks = 0;
         }

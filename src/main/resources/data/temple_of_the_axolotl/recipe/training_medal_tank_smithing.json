@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "minecraft:iron_block"
+  },
+  "base": {
+    "item": "temple_of_the_axolotl:training_medal"
+  },
+  "addition": {
+    "item": "minecraft:diamond_chestplate"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:training_medal",
+    "count": 1
+  }
+}

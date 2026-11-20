@@ -195,7 +195,7 @@ public class LuckyStarsEvents {
 
             for (ItemStack stack : table.getRandomItems(params)) {
 
-                if (stack.isEmpty()) {
+                if (stack.isEmpty() || stack.is(ModItems.HEART_OF_THE_ABYSS.get())) {
                     continue;
                 }
 

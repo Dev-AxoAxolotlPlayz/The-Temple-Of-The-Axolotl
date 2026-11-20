@@ -28,13 +28,19 @@ public class TrialTrapSpawnerEntity extends BlockEntity {
  public TrialTrapSpawnerEntity(BlockPos pos,BlockState block){super(Pre07BlockEntities.TRAP.get(),pos,block);}
  public void setTier(int tier){this.tier=Math.max(1,Math.min(4,tier));setChanged();}
  public static void tick(Level world,BlockPos pos,BlockState block,TrialTrapSpawnerEntity trap){
-  if(!(world instanceof ServerLevel level)||++trap.age%10!=0||trap.state!=0)return;
+  if(!(world instanceof ServerLevel level)||++trap.age%10!=0)return;
+  // Fix older saves: exhausted block entities acquire the visible spent state on their next tick.
+  if(trap.state!=0){
+   if(!block.getValue(TrialTrapSpawnerBlock.SPENT))level.setBlock(pos,block.setValue(TrialTrapSpawnerBlock.SPENT,true),3);
+   return;
+  }
   var players=level.getEntitiesOfClass(ServerPlayer.class,new AABB(pos).inflate(3),p->!p.isSpectator()&&!p.isCreative()&&p.distanceToSqr(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5)<=9);
   if(players.isEmpty())return;
   ServerPlayer player=players.get(0);
   int floor=Math.max(1,Math.min(10,com.devaxo.templeoftheaxolotl.traps.TempleProgress.floor(player)));
   // Mark consumed BEFORE spawning; reloads cannot restart the encounter.
   trap.state=2;trap.setChanged();
+  level.setBlock(pos,block.setValue(TrialTrapSpawnerBlock.SPENT,true),3);
   // Universal one-time outcome: 25% single, 15% double, 60% blank.
   int outcome = level.random.nextInt(100);
   int encounters = outcome < 25 ? 1 : outcome < 40 ? 2 : 0;

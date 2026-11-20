@@ -33,6 +33,10 @@ public class CelestialAnvilMenu extends AnvilMenu {
         ItemStack right = inputSlots.getItem(1);
         if (left.isEmpty()) return;
 
+        if (com.devaxo.templeoftheaxolotl.item.AxolitePlating.tier(left)>0 && right.is(com.devaxo.templeoftheaxolotl.item.ModItems.AXOLITE_PLATING.get())) {
+            resultSlots.setItem(0,com.devaxo.templeoftheaxolotl.item.AxolitePlating.plated(left)?ItemStack.EMPTY:com.devaxo.templeoftheaxolotl.item.AxolitePlating.apply(left));
+            this.setMaximumCost(1); broadcastChanges(); return;
+        }
         ItemStack vanillaResult = resultSlots.getItem(0);
         int vanillaCost = this.getCost();
         if (right.isEmpty()) {

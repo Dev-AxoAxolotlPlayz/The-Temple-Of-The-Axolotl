@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.nbt.CompoundTag;
@@ -30,13 +29,15 @@ public final class RingBoomerangCombat {
     private static final Map<UUID, Flight> ACTIVE = new HashMap<>();
     private static final Map<UUID, Long> NEXT_THROW = new HashMap<>();
     private static final Map<UUID, Long> LAST_INPUT = new HashMap<>();
+    private static final Set<UUID> RECALLED = new HashSet<>();
     private static final Set<UUID> HELD = new HashSet<>();
 
     private RingBoomerangCombat() {}
 
     public static void setHeld(ServerPlayer player, boolean held) {
         UUID id = player.getUUID();
-        if (held && !RingMiningMode.isMining(player) && player.getMainHandItem().is(ModItems.RING_OF_THE_ONE.get())) {
+        if (!held) RECALLED.remove(id);
+        if (held && !RECALLED.contains(id) && !RingMiningMode.isMining(player) && player.getMainHandItem().is(ModItems.RING_OF_THE_ONE.get())) {
             HELD.add(id);
             LAST_INPUT.put(id, player.serverLevel().getGameTime());
         } else {
@@ -45,198 +46,176 @@ public final class RingBoomerangCombat {
         }
     }
 
+    public static boolean recall(ServerPlayer player) {
+        Flight f = ACTIVE.get(player.getUUID());
+        if (f == null || f.visual.level() != player.level()) return false;
+        f.returning = true;
+        HELD.remove(player.getUUID()); RECALLED.add(player.getUUID());
+        return true;
+    }
+
+    public static boolean inFlight(ServerPlayer player) { return ACTIVE.containsKey(player.getUUID()); }
+
     private static final class Flight {
-        final Vec3 origin;
-        // Initial player hand position; used to track a moving return target.
-        final Vec3 launchHand;
-        final Vec3 direction;
-        final Vec3 side;
-        final int handedness;
         final Display.ItemDisplay visual;
-        final int duration;
-        final double reach;
-        final double sidewaysAmplitude;
-        final Set<UUID> outwardHits = new HashSet<>();
-        final Set<UUID> returnHits = new HashSet<>();
+        final net.minecraft.world.item.ItemStack ring;
+        final double reach, speed;
+        final Set<UUID> outwardHits = new HashSet<>(), returnHits = new HashSet<>();
         final Set<UUID> exitedAfterOutbound = new HashSet<>();
-        int age = 0;
-        int finishDelay = 0;
-        Vec3 previous;
-
+        Vec3 previous, direction;
+        double remaining;
+        boolean returning;
+        int age, stuck;
+        float heading;
+        final Map<UUID,Long> lastHit = new HashMap<>();
         Flight(ServerPlayer player, int duration) {
-            this.origin = player.getEyePosition().add(0, -0.25, 0);
-            this.launchHand = this.origin;
-            // Preserve pitch: the entire ellipse points where the player aimed at launch.
-            this.direction = player.getLookAngle().normalize();
-            // World-up projected perpendicular to forward gives a stable local right axis.
-            Vec3 right = new Vec3(-direction.z, 0, direction.x);
-            this.side = right.lengthSqr() < 1.0e-8
-                    ? new Vec3(1, 0, 0) : right.normalize();
-            this.handedness = player.getMainArm() == HumanoidArm.RIGHT ? 1 : -1;
-            this.duration = duration;
-            // Snapshot effective interaction reach at launch so changing equipment
-            // cannot warp an active throw. Vanilla base reach is 3 blocks.
-            this.reach = Math.max(0.1, player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE));
-            this.sidewaysAmplitude = 0.9 * (this.reach / 5.0);
-            this.visual = new Display.ItemDisplay(EntityType.ITEM_DISPLAY, player.serverLevel());
-            // Public NBT loading API: ItemDisplay setters are private in 1.21.1.
+            ring = player.getMainHandItem();
+            previous = player.getEyePosition().add(0,-0.25,0);
+            direction = player.getLookAngle().normalize();
+            reach = Math.max(0.1, player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE));
+            remaining = reach + 3;
+            speed = Math.max(0.05, 2 * reach / duration);
+            visual = new Display.ItemDisplay(EntityType.ITEM_DISPLAY, player.serverLevel());
             CompoundTag tag = new CompoundTag();
-            tag.put("item", player.getMainHandItem().copyWithCount(1).save(player.registryAccess()));
+            tag.put("item", ring.copyWithCount(1).save(player.registryAccess()));
             tag.putString("item_display", "fixed");
-            // The exported 3D model is upright in FIXED display mode.\n            // Rotate the display 90 degrees around X to flatten the blade plane.
-            // A one-tick teleport interpolation reduces trailing when the return curves.
             tag.putInt("teleport_duration", 1);
-            this.visual.load(tag);
-            this.visual.setXRot(90.0f);
-            this.visual.setYRot(player.getYRot());
-            this.visual.setCustomName(Component.literal("ring_boomerang:" + player.getUUID()));
-            this.visual.setCustomNameVisible(false);
-            this.visual.setPos(origin.x, origin.y, origin.z);
-            player.serverLevel().addFreshEntity(this.visual);
-            this.previous = origin;
+            visual.load(tag);
+            orient(this, direction);
+            visual.setCustomName(Component.literal("ring_boomerang:" + player.getUUID()));
+            visual.setPos(previous.x, previous.y, previous.z);
+            player.serverLevel().addFreshEntity(visual);
         }
     }
-
-    @SubscribeEvent
-    public static void tick(PlayerTickEvent.Post event) {
+    private static void clear(UUID id) {
+        Flight f = ACTIVE.remove(id);
+        if (f != null) f.visual.discard();
+        HELD.remove(id); LAST_INPUT.remove(id); NEXT_THROW.remove(id); RECALLED.remove(id);
+    }
+    @SubscribeEvent public static void logout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e) { clear(e.getEntity().getUUID()); }
+    @SubscribeEvent public static void dimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent e) { clear(e.getEntity().getUUID()); if (e.getEntity() instanceof ServerPlayer p) state(p,false); }
+    @SubscribeEvent public static void tick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        UUID id = player.getUUID();
-        ServerLevel level = player.serverLevel();
-        long now = level.getGameTime();
-        // Remove stale saved ItemDisplays from previous sessions. Never touch unrelated displays.
-        if (level.getGameTime() % 20 == 0) {
-            AABB scan = player.getBoundingBox().inflate(96.0);
-            for (Display.ItemDisplay display : level.getEntitiesOfClass(Display.ItemDisplay.class, scan,
-                    e -> e.getCustomName() != null && e.getCustomName().getString().startsWith("ring_boomerang:"))) {
-                boolean live = ACTIVE.values().stream().anyMatch(f -> f.visual.getUUID().equals(display.getUUID()));
-                if (!live) display.discard();
+        RingMiningMode.migrate(player);
+        UUID id = player.getUUID(); ServerLevel level = player.serverLevel(); long now = level.getGameTime();
+        if (now % 20 == 0) for (Display.ItemDisplay d : level.getEntitiesOfClass(Display.ItemDisplay.class, player.getBoundingBox().inflate(96),
+                e -> e.getCustomName() != null && e.getCustomName().getString().startsWith("ring_boomerang:"))) {
+            if (ACTIVE.values().stream().noneMatch(f -> f.visual == d)) d.discard();
+        }
+        Flight f = ACTIVE.get(id);
+        if (!player.isAlive() || !player.getMainHandItem().is(ModItems.RING_OF_THE_ONE.get()) || RingMiningMode.isMining(player)
+                || (f != null && (f.ring != player.getMainHandItem() || f.visual.level() != level || f.visual.isRemoved()))) { if (f!=null) state(player,false); clear(id); return; }
+        if (now - LAST_INPUT.getOrDefault(id,-100L) > 15) HELD.remove(id);
+        if (f == null) {
+            if (!HELD.contains(id) || now < NEXT_THROW.getOrDefault(id,0L)) return;
+            double reach = Math.max(.1, player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE));
+            int duration = Math.max(4, Math.min(200, (int)Math.ceil(20 / Math.max(.2,player.getAttributeValue(Attributes.ATTACK_SPEED)) * reach / 5)));
+            f = new Flight(player,duration); ACTIVE.put(id,f); state(player,true); NEXT_THROW.put(id,now+duration);
+        }
+        f.age++;
+        if (f.returning) {
+            Vec3 hand = player.getEyePosition().add(0,-.25,0);
+            double distance = f.previous.distanceTo(hand);
+            if (!level.getChunkSource().hasChunk(net.minecraft.core.BlockPos.containing(f.previous).getX() >> 4, net.minecraft.core.BlockPos.containing(f.previous).getZ() >> 4)) { f.visual.discard(); ACTIVE.remove(id); state(player,false); return; }
+            Vec3 end = distance <= Math.max(f.speed,1) ? hand : f.previous.add(hand.subtract(f.previous).normalize().scale(Math.max(f.speed,1)));
+            Vec3 returnDirection = end.subtract(f.previous);
+            if (returnDirection.lengthSqr() > 1e-12) f.direction = returnDirection.normalize();
+            hitSegment(player,level,f,f.previous,end,true); f.previous=end;
+            if (end.equals(hand)) { f.visual.discard(); ACTIVE.remove(id); state(player,false); return; }
+        } else {
+            double budget = f.speed;
+            // Bounded per-tick work, not a lifetime bounce limit.
+            for (int step=0; step<128 && budget>1e-6 && !f.returning; step++) {
+                double distance = Math.min(.20,Math.min(budget,f.remaining));
+                if (distance <= 1e-6) { f.returning=true; break; }
+                Vec3 start=f.previous, end=start.add(f.direction.scale(distance));
+                if (!level.getChunkSource().hasChunk(net.minecraft.core.BlockPos.containing(start).getX() >> 4, net.minecraft.core.BlockPos.containing(start).getZ() >> 4) || !level.getChunkSource().hasChunk(net.minecraft.core.BlockPos.containing(end).getX() >> 4, net.minecraft.core.BlockPos.containing(end).getZ() >> 4)) { f.returning=true; break; }
+                var wall=level.clip(new ClipContext(start,end,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,player));
+                // Harvest the actual swept cells, never an endpoint beyond a solid wall.
+                RingVegetation.clear(player,net.minecraft.core.BlockPos.containing(start));
+                if (wall.getType()==HitResult.Type.MISS) RingVegetation.clear(player,net.minecraft.core.BlockPos.containing(end));
+                else RingVegetation.clear(player,wall.getBlockPos());
+                wall=level.clip(new ClipContext(start,end,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,player) {
+                    @Override public net.minecraft.world.phys.shapes.VoxelShape getBlockShape(net.minecraft.world.level.block.state.BlockState state,net.minecraft.world.level.BlockGetter world,net.minecraft.core.BlockPos pos) {
+                        if (RingVegetation.preservedBase(player,pos,state)) return net.minecraft.world.phys.shapes.Shapes.empty();
+                        return super.getBlockShape(state,world,pos);
+                    }
+                });
+                if (wall.getType()==HitResult.Type.MISS) {
+                    f.stuck=0; hitSegment(player,level,f,start,end,false); f.previous=end; budget-=distance; f.remaining-=distance;
+                    if (f.remaining<=1e-6) f.returning=true;
+                } else {
+                    Vec3 impact=wall.getLocation();
+                    if (start.distanceTo(impact)<.003 && ++f.stuck>=4) { f.returning=true; break; }
+                    hitSegment(player,level,f,start,impact,false);
+                    Vec3 normal=Vec3.atLowerCornerOf(wall.getDirection().getNormal());
+                    f.previous=impact.add(normal.scale(.002));
+                    Vec3 reflected=f.direction.subtract(normal.scale(2*f.direction.dot(normal))).normalize();
+                    LivingEntity target=nearestEnemy(player,level,f.previous,f.reach,normal);
+                    Vec3 aim=target==null?reflected:target.getBoundingBox().getCenter().subtract(f.previous).normalize();
+                    // Avoid immediate re-entry into the same solid face; try other candidates next bounce.
+                    f.direction=aim.dot(normal)>1e-5?aim:reflected;
+                    f.outwardHits.clear(); f.remaining=f.reach + 3; budget-=Math.max(.002,start.distanceTo(impact));
+                }
             }
         }
-
-
-        if (!player.isAlive() || !player.getMainHandItem().is(ModItems.RING_OF_THE_ONE.get()) || RingMiningMode.isMining(player)) {
-            Flight old = ACTIVE.remove(id);
-            if (old != null) old.visual.discard();
-            HELD.remove(id);
-            LAST_INPUT.remove(id);
-            NEXT_THROW.remove(id);
-            return;
-        }
-
-        if (now - LAST_INPUT.getOrDefault(id, -100L) > 15) HELD.remove(id);
-        Flight flight = ACTIVE.get(id);
-        if (flight == null) {
-            if (!HELD.contains(id) || now < NEXT_THROW.getOrDefault(id, 0L)) return;
-            double speed = Math.max(0.2, player.getAttributeValue(Attributes.ATTACK_SPEED));
-            // Match full flight to attack interval (20 ticks / effective attacks per second).
-            // Fast rings traverse the SAME ellipse faster rather than shortening its geometry.
-            // Preserve the original attack-speed timing at 5 blocks. Longer
-            // throws cover proportionally more distance at similar speed.
-            double reach = Math.max(0.1, player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE));
-            int duration = Math.max(4, Math.min(200,
-                    (int) Math.ceil((20.0 / speed) * (reach / 5.0))));
-            flight = new Flight(player, duration);
-            ACTIVE.put(id, flight);
-            NEXT_THROW.put(id, now + duration);
-        }
-
-        // Leave the visual alive briefly at the hand so the last network update can render.
-        if (flight.age >= flight.duration) {
-            if (++flight.finishDelay >= 3) {
-                flight.visual.discard();
-                ACTIVE.remove(id);
-            }
-            return;
-        }
-
-        flight.age++;
-        double t = Math.min(1.0, (double) flight.age / flight.duration);
-        Vec3 position = path(flight, t, player);
-        // The 3D geometry is far wider than the old sprite. Keep the *visual* away
-        // from the camera at launch/catch without changing the hit-swept ellipse.
-        // Fade the offset out toward the far side of the arc.
-        double proximity = Math.pow(Math.abs(2.0 * t - 1.0), 4.0);
-        Vec3 visualPosition = position.add(flight.direction.scale(0.65 * proximity))
-                .add(0.0, -0.30 * proximity, 0.0);
-        flight.visual.setPos(visualPosition.x, visualPosition.y, visualPosition.z);
-        // Spin the flattened item about world up, independent of the flight curve.
-        flight.visual.setYRot((float) (flight.age * 24.0));
-
-        // Collision follows the actual swept blade path, not the filled ellipse.
-        // Substeps avoid missing a target at the outward/return boundary.
-        Vec3 previous = flight.previous;
-        double priorT = (double) (flight.age - 1) / flight.duration;
-        int steps = Math.max(2, (int) Math.ceil(previous.distanceTo(position) / 0.20));
-        for (int i = 1; i <= steps; i++) {
-            double f0 = (double) (i - 1) / steps;
-            double f1 = (double) i / steps;
-            double a = priorT + (t - priorT) * f0;
-            double b = priorT + (t - priorT) * f1;
-            // Interpolate the actual previous->current movement, including
-            // any player movement, rather than re-sampling a stale ellipse.
-            Vec3 segmentStart = previous.lerp(position, f0);
-            Vec3 segmentEnd = previous.lerp(position, f1);
-            if (a < 0.5 && b > 0.5) {
-                double split = (0.5 - a) / (b - a);
-                Vec3 apex = segmentStart.lerp(segmentEnd, split);
-                hitSegment(player, level, flight, segmentStart, apex, false);
-                hitSegment(player, level, flight, apex, segmentEnd, true);
-            } else {
-                hitSegment(player, level, flight, segmentStart, segmentEnd, a >= 0.5);
-            }
-        }
-        flight.previous = position;
+        f.visual.setPos(f.previous.x,f.previous.y,f.previous.z); orient(f, f.direction);
     }
-
-    /**
-     * Keep the launch ellipse untouched on the outbound pass. On return, smoothly
-     * translate its endpoint toward the player's CURRENT hand position.
-     *
-     * The moving endpoint implicitly includes player velocity: changes in the
-     * player's position from one tick to the next become corresponding changes
-     * in the return curve. No arbitrary chase-speed multiplier is applied.
-     */
-    private static Vec3 path(Flight flight, double t, ServerPlayer player) {
-        double theta = Math.PI * 2.0 * Math.max(0.0, Math.min(1.0, t));
-        double forward = (flight.reach / 2.0) * (1.0 - Math.cos(theta));
-        double sideways = flight.sidewaysAmplitude * Math.sin(theta) * flight.handedness;
-        Vec3 base = flight.origin.add(flight.direction.scale(forward))
-                .add(flight.side.scale(sideways));
-        if (t <= 0.5) return base;
-
-        // 0 at the apex, 1 at the catch. Smoothstep preserves a continuous
-        // position and avoids an immediate sideways jump at the apex.
-        double u = Math.min(1.0, (t - 0.5) * 2.0);
-        double follow = u * u * (3.0 - 2.0 * u);
-        Vec3 currentHand = player.getEyePosition().add(0, -0.25, 0);
-        Vec3 playerDisplacement = currentHand.subtract(flight.launchHand);
-        return base.add(playerDisplacement.scale(follow));
+    // Preserve the original flat spinning pose, then tilt that plane along travel.
+    private static void orient(Flight f, Vec3 direction) {
+        if (direction.lengthSqr() < 1e-12) return;
+        double horizontal = Math.hypot(direction.x, direction.z);
+        if (horizontal > 1e-8) f.heading = (float) Math.atan2(direction.x, direction.z);
+        float pitch = (float) -Math.atan2(direction.y, horizontal);
+        float spin = (f.age % 15) * (float) Math.toRadians(24.0);
+        org.joml.Quaternionf rotation = new org.joml.Quaternionf()
+                .rotateY(f.heading).rotateX(pitch).rotateY(spin)
+                .rotateX((float) (Math.PI / 2.0));
+        ((com.devaxo.templeoftheaxolotl.mixin.RingDisplayTransformInvoker) f.visual)
+                .tota$setTransformation(new com.mojang.math.Transformation(
+                        new org.joml.Vector3f(), rotation, new org.joml.Vector3f(1, 1, 1),
+                        new org.joml.Quaternionf()));
     }
-
+    private static void state(ServerPlayer p,boolean active) { net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(p,new com.devaxo.templeoftheaxolotl.network.RingFlightStatePayload(active)); }
+    private static boolean eligible(ServerPlayer p, LivingEntity e) {
+        return e.isAlive() && e!=p && !e.isAlliedTo(p) && !p.isAlliedTo(e)
+            && !(e instanceof net.minecraft.world.entity.TamableAnimal t && t.isTame())
+            && !(e instanceof com.devaxo.templeoftheaxolotl.entity.WaifuAxoluthuEntity a && a.getBondedPlayer()!=null)
+            && !(e instanceof net.minecraft.world.entity.player.Player other && (!p.canHarmPlayer(other) || (p.getTags().contains("in_temple") && other.getTags().contains("in_temple"))));
+    }
+    private static LivingEntity nearestEnemy(ServerPlayer p, ServerLevel l, Vec3 pos,double reach,Vec3 normal) {
+        LivingEntity best=null; double bestDist=reach*reach;
+        for (LivingEntity e:l.getEntitiesOfClass(LivingEntity.class,new AABB(pos,pos).inflate(reach),x->eligible(p,x) && (x instanceof net.minecraft.world.entity.monster.Enemy || (x instanceof net.minecraft.world.entity.Mob m && m.getTarget()==p)))) {
+            double d=e.getBoundingBox().getCenter().distanceToSqr(pos);
+            if(d<bestDist && e.getBoundingBox().getCenter().subtract(pos).dot(normal)>1e-5 && l.clip(new ClipContext(pos,e.getBoundingBox().getCenter(),ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,p)).getType()==HitResult.Type.MISS) {best=e;bestDist=d;}
+        }
+        return best;
+    }
     private static void hitSegment(ServerPlayer player, ServerLevel level, Flight flight,
                                    Vec3 start, Vec3 end, boolean returning) {
         Set<UUID> hits = returning ? flight.returnHits : flight.outwardHits;
         double radius = 0.45;
         // Record a genuine departure from the target hitbox before permitting a return hit.
         // This check runs on both outbound and returning substeps.
-        for (UUID targetId : flight.outwardHits) {
-            LivingEntity oldTarget = (LivingEntity) level.getEntity(targetId);
+        for (UUID targetId : flight.lastHit.keySet()) {
+            var oldTarget = level.getEntity(targetId);
             if (oldTarget != null && !oldTarget.getBoundingBox().inflate(radius).contains(start)) {
                 flight.exitedAfterOutbound.add(targetId);
             }
         }
         AABB area = new AABB(start, end).inflate(radius);
         for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, area,
-                entity -> entity.isAlive() && entity != player && !entity.isAlliedTo(player))) {
+                entity -> eligible(player, entity))) {
             if (hits.contains(target.getUUID())) continue;
-            if (returning && flight.outwardHits.contains(target.getUUID())
+            if (!returning && level.getGameTime()-flight.lastHit.getOrDefault(target.getUUID(),-100L)<10) continue;
+            if (returning && flight.lastHit.containsKey(target.getUUID())
                     && !flight.exitedAfterOutbound.contains(target.getUUID())) continue;
             // Intersect the swept centerline with an expanded target box.
             AABB targetBox = target.getBoundingBox().inflate(radius);
             if (targetBox.clip(start, end).isEmpty() && !targetBox.contains(start)) continue;
-            HitResult wall = level.clip(new ClipContext(start, target.getBoundingBox().getCenter(),
+            HitResult wall = returning ? null : level.clip(new ClipContext(start, target.getBoundingBox().getCenter(),
                     ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
-            if (wall.getType() != HitResult.Type.MISS) continue;
+            if (!returning && wall.getType() != HitResult.Type.MISS) continue;
             // Route through the real enchanted weapon attack pipeline. This invokes
             // vanilla damage/enchantment effects and our existing LivingDamageEvent
             // listeners (Event Horizon, Celestial Convergence, etc.) with the actual
@@ -248,7 +227,7 @@ public final class RingBoomerangCombat {
             float healthBefore = target.getHealth();
             player.attack(target);
             if (target.getHealth() < healthBefore || !target.isAlive()) {
-                hits.add(target.getUUID());
+                hits.add(target.getUUID()); flight.exitedAfterOutbound.remove(target.getUUID()); flight.lastHit.put(target.getUUID(),level.getGameTime());
             }
         }
     }

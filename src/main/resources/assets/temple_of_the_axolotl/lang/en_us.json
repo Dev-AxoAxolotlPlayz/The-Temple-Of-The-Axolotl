@@ -105,7 +105,7 @@
   "item.temple_of_the_axolotl.merolotl_spawn_egg": "Merolotl Spawn Egg",
   "block.temple_of_the_axolotl.lore_block": "Lore Block",
   "block.temple_of_the_axolotl.broken_lore_block": "Broken Lore Block",
-  "item.temple_of_the_axolotl.diary_of_an_axolotl": "§k?????????????§r",
+  "item.temple_of_the_axolotl.diary_of_an_axolotl": "\u00a7k?????????????\u00a7r",
   "block.temple_of_the_axolotl.shipyard_crane": "Shipyard Crane",
   "item.temple_of_the_axolotl.shorkolotl_100_item": "Shorkolotl-100",
   "item.temple_of_the_axolotl.iron_repository_module": "Iron Celestial Repository Module",
@@ -176,6 +176,7 @@
   "item.temple_of_the_axolotl.axolite_leggings": "Axolite Leggings",
   "item.temple_of_the_axolotl.axolite_boots": "Axolite Boots",
   "entity.temple_of_the_axolotl.waifu_axoluthu": "Axoluthu",
+  "item.temple_of_the_axolotl.abyssal_egg": "Abyssal Egg",
   "item.temple_of_the_axolotl.waifu_axoluthu_spawn_egg": "Axoluthu Spawn Egg",
   "item.temple_of_the_axolotl.architects_journal": "Axoluthu's Architect's Journal",
   "block.temple_of_the_axolotl.abyssal_chest": "Abyssal Chest",
@@ -211,5 +212,12 @@
   "item.temple_of_the_axolotl.cosmic_trident": "Cosmic Trident",
   "enchantment.temple_of_the_axolotl.auto_target": "Auto-Target",
   "item.temple_of_the_axolotl.eye_of_the_abyss": "Eye of the Abyss",
-  "enchantment.temple_of_the_axolotl.eternal_void": "Eternal Void"
+  "enchantment.temple_of_the_axolotl.eternal_void": "Eternal Void",
+  "item.temple_of_the_axolotl.axoluthus_promise": "Axoluthu's Promise",
+  "item.temple_of_the_axolotl.kraken_limb": "Kraken Limb",
+  "entity.temple_of_the_axolotl.axokraken": "Axokraken",
+  "item.temple_of_the_axolotl.netherite_repository_module": "Netherite Celestial Repository Module",
+  "item.temple_of_the_axolotl.axolite_plating": "Axolite Plating",
+  "enchantment.temple_of_the_axolotl.siphon": "Siphon",
+  "item.temple_of_the_axolotl.heart_of_the_abyss": "Heart of the Abyss"
 }

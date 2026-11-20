@@ -21,6 +21,7 @@ public final class AxoliteMeleeEvents {
                 || event.getSource().is(DamageTypes.MAGIC)
                 || !AxoliteTridentMode.isAxoliteFamily(player.getMainHandItem())
                 || AxoliteTridentMode.state(player)!=1
+                || com.devaxo.templeoftheaxolotl.combat.InnateProtection.villager(event.getEntity())
                 || event.getNewDamage()<=0) return;
         ShellShockedLogic.apply(event.getEntity(),player);
         if(event.getEntity() instanceof Mob mob) {

@@ -31,7 +31,8 @@ public class MegolotlEntity extends PathfinderMob implements GeoEntity {
   };
  }
  @Override protected PathNavigation createNavigation(Level level) {return new WaterBoundPathNavigation(this,level);}
- @Override protected void registerGoals() {goalSelector.addGoal(2,new OceanDepthSwimGoal(this,0.85,false)); goalSelector.addGoal(3,new RandomLookAroundGoal(this));}
+ @Override protected void registerGoals() {
+        goalSelector.addGoal(0, new EldritchSwimGoal(this));goalSelector.addGoal(2,new OceanDepthSwimGoal(this,0.85,false)); goalSelector.addGoal(3,new RandomLookAroundGoal(this));}
  @Override public void travel(Vec3 input) {
   if (isInWater()) {moveRelative(0.02F,input);move(MoverType.SELF,getDeltaMovement());setDeltaMovement(getDeltaMovement().scale(0.90));}
   else super.travel(input);

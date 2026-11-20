@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "temple_of_the_axolotl:heart_of_the_abyss"
+  },
+  "base": {
+    "item": "temple_of_the_axolotl:axolite_trident"
+  },
+  "addition": {
+    "item": "temple_of_the_axolotl:cosmic_essence"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:cosmic_trident",
+    "count": 1
+  }
+}

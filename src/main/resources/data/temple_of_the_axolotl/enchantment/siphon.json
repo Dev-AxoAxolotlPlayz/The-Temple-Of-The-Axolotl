@@ -1,0 +1,21 @@
+{
+  "description": {
+    "translate": "enchantment.temple_of_the_axolotl.siphon"
+  },
+  "supported_items": "#temple_of_the_axolotl:siphon_weapons",
+  "weight": 2,
+  "max_level": 3,
+  "min_cost": {
+    "base": 15,
+    "per_level_above_first": 10
+  },
+  "max_cost": {
+    "base": 45,
+    "per_level_above_first": 10
+  },
+  "anvil_cost": 4,
+  "slots": [
+    "mainhand"
+  ],
+  "effects": {}
+}

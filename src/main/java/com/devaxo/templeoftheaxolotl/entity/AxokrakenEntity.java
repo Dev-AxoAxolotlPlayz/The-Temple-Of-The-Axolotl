@@ -63,12 +63,12 @@ public class AxokrakenEntity extends PathfinderMob implements GeoEntity {
                 direction = new Vec3(direction.x, 0, direction.z).normalize();
             }
             // Never steer into the thermocline, including while pursuing a player.
-            if (swimmer.getY() <= MIN_GUARDIAN_Y + 1.0D && direction.y < 0.0D) {
+            if (!EldritchSwimGoal.active(swimmer) && swimmer.getY() <= MIN_GUARDIAN_Y + 1.0D && direction.y < 0.0D) {
                 direction = new Vec3(direction.x, 0.0D, direction.z);
                 if (direction.lengthSqr() > 1.0E-6D) direction = direction.normalize();
             }
             Vec3 desired = direction.scale(Math.max(0.08D, speedModifier * 0.23D));
-            if (swimmer.getY() < MIN_GUARDIAN_Y + 1.0D)
+            if (!EldritchSwimGoal.active(swimmer) && swimmer.getY() < MIN_GUARDIAN_Y + 1.0D)
                 desired = new Vec3(desired.x, Math.max(0.10D, desired.y), desired.z);
             swimmer.setDeltaMovement(swimmer.getDeltaMovement().lerp(desired, 0.18D));
             swimmer.setYRot((float)(net.minecraft.util.Mth.atan2(direction.z, direction.x) * (180D / Math.PI)) - 90F);
@@ -82,6 +82,7 @@ public class AxokrakenEntity extends PathfinderMob implements GeoEntity {
 
     @Override protected int decreaseAirSupply(int currentAir) { return currentAir; }
     @Override protected void registerGoals() {
+        goalSelector.addGoal(0, new EldritchSwimGoal(this));
         goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.25, true));
         goalSelector.addGoal(2, new Goal() {
             { setFlags(EnumSet.of(Flag.MOVE)); }
@@ -95,23 +96,23 @@ public class AxokrakenEntity extends PathfinderMob implements GeoEntity {
     }
     @Override public void tick() {
         super.tick();
-        if (level().isClientSide || !level().dimension().equals(AbyssTrialEvents.ABYSS)) return;
+        if (level().isClientSide || (!EldritchSwimGoal.active(this) && !level().dimension().equals(AbyssTrialEvents.ABYSS))) return;
         if (attackCooldown > 0) attackCooldown--;
         if (patrolDelay > 0) patrolDelay--;
         if (snagTicks > 0) snagTicks--;
         // Hard safety floor, including after knockback, currents, or saved-world reload.
         // Cancel downward velocity and steer back upward instead of teleporting.
-        if (getY() < MIN_GUARDIAN_Y) {
+        if (!EldritchSwimGoal.active(this) && getY() < MIN_GUARDIAN_Y) {
             Vec3 motion = getDeltaMovement();
             setDeltaMovement(motion.x, Math.max(0.16D, motion.y), motion.z);
             getNavigation().stop();
         }
         // A guardian stays around its village unless actively chasing a nearby player.
-        if (home != null && getTarget() == null && horizontalHomeDistanceSqr() > patrolRadius * patrolRadius)
+        if (!EldritchSwimGoal.active(this) && home != null && getTarget() == null && horizontalHomeDistanceSqr() > patrolRadius * patrolRadius)
             getNavigation().moveTo(home.getX() + .5, home.getY(), home.getZ() + .5, 1.1);
         if (!(getTarget() instanceof Player target) || !target.isAlive()) return;
         double dist = distanceToSqr(target);
-        if (dist > 24 * 24 && home != null && horizontalHomeDistanceSqr() > (patrolRadius + 16) * (patrolRadius + 16)) {
+        if (!EldritchSwimGoal.active(this) && dist > 24 * 24 && home != null && horizontalHomeDistanceSqr() > (patrolRadius + 16) * (patrolRadius + 16)) {
             setTarget(null); return;
         }
         if (dist < 18 * 18 && attackCooldown == 0 && hasLineOfSight(target)) {
@@ -124,7 +125,7 @@ public class AxokrakenEntity extends PathfinderMob implements GeoEntity {
             if (pull.lengthSqr() > 2.25) target.setDeltaMovement(target.getDeltaMovement().scale(.5).add(pull.normalize().scale(.42)));
             target.hurtMarked = true;
         }
-        if (snagTicks == 9 && dist < 4 * 4) target.hurt(damageSources().mobAttack(this), 8);
+        if (snagTicks == 9 && (dist < 4 * 4 || (EldritchSwimGoal.active(this) && getBoundingBox().inflate(2).intersects(target.getBoundingBox()))) && hasLineOfSight(target)) target.hurt(damageSources().mobAttack(this), 8);
     }
     private double horizontalHomeDistanceSqr() {
         if (home == null) return 0;

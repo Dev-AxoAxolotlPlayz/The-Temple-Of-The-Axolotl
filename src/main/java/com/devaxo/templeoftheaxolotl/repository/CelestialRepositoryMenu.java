@@ -51,13 +51,34 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
     public boolean logisticsOutbound() { return logisticsOutbound != 0; }
     public int logisticsRadius() { return logisticsRadius; }
     public int magnetMode() { return magnetMode; }
+    // Filtered views are virtual: never rearrange or rewrite physical storage.
+    private int activeFilter = 0; // 0 all, 1 ore, 2 equipment, 3 mob drop, 4 other
+    private final int[] visiblePhysicalPage = new int[CelestialRepository.TYPES];
+    private final int[] visiblePhysicalIndex = new int[CelestialRepository.TYPES];
+    private int filteredPageCount = 1;
+    public int activeFilter() { return activeFilter; }
+    private record Location(int page, int index, CelestialRepository.Entry entry) {}
+    private java.util.List<Location> matching(ServerPlayer player) {
+        java.util.ArrayList<Location> matches = new java.util.ArrayList<>();
+        for (int page = 0; page < CelestialRepository.pages(player); page++) {
+            var entries = CelestialRepository.readPage(player, page);
+            for (int index = 0; index < entries.size(); index++) {
+                var entry = entries.get(index);
+                if (RepositoryCategories.matches(entry.sample(), activeFilter)) matches.add(new Location(page, index, entry));
+            }
+        }
+        return matches;
+    }
     private int activePage = 0;
     private int moduleEquipped = 0;
     public int activePage() { return activePage; }
+    public int tier() { return moduleEquipped; }
     public boolean hasSecondPage() { return moduleEquipped != 0; }
-    public int pageCount() { return moduleEquipped >= 2 ? 3 : moduleEquipped >= 1 ? 2 : 1; }
+    public int pageCount() { return activeFilter == 0 ? (moduleEquipped >= 5 ? 4 : moduleEquipped >= 2 ? 3 : moduleEquipped >= 1 ? 2 : 1) : filteredPageCount; }
     private boolean equipped(ServerPlayer player) { return CelestialRepository.tier(player) > 0; }
 
+    private boolean oxygenView;
+    public void setOxygenView(boolean value) { oxygenView = value; }
     public static final int PLAYER_X = 155;
 
     public CelestialRepositoryMenu(int id, Inventory inventory) {
@@ -66,6 +87,7 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
         for (int i = 0; i < CelestialRepository.TYPES; i++) {
             final int index = i;
             addSlot(new Slot(display, i, 8 + (i % 7) * 18, 26 + (i / 7) * 18) {
+                @Override public boolean isActive() { return !oxygenView; }
                 @Override public boolean mayPickup(Player player) { return false; }
                 @Override public boolean mayPlace(ItemStack stack) { return false; }
                 @Override public boolean allowModification(Player player) { return false; }
@@ -75,6 +97,14 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
                 @Override public void set(int value) { counts[index] = value; }
             });
         }
+        addDataSlot(new DataSlot() {
+            @Override public int get() { return activeFilter; }
+            @Override public void set(int value) { activeFilter = value; }
+        });
+        addDataSlot(new DataSlot() {
+            @Override public int get() { return filteredPageCount; }
+            @Override public void set(int value) { filteredPageCount = value; }
+        });
         addDataSlot(new DataSlot() {
             @Override public int get() { return activePage; }
             @Override public void set(int value) { activePage = value; }
@@ -161,14 +191,23 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
         repairEnabled = hasModule(player, 6, com.devaxo.templeoftheaxolotl.item.ModItems.CELESTIAL_ANVIL.get()) ? 1 : 0;
         updateCraft(player);
         updateRepair(player);
+        java.util.List<Location> filtered = activeFilter == 0 ? java.util.List.of() : matching(player);
+        filteredPageCount = Math.max(1, (filtered.size() + CelestialRepository.TYPES - 1) / CelestialRepository.TYPES);
         if (activePage >= pageCount()) activePage = 0;
-        var entries = CelestialRepository.readPage(player, activePage);
+        var physical = activeFilter == 0 ? CelestialRepository.readPage(player, activePage) : java.util.List.<CelestialRepository.Entry>of();
         for (int i = 0; i < CelestialRepository.TYPES; i++) {
-            if (i < entries.size()) {
-                var entry = entries.get(i);
-                display.setItem(i, entry.sample().copy());
-                counts[i] = entry.quantity();
+            Location location = null;
+            if (activeFilter == 0 && i < physical.size()) location = new Location(activePage, i, physical.get(i));
+            if (activeFilter != 0 && activePage * CelestialRepository.TYPES + i < filtered.size())
+                location = filtered.get(activePage * CelestialRepository.TYPES + i);
+            if (location != null) {
+                visiblePhysicalPage[i] = location.page();
+                visiblePhysicalIndex[i] = location.index();
+                display.setItem(i, location.entry().sample().copy());
+                counts[i] = location.entry().quantity();
             } else {
+                visiblePhysicalPage[i] = -1;
+                visiblePhysicalIndex[i] = -1;
                 display.setItem(i, ItemStack.EMPTY);
                 counts[i] = 0;
             }
@@ -229,6 +268,25 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
     }
     @Override public boolean clickMenuButton(Player player, int id) {
         if (!(player instanceof ServerPlayer server)) return false;
+        if (id == 7 && equipped(server) && server.containerMenu == this) {
+            for (int i=9;i<36;i++) {
+                ItemStack stack=inventory.getItem(i);
+                if(stack.isEmpty()) continue;
+                stack.shrink(CelestialRepository.insertPage(server,activePage,stack));
+                for(int page=0;page<pageCount() && !stack.isEmpty();page++) {
+                    if(page!=activePage) stack.shrink(CelestialRepository.insertPage(server,page,stack));
+                }
+                if(stack.isEmpty()) inventory.setItem(i,ItemStack.EMPTY);
+            }
+            inventory.setChanged(); refresh(server); broadcastChanges(); return true;
+        }
+        if (id >= 20 && id <= 24 && equipped(server)) {
+            activeFilter = id - 20;
+            activePage = 0;
+            refresh(server);
+            return true;
+        }
+        if (id == 8 && equipped(server)) { activePage = (activePage + pageCount() - 1) % pageCount(); refresh(server); return true; }
         if (id == 1 && equipped(server)) { activePage = (activePage + 1) % pageCount(); refresh(server); return true; }
         if (id == 2 && logisticsEquipped != 0) { logisticsPanel = 1 - logisticsPanel; refresh(server); return true; }
         if (id == 3 && logisticsEquipped != 0) { com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.toggleInbound(server); refresh(server); return true; }
@@ -384,7 +442,7 @@ public final class CelestialRepositoryMenu extends AbstractContainerMenu {
             int moved = CelestialRepository.insertPage(server, activePage, hand);
             if (moved > 0) hand.shrink(moved);
         } else if ((type == ClickType.PICKUP && button == 0) || type == ClickType.QUICK_MOVE) {
-            ItemStack withdrawn = CelestialRepository.extractPage(server, activePage, slotId, 64);
+            ItemStack withdrawn = CelestialRepository.extractPage(server, visiblePhysicalPage[slotId], visiblePhysicalIndex[slotId], 64);
             if (!withdrawn.isEmpty()) {
                 server.getInventory().add(withdrawn);
                 if (!withdrawn.isEmpty()) server.drop(withdrawn, false);

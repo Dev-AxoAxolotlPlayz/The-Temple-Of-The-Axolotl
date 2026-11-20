@@ -18,6 +18,7 @@ public class NoodleStarterItem extends Item {
         if (player instanceof ServerPlayer owner) {
             give(owner, new ItemStack(ModItems.ABYSSAL_CHARM.get()));
             give(owner, new ItemStack(ModItems.ABYSSAL_TORCH.get()));
+            give(owner, new ItemStack(ModItems.NOODLE_TRAINING_MEDAL.get()));
             ItemStack book = new ItemStack(ModItems.NOODLE_COMMAND_BOOK.get());
             NoodleTraining.setCommands(book, NoodleCommandLibrary.load(owner.getUUID()));
             give(owner, book);

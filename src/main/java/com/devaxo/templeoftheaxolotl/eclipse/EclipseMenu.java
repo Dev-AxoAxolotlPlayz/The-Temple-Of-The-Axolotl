@@ -82,12 +82,24 @@ public final class EclipseMenu extends AbstractContainerMenu {
     }
     public int displayedCost() { return (costHigh << 16) | costLow; }
 
+    private boolean promiseRecipe() {
+        return altar != null && altar.offerings.getItem(0).getCount()==1 && ((altar.offerings.getItem(0).is(com.devaxo.templeoftheaxolotl.item.ModItems.AXOLUTHUS_PROMISE.get()) && altar.offerings.getItem(1).is(com.devaxo.templeoftheaxolotl.item.ModItems.KRAKEN_LIMB.get())) || (altar.offerings.getItem(0).is(com.devaxo.templeoftheaxolotl.item.ModItems.CELESTIAL_MAGNET.get()) && altar.offerings.getItem(1).is(com.devaxo.templeoftheaxolotl.item.ModItems.STARDUST.get())));
+    }
     /** Stage 2: enchantment merging; other transmutation recipes follow in stage 3. */
     private ItemStack enchantResult() {
         if (altar == null) return ItemStack.EMPTY;
         ItemStack left = altar.offerings.getItem(0);
         ItemStack right = altar.offerings.getItem(1);
         if (left.isEmpty() || right.isEmpty()) return ItemStack.EMPTY;
+        if (com.devaxo.templeoftheaxolotl.item.AxolitePlating.tier(left)>0 && right.is(com.devaxo.templeoftheaxolotl.item.ModItems.AXOLITE_PLATING.get())) return com.devaxo.templeoftheaxolotl.item.AxolitePlating.plated(left)?ItemStack.EMPTY:com.devaxo.templeoftheaxolotl.item.AxolitePlating.apply(left);
+        if (promiseRecipe()) {
+            int n=com.devaxo.templeoftheaxolotl.promise.PromiseUpgrade.level(left);
+            if(n>=8)return ItemStack.EMPTY;
+            ItemStack out=left.copy();
+            var tag=out.getOrDefault(DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+            if(out.has(DataComponents.CUSTOM_NAME)){var custom=out.get(DataComponents.CUSTOM_NAME);if(custom!=null){var name=custom.copy(); if(n>0 && custom.getString().endsWith(" U"+n)) name=net.minecraft.network.chat.Component.literal(custom.getString().substring(0,custom.getString().length()-(" U"+n).length())).withStyle(custom.getStyle()); out.set(DataComponents.CUSTOM_NAME,name.append(" U"+(n+1)));}}
+            tag.putInt("promise_upgrade",n+1);out.set(DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(tag));return out;
+        }
         ItemEnchantments source = EnchantmentHelper.getEnchantmentsForCrafting(right);
         if (source.isEmpty()) return ItemStack.EMPTY;
         ItemStack output = left.copy();
@@ -116,6 +128,8 @@ public final class EclipseMenu extends AbstractContainerMenu {
     private int ritualCost() {
         if (inscription) return inscriptionCost();
         if (enchantResult().isEmpty()) return 0;
+        if (com.devaxo.templeoftheaxolotl.item.AxolitePlating.tier(altar.offerings.getItem(0))>0 && altar.offerings.getItem(1).is(com.devaxo.templeoftheaxolotl.item.ModItems.AXOLITE_PLATING.get())) return 0;
+        if(promiseRecipe())return com.devaxo.templeoftheaxolotl.promise.PromiseUpgrade.COST[com.devaxo.templeoftheaxolotl.promise.PromiseUpgrade.level(altar.offerings.getItem(0))];
         ItemStack left = altar.offerings.getItem(0);
         ItemStack right = altar.offerings.getItem(1);
         ItemEnchantments incoming = EnchantmentHelper.getEnchantmentsForCrafting(right);
@@ -221,7 +235,7 @@ public final class EclipseMenu extends AbstractContainerMenu {
         }
         if (id == 2) { // Deposit only the remaining required raw XP cost.
             int missing = Math.max(0, ritualCost() - sessionXp);
-            int amount = Math.min(missing, Math.min(Math.max(0, player.totalExperience), Integer.MAX_VALUE - sessionXp));
+            int amount = Math.min(missing, Math.min(com.devaxo.templeoftheaxolotl.promise.PromiseUpgrade.xp(server), Integer.MAX_VALUE - sessionXp));
             if (amount > 0) { player.giveExperiencePoints(-amount); sessionXp += amount; broadcastChanges(); }
             return true;
         }
@@ -233,14 +247,15 @@ public final class EclipseMenu extends AbstractContainerMenu {
         if (id == 4 && !inscription) {
             ItemStack result = enchantResult();
             int price = ritualCost();
-            if (result.isEmpty() || price <= 0 || sessionXp < price
-                    || !altar.offerings.getItem(2).is(Items.DIAMOND_BLOCK)
+            if (result.isEmpty() || price < 0 || sessionXp < price
+                    || (!promiseRecipe() && !altar.offerings.getItem(2).is(Items.DIAMOND_BLOCK))
                     || !altar.offerings.getItem(5).isEmpty()) return false;
+            boolean promise=promiseRecipe();
             altar.offerings.setItem(5, result.copy());
             sessionXp -= price;
             altar.offerings.removeItem(0, 1);
             altar.offerings.removeItem(1, 1);
-            altar.offerings.removeItem(2, 1); // One diamond block per successful ritual.
+            if(!promise) altar.offerings.removeItem(2, 1); // One diamond block per successful ritual.
             altar.setChanged();
             broadcastChanges();
             return true;

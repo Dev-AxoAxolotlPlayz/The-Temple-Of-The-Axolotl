@@ -21,9 +21,20 @@ public class AxoCthuluEntity extends PathfinderMob implements GeoEntity {
     private int targetTicks;
     // 0..3 mob waves; 4 = crimson transition; 5 = final battle.
     private int encounterStage;
+    private int waveSpawned;
     private int waveStep; // 0 spawn mobs, 1 clear mobs, 2 clear tentacles, 3 shield strike
     private int awakeningTicks;
     private final Set<UUID> summoned = new HashSet<>();
+    public void forgetSummon(UUID id) { summoned.remove(id); overgrowth.remove(id); }
+    private final net.minecraft.server.level.ServerBossEvent hud = new net.minecraft.server.level.ServerBossEvent(net.minecraft.network.chat.Component.literal("AxoCthulu"), net.minecraft.world.BossEvent.BossBarColor.PURPLE, net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_6);
+    private void updateHud(ServerLevel s) {
+        for(var p:java.util.List.copyOf(hud.getPlayers())) if(p.level()!=s || !p.isAlive() || !s.players().contains(p)) hud.removePlayer(p);
+        for(var p:s.players()) if(p.isAlive() && !p.isSpectator()) { hud.addPlayer(p); EldritchHudCleanup.remember(p,hud); }
+        hud.setProgress(encounterStage < 4 ? (4-encounterStage)/4f : encounterStage==4 ? 0f : getHealth()/getMaxHealth());
+        hud.setName(net.minecraft.network.chat.Component.literal(encounterStage<4 ? "AxoCthulu — Wave "+(encounterStage+1)+"/4 | "+(waveStep==3?"Strike the shield":summoned.size()+" remaining") : encounterStage==4?"AxoCthulu — Awakening":"AxoCthulu — Cosmic Trident only"));
+    }
+    @Override public void remove(Entity.RemovalReason reason) { hud.removeAllPlayers(); super.remove(reason); }
+
     private boolean encounterStarted;
     private int encounterCooldown;
     // Final-phase laser: 40 ticks warning, then one server-authoritative hit.
@@ -68,6 +79,7 @@ public class AxoCthuluEntity extends PathfinderMob implements GeoEntity {
         tag.putBoolean("EldritchEyeRewarded", eyeRewarded);
         tag.putInt("EldritchStage", encounterStage);
         tag.putInt("EldritchStep", waveStep);
+        tag.putInt("EldritchWaveSpawned", waveSpawned);
         tag.putInt("EldritchAwakening", awakeningTicks);
         tag.putUUID("EldritchInstance", getUUID());
         tag.putInt("EldritchCooldown", encounterCooldown);
@@ -88,6 +100,7 @@ public class AxoCthuluEntity extends PathfinderMob implements GeoEntity {
         eyeRewarded = tag.getBoolean("EldritchEyeRewarded");
         encounterStage = tag.getInt("EldritchStage");
         waveStep = tag.getInt("EldritchStep");
+        waveSpawned = tag.getInt("EldritchWaveSpawned");
         awakeningTicks = tag.getInt("EldritchAwakening");
         encounterCooldown = tag.getInt("EldritchCooldown");
         laserCooldown = tag.contains("EldritchLaserCooldown") ? tag.getInt("EldritchLaserCooldown") : 100;
@@ -107,6 +120,7 @@ public class AxoCthuluEntity extends PathfinderMob implements GeoEntity {
         summoned.clear();
         var ids = tag.getList("EldritchSummons", 10);
         for (int i = 0; i < ids.size(); i++) { CompoundTag entry = ids.getCompound(i); if (entry.hasUUID("Id")) summoned.add(entry.getUUID("Id")); }
+        if (!tag.contains("EldritchWaveSpawned") && encounterStage<4 && waveStep==1 && summoned.isEmpty()) waveStep=0;
     }
     // Award the Eye exactly once, only for a legitimate completed final-phase kill.
     private boolean eyeRewarded;
@@ -122,7 +136,9 @@ public class AxoCthuluEntity extends PathfinderMob implements GeoEntity {
                 getX(), getY(), getZ(), 120, 3.0, 3.0, 3.0, 0.15);
     }
     @Override public void die(DamageSource source) {
-        awardEye(source);
+        if (level() instanceof ServerLevel s && com.devaxo.templeoftheaxolotl.world.EldritchEncounter.arena(s)) {
+            if(com.devaxo.templeoftheaxolotl.world.EldritchEncounter.get(s).owns(getUUID())) { awardEye(source); com.devaxo.templeoftheaxolotl.world.EldritchEncounter.get(s).complete(getUUID(),s); }
+        } else awardEye(source);
         if (level() instanceof ServerLevel server) {
             for (UUID id : summoned) {
                 Entity add = server.getEntity(id);
@@ -138,7 +154,7 @@ public class AxoCthuluEntity extends PathfinderMob implements GeoEntity {
         super.die(source);
     }
 
-    private void spawnWave(ServerLevel server, boolean tentacles) {
+    private boolean spawnWave(ServerLevel server, boolean tentacles) {
         int wave = encounterStage;
         EntityType<?>[] types = switch (wave) {
             case 0 -> new EntityType<?>[]{ModEntities.MEROLOTL.get()};
@@ -153,11 +169,11 @@ public class AxoCthuluEntity extends PathfinderMob implements GeoEntity {
             default -> new int[]{8,5,5,2};
         };
         int total = tentacles ? wave + 1 : 20;
-        for (int i = 0; i < total; i++) {
+        for (int i = waveSpawned; i < total; i++) {
             Entity entity;
             if (tentacles) {
                 AttackTentacleEntity tentacle = ModEntities.ATTACK_TENTACLE.get().create(server);
-                if (tentacle == null) continue;
+                if (tentacle == null) return false;
                 tentacle.setEncounterOwner(getUUID());
                 entity = tentacle;
             } else {
@@ -165,15 +181,27 @@ public class AxoCthuluEntity extends PathfinderMob implements GeoEntity {
                 int kind = 0;
                 while (kind < counts.length - 1 && index >= counts[kind]) index -= counts[kind++];
                 entity = types[kind].create(server);
-                if (entity == null) continue;
+                if (entity == null) return false;
                 if (entity instanceof AxoleviathanEntity leviathan) leviathan.setEldritchVariant(true);
             }
             double angle = (Math.PI * 2 * i / total);
             double radius = tentacles ? 18 : 28 + (i % 3) * 6;
-            entity.moveTo(getX() + Math.cos(angle) * radius, getY() - 3,
-                    getZ() + Math.sin(angle) * radius, random.nextFloat() * 360, 0);
-            if (server.addFreshEntity(entity)) summoned.add(entity.getUUID());
-        }
+            double sx=getX()+Math.cos(angle)*radius, sz=getZ()+Math.sin(angle)*radius;
+            double sy=getY()-3;
+            if(com.devaxo.templeoftheaxolotl.world.EldritchEncounter.arena(server)) {
+                sx=net.minecraft.util.Mth.clamp(sx,-240,240); sz=net.minecraft.util.Mth.clamp(sz,-240,240);
+                sy=net.minecraft.util.Mth.clamp(sy,-50,14);
+            }
+            entity.moveTo(sx, sy, sz, random.nextFloat()*360, 0);
+            entity.getPersistentData().putUUID("EldritchOwner",getUUID());
+            if(entity instanceof Mob mob) mob.setPersistenceRequired();
+            server.getChunk(entity.chunkPosition().x, entity.chunkPosition().z);
+            server.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.POST_TELEPORT, entity.chunkPosition(), 2, entity.getId());
+            if (!server.addFreshEntity(entity)) return false;
+            summoned.add(entity.getUUID());
+            waveSpawned++;
+            } 
+        return true;
     }
     private void tickEncounter(ServerLevel server) {
         if (!encounterStarted) return;
@@ -195,12 +223,21 @@ public class AxoCthuluEntity extends PathfinderMob implements GeoEntity {
         if (encounterStage == 5) { tickFinalBattle(server); return; }
         if (encounterStage > 5) return;
         if (encounterCooldown-- > 0) return;
-        if (waveStep == 0) { summoned.clear(); spawnWave(server, false); waveStep = 1; return; }
+        if (waveStep == 0) {
+            if (spawnWave(server, false)) { waveStep = 1; waveSpawned = 0; }
+            else encounterCooldown = 20;
+            return;
+        }
+        if (waveStep == 4) {
+            if (spawnWave(server, true)) { waveStep = 2; waveSpawned = 0; }
+            else encounterCooldown = 20;
+            return;
+        }
         if (waveStep == 1 || waveStep == 2) {
             // Never mistake an unloaded entity for a kill: wait for its chunk to load.
             summoned.removeIf(id -> { Entity e = server.getEntity(id); return e != null && !e.isAlive(); });
             if (!summoned.isEmpty()) return;
-            if (waveStep == 1) { spawnWave(server, true); waveStep = 2; }
+            if (waveStep == 1) { waveStep = 4; waveSpawned = 0; }
             else { waveStep = 3; }
         }
     }
@@ -222,6 +259,7 @@ public class AxoCthuluEntity extends PathfinderMob implements GeoEntity {
                 AttackTentacleEntity tentacle = ModEntities.ATTACK_TENTACLE.get().create(server);
                 if (tentacle != null) {
                     tentacle.setEncounterOwner(getUUID());
+                    tentacle.getPersistentData().putUUID("EldritchOwner",getUUID());
                     double angle = random.nextDouble() * Math.PI * 2;
                     tentacle.moveTo(getX() + Math.cos(angle) * 16, getY() - 3,
                             getZ() + Math.sin(angle) * 16, random.nextFloat() * 360, 0);
@@ -311,12 +349,14 @@ public class AxoCthuluEntity extends PathfinderMob implements GeoEntity {
         super.tick();
         if (level().isClientSide) return;
         if (level() instanceof ServerLevel server) {
-            com.devaxo.templeoftheaxolotl.world.EldritchArenaBuilder.tick(server, this);
+            if(com.devaxo.templeoftheaxolotl.world.EldritchEncounter.arena(server)) {
+                if(!com.devaxo.templeoftheaxolotl.world.EldritchEncounter.get(server).owns(getUUID())) { discard(); return; }
+                if(tickCount%10==0) updateHud(server);
+                if(server.players().stream().noneMatch(p -> p.isAlive() && !p.isSpectator())) {setDeltaMovement(Vec3.ZERO);return;}
+            }
             // Begin only when a Survival participant approaches the boss in Eldritch Waters.
             if (!encounterStarted && server.dimension().location().getPath().equals("eldritch_waters")
-                    && !server.getEntitiesOfClass(net.minecraft.server.level.ServerPlayer.class,
-                            getBoundingBox().inflate(80.0),
-                            p -> p.isAlive() && !p.isSpectator() && !p.isCreative()).isEmpty()) {
+                    && !server.players().stream().noneMatch(p -> p.isAlive() && !p.isSpectator())) {
                 beginEncounter();
             }
             tickEncounter(server);

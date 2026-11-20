@@ -5,12 +5,18 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BoatWaveMixin",
+    "RingDisplayTransformInvoker",
     "AxoliteSmithingMixin",
     "AxoliteArrowStackAccessor",
     "AxoliteTridentSyncMixin",
     "ShellShockedMobMixin",
     "ShellShockedEndermanMixin",
-    "ShellShockedCreeperMixin"
+    "ShellShockedCreeperMixin",
+    "EldritchFlatGeneratorMixin",
+    "PersistentTridentItemMixin",
+    "ExperienceOrbCountAccessor",
+    "PlatedNameMixin",
+    "RepositoryAirMixin"
   ],
   "client": [
     "BoatRendererWaveMixin",
@@ -31,7 +37,11 @@
     "DiaryLandingRevealMixin",
     "AxoliteTridentItemRenderMixin",
     "AxoliteTridentFlightRenderMixin",
-    "TridentChargeHandLayerMixin"
+    "TridentChargeHandLayerMixin",
+    "PromiseFirstPersonPlayerMixin",
+    "PromiseFirstPersonArmorMixin",
+    "PromiseFirstPersonHeadLayerMixin",
+    "PromiseFirstPersonEquipmentMixin"
   ],
   "injectors": {
     "defaultRequire": 1

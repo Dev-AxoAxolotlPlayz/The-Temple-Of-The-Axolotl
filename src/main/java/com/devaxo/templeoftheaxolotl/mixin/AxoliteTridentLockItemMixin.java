@@ -36,7 +36,7 @@ public abstract class AxoliteTridentLockItemMixin {
         Mob best=null;
         double bestAlong=48;
         for(Mob mob:level.getEntitiesOfClass(Mob.class,player.getBoundingBox().inflate(48))) {
-            if(!mob.isAlive() || !mob.isPickable() || mob.isAlliedTo(player) || player.isAlliedTo(mob)
+            if(mob instanceof com.devaxo.templeoftheaxolotl.entity.AxoCthuluEntity || !mob.isAlive() || !mob.isPickable() || mob.isAlliedTo(player) || player.isAlliedTo(mob)
                || (mob instanceof net.minecraft.world.entity.TamableAnimal tame && tame.isTame())) continue;
             Vec3 center=mob.getBoundingBox().getCenter();
             double along=center.subtract(origin).dot(forward);

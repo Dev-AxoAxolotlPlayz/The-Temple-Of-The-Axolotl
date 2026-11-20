@@ -1,4 +1,6 @@
 package com.devaxo.templeoftheaxolotl.mixin;
+
+import com.devaxo.templeoftheaxolotl.client.renderer.TridentChargeRenderContext;
 import com.devaxo.templeoftheaxolotl.item.ModItems;
 import com.devaxo.templeoftheaxolotl.client.renderer.AxoliteTridentMesh;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -32,9 +34,8 @@ public class AxoliteTridentItemRenderMixin {
         if (context == ItemDisplayContext.THIRD_PERSON_LEFT_HAND || context == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) {
             var holder = TridentChargeRenderContext.get();
             if (holder != null && holder.isUsingItem() && holder.getUseItem().is(stack.getItem())) {
-                // Charge animation pitches the held shaft across the shoulders;
-                // rotate around the model's shaft-normal axis instead of yawing it.
-                pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(90.0F));
+                // Flip the model during third-person charging to correct pommel orientation.
+                pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(180.0F));
             }
         }
         if(context==ItemDisplayContext.GUI) pose.scale(.55f,.55f,.55f);

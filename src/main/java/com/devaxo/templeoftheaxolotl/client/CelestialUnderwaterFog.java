@@ -46,6 +46,9 @@ public final class CelestialUnderwaterFog {
             event.setCanceled(true);
             return;
         }
+        if (mc.level != null && com.devaxo.templeoftheaxolotl.event.TemplePressureScale.exempt(mc.level) && event.getCamera().getFluidInCamera()==FogType.WATER) {
+            event.setNearPlaneDistance(-8f); event.setFarPlaneDistance(2048f); event.setCanceled(true); return;
+        }
         if(!applies(event))return;
         float d=depth(event.getCamera().getPosition().y);
         // Shallow-water exploration remains readable; deep water closes in progressively.

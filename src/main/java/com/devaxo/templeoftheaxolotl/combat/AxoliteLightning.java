@@ -35,6 +35,7 @@ public final class AxoliteLightning {
     public static void chain(ServerLevel level, Player owner, Entity direct, Mob first,
                              int initialDepth, Set<UUID> visited, Set<UUID> cargo,
                              boolean starfall, ItemStack cosmicWeapon) {
+        if (com.devaxo.templeoftheaxolotl.combat.InnateProtection.villager(first)) return;
         var queue=new ArrayDeque<Node>();
         queue.add(new Node(first.getBoundingBox().getCenter(),initialDepth));
         while(!queue.isEmpty()) {
@@ -48,7 +49,7 @@ public final class AxoliteLightning {
             for(int i=0;i<branches;i++) {
                 Vec3 origin=node.pos();
                 Mob target=level.getEntitiesOfClass(Mob.class,new AABB(origin,origin).inflate(20),m ->
-                                m.isAlive() && m.isPickable() && !m.getUUID().equals(owner.getUUID()) && !visited.contains(m.getUUID())
+                                !com.devaxo.templeoftheaxolotl.combat.InnateProtection.villager(m) && m.isAlive() && m.isPickable() && !m.getUUID().equals(owner.getUUID()) && !visited.contains(m.getUUID())
                     && !m.isAlliedTo(owner) && !owner.isAlliedTo(m)
                     && !(m instanceof TamableAnimal t && t.isTame())
                     && m.getBoundingBox().getCenter().distanceToSqr(origin)<=400)
@@ -63,7 +64,7 @@ public final class AxoliteLightning {
                 for(ExperienceOrb orb:level.getEntitiesOfClass(ExperienceOrb.class,box)) before.add(orb.getUUID());
                 arc(level,origin,next);
                 var magic=level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DamageTypes.MAGIC);
-                if(!target.hurt(new DamageSource(magic,direct,owner),8f)) continue;
+                if(!SiphonEvents.secondary(owner, cosmicWeapon, () -> target.hurt(new DamageSource(magic,direct,owner),8f))) continue;
                 ShellShockedLogic.apply(target,owner);
                 if (starfall) StarfallBurst.doubleBurst(level, next, owner, target, cosmicWeapon);
                 if(!target.isAlive() && cargo!=null) {

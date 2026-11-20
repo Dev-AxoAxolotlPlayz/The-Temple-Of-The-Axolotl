@@ -42,6 +42,8 @@ public final class StarfallBurst {
     }
     @net.neoforged.bus.api.SubscribeEvent
     public static void onServerTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) {
+        // Detach due jobs before invoking damage callbacks, which may enqueue more bursts.
+        var ready = new java.util.ArrayList<Pending>();
         var iterator = PENDING.iterator();
         while (iterator.hasNext()) {
             Pending pending = iterator.next();
@@ -49,6 +51,11 @@ public final class StarfallBurst {
             if (world == null) { iterator.remove(); continue; }
             if (world.getGameTime() < pending.due()) continue;
             iterator.remove();
+            ready.add(pending);
+        }
+        for (Pending pending : ready) {
+            ServerLevel world = event.getServer().getLevel(pending.dimension());
+            if (world == null) continue;
             Entity entity = world.getEntity(pending.ownerId());
             if (!(entity instanceof Player owner) || !owner.isAlive()) continue;
             Entity primary = pending.primaryId() == null ? null : world.getEntity(pending.primaryId());
@@ -66,7 +73,7 @@ public final class StarfallBurst {
         int fireAspect = level(world, weapon, "fire_aspect");
         int knockback = level(world, weapon, "knockback");
         for (Mob mob : world.getEntitiesOfClass(Mob.class, new AABB(center, center).inflate(5),
-                m -> m.isAlive() && !m.isAlliedTo(owner)
+                m -> !com.devaxo.templeoftheaxolotl.combat.InnateProtection.villager(m) && m.isAlive() && !m.isAlliedTo(owner)
                         && !owner.isAlliedTo(m) && !(m instanceof TamableAnimal t && t.isTame()))) {
             double distance = mob.getBoundingBox().getCenter().distanceTo(center);
             float damage = (float) (8.0 * Math.max(0, 1 - distance / 5.0));
@@ -74,7 +81,8 @@ public final class StarfallBurst {
             if (smite > 0 && mob.getType().is(EntityTypeTags.UNDEAD)) damage += 2.5f * smite;
             if (bane > 0 && mob.getType().is(EntityTypeTags.ARTHROPOD)) damage += 2.5f * bane;
             if (impaling > 0 && mob.getType().is(EntityTypeTags.SENSITIVE_TO_IMPALING)) damage += 2.5f * impaling;
-            if (damage > 0 && mob.hurt(world.damageSources().playerAttack(owner), damage)) {
+            final float hitDamage = damage;
+            if (damage > 0 && SiphonEvents.secondary(owner, weapon, () -> mob.hurt(world.damageSources().playerAttack(owner), hitDamage))) {
                 if (fireAspect > 0) mob.igniteForSeconds(4 * fireAspect);
                 if (knockback > 0) {
                     Vec3 away = mob.position().subtract(center);

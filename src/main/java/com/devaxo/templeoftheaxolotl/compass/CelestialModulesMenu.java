@@ -14,7 +14,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
     private final SimpleContainer modules = new SimpleContainer(18);
     private final SimpleContainer discs = new SimpleContainer(9);
     private final Inventory playerInventory;
-    private final int[] control = new int[17];
+    private final int[] control = new int[18];
     private boolean loadingSlots = false;
     public int tridentMode() { return control[16]; }
     public int playing() { return control[0] - 1; }
@@ -27,6 +27,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
     public boolean inbound() { return control[8] != 0; }
     public boolean outbound() { return control[9] != 0; }
     public int radius() { return control[10]; }
+    public boolean sustainable() { return control[17] != 0; }
     public boolean miningMode() { return control[11] != 0; }
     public boolean helmetNightVisionEnabled() { return control[12] != 0; }
     public boolean helmetConduitEnabled() { return control[13] != 0; }
@@ -129,6 +130,9 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
         }
     }
 
+    public void syncRepositoryTank(ItemStack stack) {
+        if (!ItemStack.matches(modules.getItem(3), stack)) modules.setItem(3, stack.copy());
+    }
     private void refresh(ServerPlayer p) {
         control[0] = CelestialMusicRack.playing(p) + 1;
         control[1] = CelestialMusicRack.paused(p) ? 1 : 0;
@@ -165,6 +169,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
             control[12] = com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.helmetNightVisionEnabled(server) ? 1 : 0;
             control[13] = com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.helmetConduitEnabled(server) ? 1 : 0;
             control[14] = com.devaxo.templeoftheaxolotl.event.AbyssalGillsProtection.enabled(server) ? 1 : 0;
+            control[17] = com.devaxo.templeoftheaxolotl.combat.RingMiningMode.sustainable(server) ? 1 : 0;
             control[16] = com.devaxo.templeoftheaxolotl.item.AxoliteTridentMode.state(server);
             control[15] = com.devaxo.templeoftheaxolotl.event.AbyssalLanternEvents.moduleEnabled(server) ? 1 : 0;
         }
@@ -182,6 +187,7 @@ public final class CelestialModulesMenu extends AbstractContainerMenu {
         else if (id == 14 && TempleHudModules.getSlot(server, 4).is(com.devaxo.templeoftheaxolotl.item.ModItems.CELESTIAL_MAGNET.get()))
             com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.cycleMagnet(server);
         else if (id == 24) { if (!com.devaxo.templeoftheaxolotl.item.AxoliteTridentMode.toggle(server)) return false; }
+        else if (id == 25) { if (!com.devaxo.templeoftheaxolotl.combat.RingMiningMode.toggleSustainable(server)) return false; }
         else if (id == 16) com.devaxo.templeoftheaxolotl.combat.RingMiningMode.toggle(server);
         else if (id == 17) com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.toggleHelmetNightVision(server);
         else if (id == 18) com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.toggleHelmetConduit(server);

@@ -1,0 +1,78 @@
+{
+  "name": "Training Medals",
+  "category": "temple_of_the_axolotl:companions",
+  "icon": "temple_of_the_axolotl:training_medal",
+  "sortnum": 11,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "temple_of_the_axolotl:training_medal",
+      "text": "Training Medals teach Baby Noodles innate abilities. Each noodle has five innate slots. Standard innates cost one slot; fused pairs cost three."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Training Rules",
+      "text": "Use a specialized medal on your own Baby Noodle. Duplicate or incompatible innates are rejected. A successful application consumes the medal. The following ability descriptions describe planned Stage III effects; Stage II implements training and compatibility."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Creeper Sense",
+      "text": "$(l)Smithing recipe$()$(br)Template: TNT$(br)Base: Training Medal$(br)Addition: Gunpowder$(br2)One-shot creepers and attack them faster.$(br2)Slot cost: 1."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Blink",
+      "text": "$(l)Smithing recipe$()$(br)Template: Eye of Ender$(br)Base: Training Medal$(br)Addition: Ender Pearl$(br2)Long-distance teleportation and owner rescue from lava or the void by exchanging positions.$(br2)Slot cost: 1."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Impervious",
+      "text": "$(l)Smithing recipe$()$(br)Template: Block of Netherite$(br)Base: Training Medal$(br)Addition: Enchanted Golden Apple$(br2)Complete damage immunity.$(br2)Slot cost: 1."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Devilish",
+      "text": "$(l)Smithing recipe$()$(br)Template: Magma Block$(br)Base: Training Medal$(br)Addition: Blaze Rod$(br2)Increased damage and speed; fire immunity.$(br2)Slot cost: 1."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Angelic",
+      "text": "$(l)Smithing recipe$()$(br)Template: Glowstone$(br)Base: Training Medal$(br)Addition: Phantom Membrane$(br2)Flight, fall immunity and temporary yellow stars emitting light level 7.$(br2)Slot cost: 1."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Berserker",
+      "text": "$(l)Smithing recipe$()$(br)Template: Blaze Rod$(br)Base: Training Medal$(br)Addition: Iron Sword$(br2)+100% damage and attack speed; -20 maximum HP.$(br2)Slot cost: 1."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tank",
+      "text": "$(l)Smithing recipe$()$(br)Template: Block of Iron$(br)Base: Training Medal$(br)Addition: Diamond Chestplate$(br2)+50% damage, +100% maximum HP, 30 armor and 20 toughness; -10% movement and attack speed.$(br2)Slot cost: 1."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Prospector",
+      "text": "$(l)Smithing recipe$()$(br)Template: Diamond$(br)Base: Training Medal$(br)Addition: Iron Pickaxe$(br2)15% chance to double a completed Fetch order, rolled once, without extra time.$(br2)Slot cost: 1."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ghost",
+      "text": "$(l)Smithing recipe$()$(br)Template: Ghast Tear$(br)Base: Training Medal$(br)Addition: Soul Lantern$(br2)Places soul lanterns in dark areas. Fetch is 20% slower. Cannot attack or Guard.$(br2)Slot cost: 1."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Demi Medal",
+      "text": "Template: Nether Star$(br)Base: Training Medal$(br)Addition: Nether Star$(br2)The Demi Medal is a fusion catalyst. Place it in the template slot and two compatible specialized medals in the base and addition slots, in either order. The fused result costs three innate slots."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Demi Fusion Pairs",
+      "text": "Blink + Impervious$(br)Devilish + Impervious$(br)Angelic + Impervious$(br)Devilish + Angelic$(br)Berserker + Impervious$(br)Tank + Impervious$(br2)These pairs cannot be applied separately. Use Demi fusion instead."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Compatibility",
+      "text": "Ghost cannot coexist with Creeper Sense, Berserker, Tank or Devilish, including fused medals containing those traits. Ghost cannot be fused. Berserker and Tank are naturally compatible. All other restrictions and the five-slot limit still apply."
+    }
+  ]
+}

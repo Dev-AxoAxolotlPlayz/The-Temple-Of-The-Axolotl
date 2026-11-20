@@ -3,7 +3,7 @@
   "generator": {
     "type": "minecraft:flat",
     "settings": {
-      "biome": "minecraft:deep_ocean",
+      "biome": "temple_of_the_axolotl:void_sea",
       "features": false,
       "lakes": false,
       "layers": [

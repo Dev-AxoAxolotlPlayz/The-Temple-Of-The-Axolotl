@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "temple_of_the_axolotl:axolite_plating"
+  },
+  "base": {
+    "item": "temple_of_the_axolotl:axolotl_absolute"
+  },
+  "addition": {
+    "item": "minecraft:netherite_block"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:axolotl_absolute",
+    "count": 1
+  }
+}

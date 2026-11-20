@@ -1,0 +1,11 @@
+{
+  "name": "tr7zw",
+  "category": "temple_of_the_axolotl:special_thanks",
+  "icon": "minecraft:book",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Special thanks to tr7zw, creator of $(l:https://github.com/tr7zw/FirstPersonModel)First-Person Model$(/l). Its openly shared rendering techniques inspired the immersive first-person body rendering of Axoluthu's Promise. Thank you for sharing your work with fellow mod developers! $(br2)\u2014 DevAxo"
+    }
+  ]
+}

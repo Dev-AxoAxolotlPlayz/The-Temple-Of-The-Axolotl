@@ -3,6 +3,15 @@
   "values": [
     "temple_of_the_axolotl:axolite_trident",
     "temple_of_the_axolotl:axolite_pickaxe_tier_2",
-    "temple_of_the_axolotl:axolite_pickaxe_tier_3"
+    "temple_of_the_axolotl:axolite_pickaxe_tier_3",
+    "temple_of_the_axolotl:axolite_helmet",
+    "temple_of_the_axolotl:axolite_chestplate",
+    "temple_of_the_axolotl:axolite_leggings",
+    "temple_of_the_axolotl:axolite_boots",
+    "temple_of_the_axolotl:axolite_pickaxe",
+    "temple_of_the_axolotl:axolotl_absolute",
+    "temple_of_the_axolotl:axolotl_chestplate",
+    "temple_of_the_axolotl:axolotl_leggings",
+    "temple_of_the_axolotl:axolotl_boots"
   ]
 }

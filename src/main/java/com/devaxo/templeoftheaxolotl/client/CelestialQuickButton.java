@@ -11,6 +11,9 @@ public final class CelestialQuickButton extends Button {
     private final String label;
     private int anchorX, anchorY;
     private boolean growLeft = true;
+    private boolean overhead;
+    private int labelX;
+    public void overhead(boolean enabled, int x) { overhead=enabled; labelX=x; if(enabled) { setWidth(18); } }
     // Each row is exactly eight pixels.  The old icon renderer started at pixel 5,
     // clipping the final three columns against the 18px button's right border.
     private static final String[][] ICONS = {
@@ -44,7 +47,8 @@ public final class CelestialQuickButton extends Button {
         boolean hovered = mouseX >= (growLeft ? anchorX - Math.max(0, getWidth() - 18) : anchorX)
                 && mouseX < (growLeft ? anchorX + 18 : anchorX + getWidth())
                 && mouseY >= anchorY && mouseY < anchorY + 18;
-        int width = hovered ? expandedWidth() : 18;
+        if (overhead) hovered = iconHovered(mouseX, mouseY);
+        int width = hovered && !overhead ? expandedWidth() : 18;
         setWidth(width);
         setX(growLeft ? anchorX - (width - 18) : anchorX);
         int x = getX(), y = anchorY;
@@ -65,7 +69,11 @@ public final class CelestialQuickButton extends Button {
             if (icon[iy].charAt(ix) == '#')
                 g.fill(iconX + 5 + ix, y + 5 + iy, iconX + 6 + ix, y + 6 + iy, color);
         }
-        if (hovered) g.drawString(Minecraft.getInstance().font, label,
+        if (hovered && overhead) {
+            var font = Minecraft.getInstance().font;
+            g.fill(labelX, y-13, labelX+font.width(label)+8, y-1, 0xEE171925);
+            g.drawString(font,label,labelX+4,y-11,color,false);
+        } else if (hovered) g.drawString(Minecraft.getInstance().font, label,
                 growLeft ? x + 4 : x + 21, y + 5, 0xFFFFFFFF, false);
     }
 }

@@ -159,6 +159,24 @@ public final class BabyNoodleChat {
                 a.cancelJob(); a.setOrderedToSit(false); a.setGuarding(true); a.acknowledge();
                 owner.sendSystemMessage(Component.literal(a.permanentName() + " is guarding you.")); return;
             }
+            if (command.toLowerCase(Locale.ROOT).startsWith("fetch ")) {
+                String[] parts = command.substring(6).trim().split("\\s+");
+                if (parts.length == 2) {
+                    ResourceLocation requestedId = ResourceLocation.tryParse(parts[0].contains(":") ? parts[0] : "minecraft:" + parts[0]);
+                    int amount;
+                    try { amount = Integer.parseInt(parts[1]); } catch (NumberFormatException ex) { amount = 0; }
+                    if (requestedId == null || !requestedId.getNamespace().equals("minecraft")
+                            || !BuiltInRegistries.ITEM.containsKey(requestedId) || !eligible(requestedId.getPath())
+                            || amount < 1 || amount > 4096) {
+                        owner.sendSystemMessage(Component.literal("Fetch requires an unprocessed vanilla resource and an amount from 1 to 4096.")); return;
+                    }
+                    if (a.busy()) { owner.sendSystemMessage(Component.literal(a.permanentName() + " is already on a mission.")); return; }
+                    Item requestedItem = BuiltInRegistries.ITEM.get(requestedId);
+                    a.fetch(requestedItem, amount);
+                    owner.sendSystemMessage(Component.literal(a.permanentName() + " is fetching " + amount + " " + requestedItem.getDescription().getString() + "!"));
+                    return;
+                }
+            }
             Matcher things = THINGS.matcher(command);
             Matcher materials = MATERIALS.matcher(command);
             if (things.matches() || materials.matches()) {
@@ -186,7 +204,7 @@ public final class BabyNoodleChat {
                 if (ingredients == null || ingredients.isEmpty()) {
                     owner.sendSystemMessage(Component.literal("No eligible vanilla crafting recipe found for " + targetItem.getDescription().getString() + ".")); return;
                 }
-                a.setGuarding(false); a.fetchMaterials(ingredients, crafts);
+                a.fetchMaterials(ingredients, crafts);
                 owner.sendSystemMessage(Component.literal(a.permanentName() + " is collecting ingredients for " + crafts + " " + targetItem.getDescription().getString() + "!"));
                 return;
             }
@@ -198,14 +216,14 @@ public final class BabyNoodleChat {
                 try { quantity = amount == null ? 16 : Integer.parseInt(amount); } catch (NumberFormatException ex) { quantity = 64; }
                 quantity = Math.max(1, Math.min(4096, quantity));
                 Item log = biomeLog(a);
-                a.setGuarding(false); a.fetch(log, quantity);
+                a.fetch(log, quantity);
                 owner.sendSystemMessage(Component.literal(a.permanentName() + " is gathering " + quantity + " " + log.getDescription().getString() + "!"));
                 return;
             }
             var custom = customPlan(owner, a, command);
             if (custom != null && !custom.isEmpty()) {
                 if (a.busy()) { owner.sendSystemMessage(Component.literal(a.permanentName() + " is already on a mission.")); return; }
-                a.setGuarding(false); a.fetchMaterials(custom, custom.values().stream().mapToInt(Integer::intValue).sum());
+                a.fetchMaterials(custom, custom.values().stream().mapToInt(Integer::intValue).sum());
                 owner.sendSystemMessage(Component.literal(a.permanentName() + " is gathering the entire shopping list in one trip!"));
                 return;
             }
@@ -272,17 +290,25 @@ public final class BabyNoodleChat {
         } finally { visiting.remove(item); }
     }
 
-    private static boolean eligible(String id) {
-        if (id.endsWith("_spawn_egg") || id.contains("potion") || id.contains("enchanted")
-                || id.contains("command_block") || id.contains("structure_block") || id.contains("jigsaw")
-                || id.contains("portal") || id.contains("netherite") || id.contains("diamond") || id.contains("ancient_debris") || id.contains("shulker_box")
-                || id.contains("dragon") || id.contains("end_crystal") || id.contains("end_rod")
-                || id.contains("trial_spawner") || id.contains("vault") || id.contains("spawner")) return false;
-        return !java.util.Set.of("bedrock", "beacon", "nether_star", "elytra", "end_stone", "end_portal_frame",
-                "totem_of_undying", "conduit", "enchanting_table", "anvil", "respawn_anchor", "lodestone",
-                "recovery_compass", "heavy_core", "budding_amethyst", "reinforced_deepslate",
-                "barrier", "light", "debug_stick", "knowledge_book", "written_book", "dragon_breath",
-                "netherite_upgrade_smithing_template", "trident", "mace").contains(id);
+    /** Only naturally harvested, mined or dropped vanilla materials. Never processed products. */
+    public static boolean eligible(String id) {
+        if (id.endsWith("_log") || id.endsWith("_stem") || id.endsWith("_wood")
+                || id.endsWith("_hyphae") || id.endsWith("_leaves") || id.endsWith("_sapling")
+                || id.endsWith("_ore") || id.endsWith("_seeds") || id.endsWith("_flower")
+                || id.endsWith("_coral") || id.endsWith("_coral_fan") || id.endsWith("_mushroom")) return true;
+        return RAW_RESOURCES.contains(id);
+    }
+    private static final Set<String> RAW_RESOURCES = Set.of(
+            "dirt", "coarse_dirt", "rooted_dirt", "grass_block", "podzol", "mycelium", "mud", "clay", "clay_ball",
+            "sand", "red_sand", "gravel", "flint", "stone", "cobblestone", "cobbled_deepslate", "deepslate", "tuff", "calcite", "dripstone_block", "pointed_dripstone", "granite", "diorite", "andesite", "obsidian", "crying_obsidian",
+            "netherrack", "soul_sand", "soul_soil", "basalt", "blackstone", "magma_block", "end_stone", "ice", "packed_ice", "blue_ice", "snow", "snowball", "snow_block",
+            "coal", "raw_iron", "raw_gold", "raw_copper", "diamond", "emerald", "lapis_lazuli", "redstone", "quartz", "amethyst_shard", "glowstone_dust", "ancient_debris",
+            "wheat", "wheat_seeds", "beetroot", "beetroot_seeds", "carrot", "potato", "pumpkin", "melon", "melon_slice", "cocoa_beans", "sugar_cane", "bamboo", "cactus", "kelp", "seagrass", "sea_pickle", "lily_pad", "vine", "glow_berries", "sweet_berries", "nether_wart", "chorus_fruit", "apple",
+            "leather", "feather", "string", "spider_eye", "rotten_flesh", "bone", "gunpowder", "slime_ball", "ender_pearl", "blaze_rod", "ghast_tear", "phantom_membrane", "rabbit_hide", "rabbit_foot", "ink_sac", "glow_ink_sac", "prismarine_shard", "prismarine_crystals", "nautilus_shell", "scute", "armadillo_scute", "turtle_scute", "honeycomb", "egg", "tropical_fish", "cod", "salmon", "pufferfish", "beef", "porkchop", "chicken", "mutton", "rabbit", "wool", "white_wool", "black_wool", "brown_wool", "gray_wool", "light_gray_wool", "pink_wool", "red_wool", "orange_wool", "yellow_wool", "lime_wool", "green_wool", "cyan_wool", "light_blue_wool", "blue_wool", "purple_wool", "magenta_wool", "brown_mushroom", "red_mushroom", "crimson_fungus", "warped_fungus", "crimson_roots", "warped_roots", "nether_sprouts", "shroomlight", "moss_block", "azalea", "flowering_azalea", "small_dripleaf", "big_dripleaf", "hanging_roots", "spore_blossom", "short_grass", "fern", "dead_bush", "stick", "oak_log", "spruce_log", "birch_log", "jungle_log", "acacia_log", "dark_oak_log", "mangrove_log", "cherry_log", "pale_oak_log");
+
+    public static java.util.List<String> rawSuggestions() {
+        return BuiltInRegistries.ITEM.keySet().stream().filter(id -> id.getNamespace().equals("minecraft") && eligible(id.getPath()))
+                .map(ResourceLocation::toString).sorted().toList();
     }
 
     private static Item biomeLog(AbyssalAxolotlEntity a) {

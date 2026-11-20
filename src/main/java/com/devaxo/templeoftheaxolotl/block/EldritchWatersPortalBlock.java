@@ -58,6 +58,7 @@ public final class EldritchWatersPortalBlock extends Block {
             sp.displayClientMessage(Component.literal("Eldritch Waters dimension is unavailable."), true);
             return;
         }
+        if (com.devaxo.templeoftheaxolotl.world.EldritchWipe.pending(sp.server)) { sp.displayClientMessage(Component.literal("Eldritch Waters wipe pending; restart the world."),true); return; }
         // Flat worldgen supplies the water column and seabed; no giant synchronous block-fill.
         destination.getChunk(0, 0);
         BlockPos exitPos = ARRIVAL.below(2);
@@ -69,15 +70,7 @@ public final class EldritchWatersPortalBlock extends Block {
         data.putDouble(RETURN_X, sp.getX()); data.putDouble(RETURN_Y, sp.getY()); data.putDouble(RETURN_Z, sp.getZ());
         if (!sp.teleportTo(destination, ARRIVAL.getX()+0.5, ARRIVAL.getY()+0.5, ARRIVAL.getZ()+0.5,
                 Set.of(), sp.getYRot(), sp.getXRot())) return;
-        // Only spawn a boss if one does not already occupy this encounter arena.
-        if (destination.getEntitiesOfClass(com.devaxo.templeoftheaxolotl.entity.AxoCthuluEntity.class,
-                new AABB(-256, -60, -256, 256, 300, 256)).isEmpty()) {
-            var boss = ModEntities.AXOCTHULU.get().create(destination);
-            if (boss != null) {
-                boss.moveTo(0.5, 2.0, 42.5, 180.0F, 0.0F);
-                destination.addFreshEntity(boss);
-            }
-        }
+        com.devaxo.templeoftheaxolotl.world.EldritchEncounter.ensure(destination);
         sp.displayClientMessage(Component.literal("Eldritch Waters: defeat the summoned waves to expose each shield."), false);
     }
     @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,

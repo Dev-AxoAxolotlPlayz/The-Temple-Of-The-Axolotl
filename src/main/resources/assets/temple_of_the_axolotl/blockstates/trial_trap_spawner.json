@@ -1,1 +1,10 @@
-{"variants": {"": {"model": "temple_of_the_axolotl:block/trial_trap_spawner"}}}
+{
+  "variants": {
+    "spent=false": {
+      "model": "temple_of_the_axolotl:block/trial_trap_spawner"
+    },
+    "spent=true": {
+      "model": "temple_of_the_axolotl:block/trial_trap_spawner_spent"
+    }
+  }
+}

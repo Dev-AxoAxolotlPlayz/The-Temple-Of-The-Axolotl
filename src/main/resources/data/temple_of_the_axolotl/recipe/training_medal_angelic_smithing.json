@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "minecraft:glowstone"
+  },
+  "base": {
+    "item": "temple_of_the_axolotl:training_medal"
+  },
+  "addition": {
+    "item": "minecraft:phantom_membrane"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:training_medal",
+    "count": 1
+  }
+}

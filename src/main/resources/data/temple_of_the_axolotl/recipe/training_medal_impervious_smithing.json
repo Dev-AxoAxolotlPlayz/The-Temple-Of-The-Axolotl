@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "minecraft:netherite_block"
+  },
+  "base": {
+    "item": "temple_of_the_axolotl:training_medal"
+  },
+  "addition": {
+    "item": "minecraft:enchanted_golden_apple"
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:training_medal",
+    "count": 1
+  }
+}

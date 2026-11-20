@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "NHN",
+    "GDG",
+    "KKK"
+  ],
+  "key": {
+    "N": {
+      "item": "minecraft:nether_star"
+    },
+    "H": {
+      "item": "temple_of_the_axolotl:heart_of_the_abyss"
+    },
+    "G": {
+      "item": "minecraft:glow_ink_sac"
+    },
+    "D": {
+      "item": "minecraft:dragon_egg"
+    },
+    "K": {
+      "item": "temple_of_the_axolotl:kraken_limb"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:abyssal_egg",
+    "count": 1
+  }
+}

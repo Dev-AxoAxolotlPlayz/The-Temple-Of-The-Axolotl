@@ -7,4 +7,9 @@ public class MerolotlModel extends GeoModel<MerolotlEntity> {
     @Override public ResourceLocation getModelResource(MerolotlEntity e) { return id("geo/merolotl.geo.json"); }
     @Override public ResourceLocation getTextureResource(MerolotlEntity e) { return id("textures/entity/merolotl.png"); }
     @Override public ResourceLocation getAnimationResource(MerolotlEntity e) { return id("animations/merolotl.animation.json"); }
+    @Override public void setCustomAnimations(MerolotlEntity entity,long id,software.bernie.geckolib.animation.AnimationState<MerolotlEntity> state) {
+        super.setCustomAnimations(entity,id,state);
+        var root=getAnimationProcessor().getBone("root");
+        if(root!=null) root.setRotX((float)Math.toRadians(net.minecraft.util.Mth.lerp(state.getPartialTick(),entity.xRotO,entity.getXRot())));
+    }
 }

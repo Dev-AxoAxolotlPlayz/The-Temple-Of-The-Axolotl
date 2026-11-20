@@ -17,8 +17,8 @@ import java.util.*;
 @EventBusSubscriber(modid = TempleOfTheAxolotl.MODID)
 public final class HeyCompanionCommand {
     private HeyCompanionCommand() {}
-    private static final List<String> NOODLE_ACTIONS = List.of("follow", "sit", "stop", "protect", "fetch_logs");
-    private static final List<String> AXO_ACTIONS = List.of("journal", "build");
+    private static final List<String> NOODLE_ACTIONS = List.of("follow", "sit", "stop", "protect", "fetch");
+    private static final List<String> AXO_ACTIONS = List.of("journal", "build", "share");
 
     private static List<AbyssalAxolotlEntity> noodles(ServerPlayer p) {
         return p.serverLevel().getEntitiesOfClass(AbyssalAxolotlEntity.class,
@@ -53,6 +53,11 @@ public final class HeyCompanionCommand {
         String action = StringArgumentType.getString(ctx, "action");
         if (action.equalsIgnoreCase("build"))
             return SharedSuggestionProvider.suggest(WaifuAxoluthuConstructionRequests.TYPES, builder);
+        if (action.equalsIgnoreCase("fetch")) {
+            String input = builder.getRemaining();
+            if (input.contains(" ")) return SharedSuggestionProvider.suggest(List.of("1", "16", "32", "64", "128", "256"), builder);
+            return SharedSuggestionProvider.suggest(BabyNoodleChat.rawSuggestions(), builder);
+        }
         return builder.buildFuture();
     };
 
@@ -67,17 +72,24 @@ public final class HeyCompanionCommand {
                 case "sit" -> "sit";
                 case "stop" -> "stop";
                 case "protect" -> "protect me";
-                case "fetch_logs" -> "fetch " + (args.isBlank() ? "16" : args.trim()) + " logs";
+                case "fetch" -> "fetch " + args.trim();
                 default -> "";
             };
-            if (action.equals("fetch_logs") && !args.isBlank() && !args.matches("[0-9]{1,4}")) {
-                source.sendFailure(Component.literal("Use a numeric log count, up to 4096.")); return 0;
+            if (action.equals("fetch") && !args.matches("(?:minecraft:)?[a-z0-9_]+ [0-9]{1,4}")) {
+                source.sendFailure(Component.literal("Usage: /hey <name> fetch <raw_vanilla_item> <amount>")); return 0;
             }
             BabyNoodleChat.handleText(p, "hey " + a.permanentName() + " " + phrase, a.getUUID());
             return 1;
         }
         for (var a : axoluthus(p)) {
             if (!isAxo(name,a)) continue;
+            if (action.equals("share") && args.startsWith("the module with ")) {
+                ServerPlayer target = p.getServer().getPlayerList().getPlayerByName(args.substring(16).trim());
+                if (target == null || !com.devaxo.templeoftheaxolotl.promise.PromiseState.requestDelivery(a, target)) {
+                    source.sendFailure(Component.literal("Target must be online, in this dimension and not already gifted.")); return 0;
+                }
+                return 1;
+            }
             if (action.equals("journal") && args.isBlank()) {
                 com.devaxo.templeoftheaxolotl.network.AxoluthuJournalPayload.send(p); return 1;
             }

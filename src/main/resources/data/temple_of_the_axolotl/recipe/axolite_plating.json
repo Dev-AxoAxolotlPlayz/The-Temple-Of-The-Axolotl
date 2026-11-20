@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    "HA ",
+    " R "
+  ],
+  "key": {
+    "S": {
+      "item": "temple_of_the_axolotl:scalding_plate"
+    },
+    "H": {
+      "item": "temple_of_the_axolotl:handheld_hydraulic_press"
+    },
+    "A": {
+      "item": "temple_of_the_axolotl:axolite_ingot"
+    },
+    "R": {
+      "item": "temple_of_the_axolotl:reinforced_iron_plating"
+    }
+  },
+  "result": {
+    "id": "temple_of_the_axolotl:axolite_plating",
+    "count": 1
+  }
+}

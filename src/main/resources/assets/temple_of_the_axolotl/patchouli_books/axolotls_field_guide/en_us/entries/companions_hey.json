@@ -12,5 +12,6 @@
       "type": "patchouli:text",
       "text": "Abyssal Axolotl actions: follow, sit, stop, protect, fetch_logs. Example: /hey Blueberry fetch_logs 16. Axoluthu: /hey Axoluthu journal or /hey Axoluthu build <building_type>. Point at the intended site and use command suggestions for learned building types."
     }
-  ]
+  ],
+  "sortnum": 10
 }

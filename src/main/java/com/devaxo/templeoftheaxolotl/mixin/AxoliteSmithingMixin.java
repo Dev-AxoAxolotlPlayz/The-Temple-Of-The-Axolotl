@@ -31,6 +31,13 @@ public abstract class AxoliteSmithingMixin {
 
     @Inject(method = "matches(Lnet/minecraft/world/item/crafting/SmithingRecipeInput;Lnet/minecraft/world/level/Level;)Z", at = @At("RETURN"), cancellable = true)
     private void axoliteRequireHealthyIron(SmithingRecipeInput input, Level level, CallbackInfoReturnable<Boolean> cir) {
+        if (input.base().is(ModItems.NOODLE_TRAINING_MEDAL.get()) &&
+                (input.template().is(ModItems.NOODLE_TRAINING_MEDAL.get()) ||
+                 !com.devaxo.templeoftheaxolotl.entity.NoodleInnates.kind(input.base()).isEmpty())) {
+            cir.setReturnValue(!com.devaxo.templeoftheaxolotl.entity.NoodleInnates.smith(input).isEmpty());
+            return;
+        }
+        if (cir.getReturnValue() && input.template().is(ModItems.AXOLITE_PLATING.get()) && com.devaxo.templeoftheaxolotl.item.AxolitePlating.armor(input.base()) && com.devaxo.templeoftheaxolotl.item.AxolitePlating.plated(input.base())) { cir.setReturnValue(false); return; }
         if (!cir.getReturnValue() || !axoliteRecipeInput(input)) return;
         ItemStack base = input.base();
         // Strictly more than half of the item's maximum durability must remain.
@@ -41,6 +48,13 @@ public abstract class AxoliteSmithingMixin {
 
     @Inject(method = "assemble(Lnet/minecraft/world/item/crafting/SmithingRecipeInput;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/world/item/ItemStack;", at = @At("RETURN"), cancellable = true)
     private void axoliteCopyDataAndRepair(SmithingRecipeInput input, HolderLookup.Provider registries, CallbackInfoReturnable<ItemStack> cir) {
+        if (!cir.getReturnValue().isEmpty() && input.base().is(ModItems.NOODLE_TRAINING_MEDAL.get())) {
+            ItemStack medal = com.devaxo.templeoftheaxolotl.entity.NoodleInnates.smith(input);
+            if (!medal.isEmpty()) { cir.setReturnValue(medal); return; }
+        }
+        if (input.template().is(ModItems.AXOLITE_PLATING.get()) && input.addition().is(net.minecraft.world.item.Items.NETHERITE_BLOCK) && com.devaxo.templeoftheaxolotl.item.AxolitePlating.armor(input.base()) && !cir.getReturnValue().isEmpty()) { cir.setReturnValue(com.devaxo.templeoftheaxolotl.item.AxolitePlating.apply(input.base())); return; }
+        if (input.template().is(ModItems.HEART_OF_THE_ABYSS.get()) && input.base().is(ModItems.AXOLITE_TRIDENT.get()) && input.addition().is(ModItems.COSMIC_ESSENCE.get()) && !cir.getReturnValue().isEmpty()) { var out=cir.getReturnValue(); out.applyComponents(input.base().getComponentsPatch()); out.set(DataComponents.ATTRIBUTE_MODIFIERS,new ItemStack(ModItems.COSMIC_TRIDENT.get()).get(DataComponents.ATTRIBUTE_MODIFIERS)); cir.setReturnValue(out); return; }
+        if (com.devaxo.templeoftheaxolotl.item.AxolitePlating.tier(input.base())>0 && com.devaxo.templeoftheaxolotl.item.AxolitePlating.tier(cir.getReturnValue())>com.devaxo.templeoftheaxolotl.item.AxolitePlating.tier(input.base())) { var out=cir.getReturnValue(); out.applyComponents(input.base().getComponentsPatch()); cir.setReturnValue(out); return; }
         boolean upgrade = input.template().is(ModItems.AXOLITE_INGOT.get()) &&
                 ((input.base().is(ModItems.AXOLITE_PICKAXE.get()) && input.addition().is(ModItems.AXOLITE_INGOT.get())) ||
                  (input.base().is(ModItems.AXOLITE_PICKAXE_TIER_2.get()) && input.addition().is(net.minecraft.world.item.Items.DIAMOND_BLOCK)));

@@ -56,23 +56,11 @@ public final class InventoryStorageButtons {
         int x = recipeOpen ? inventory.getGuiLeft() + 8 : inventory.getGuiLeft() - 20;
         int y = recipeOpen ? inventory.getGuiTop() - 20 : inventory.getGuiTop() + 8;
         CelestialQuickButton[] buttons = {repositoryButton, lootbagButton, modulesButton};
-        // In the horizontal recipe-book layout, shift neighboring buttons to
-        // accommodate an expanded label. Never allow buttons to overlap.
-        int cursorX = x;
-        var mc = net.minecraft.client.Minecraft.getInstance();
-        double mx = mc.mouseHandler.xpos() * inventory.width / mc.getWindow().getScreenWidth();
-        double my = mc.mouseHandler.ypos() * inventory.height / mc.getWindow().getScreenHeight();
-        int hoveredIndex = -1;
-        if (recipeOpen && my >= y && my < y + 18) {
-            for (int i = 0; i < buttons.length; i++) {
-                if (mx >= x + i * 20 && mx < x + i * 20 + 18) { hoveredIndex = i; break; }
-            }
-        }
         for (int i = 0; i < buttons.length; i++) {
-            buttons[i].anchor(recipeOpen ? cursorX : x, y + (recipeOpen ? 0 : i * 20), !recipeOpen);
+            buttons[i].overhead(recipeOpen, x);
+            buttons[i].anchor(recipeOpen ? x + i * 20 : x, y + (recipeOpen ? 0 : i * 20), !recipeOpen);
             buttons[i].visible = x >= 0 && y >= 0;
             buttons[i].active = buttons[i].visible;
-            if (recipeOpen) cursorX += (i == hoveredIndex ? buttons[i].expandedWidth() : 18) + 2;
         }
     }
 }

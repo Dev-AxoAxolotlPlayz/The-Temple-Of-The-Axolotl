@@ -25,9 +25,18 @@ public final class RepositoryJeiPlugin implements IModPlugin {
     @Override public ResourceLocation getPluginUid() {
         return ResourceLocation.fromNamespaceAndPath("temple_of_the_axolotl", "repository_jei");
     }
+    @Override public void registerRecipes(mezz.jei.api.registration.IRecipeRegistration registration) {
+        registration.addIngredientInfo(new net.minecraft.world.item.ItemStack(com.devaxo.templeoftheaxolotl.item.ModItems.NOODLE_TRAINING_MEDAL.get()),
+                mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
+                net.minecraft.network.chat.Component.literal("Look for Recipes in An Axolotl's Field Guide."));
+    }
     @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
-        runtime.getIngredientManager().removeIngredientsAtRuntime(mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
-                java.util.List.of(new net.minecraft.world.item.ItemStack(com.devaxo.templeoftheaxolotl.item.ModItems.NOODLE_TRAINING_MEDAL.get())));
+        var manager = runtime.getRecipeManager();
+        var recipes = manager.createRecipeLookup(RecipeTypes.SMITHING).includeHidden().get()
+                .filter(recipe -> recipe.id().getNamespace().equals("temple_of_the_axolotl")
+                        && recipe.id().getPath().startsWith("training_medal_")
+                        && recipe.id().getPath().endsWith("_smithing")).toList();
+        manager.hideRecipes(RecipeTypes.SMITHING, recipes);
     }
     @Override public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addRecipeTransferHandler(new IRecipeTransferHandler<CelestialRepositoryMenu, RecipeHolder<CraftingRecipe>>() {

@@ -10,16 +10,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record RingAttackInputPayload(boolean held) implements CustomPacketPayload {
+public record RingAttackInputPayload(boolean held, boolean recall) implements CustomPacketPayload {
     public static final Type<RingAttackInputPayload> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, "ring_attack_input"));
     public static final StreamCodec<RegistryFriendlyByteBuf, RingAttackInputPayload> STREAM_CODEC =
-            StreamCodec.composite(ByteBufCodecs.BOOL, RingAttackInputPayload::held, RingAttackInputPayload::new);
+            StreamCodec.composite(ByteBufCodecs.BOOL, RingAttackInputPayload::held, ByteBufCodecs.BOOL, RingAttackInputPayload::recall, RingAttackInputPayload::new);
     @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     public static void handle(RingAttackInputPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
             if (context.player() instanceof ServerPlayer player) {
-                RingBoomerangCombat.setHeld(player, payload.held());
+                if (payload.recall()) { RingBoomerangCombat.recall(player); }
+                else RingBoomerangCombat.setHeld(player, payload.held());
             }
         });
     }

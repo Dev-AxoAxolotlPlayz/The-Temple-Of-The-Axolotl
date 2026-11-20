@@ -4,7 +4,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.server.level.ServerLevelAccessor;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -81,6 +81,8 @@ public class MerolotlEntity extends PathfinderMob implements GeoEntity, RangedAt
     }
 
     @Override protected int decreaseAirSupply(int currentAir) { return currentAir; }
+    // NeoForge retains this deprecated spawn hook for mob initialization.
+    @SuppressWarnings("deprecation")
     @Override @Nullable
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty,
                                         MobSpawnType reason, @Nullable SpawnGroupData data) {
@@ -121,6 +123,7 @@ public class MerolotlEntity extends PathfinderMob implements GeoEntity, RangedAt
         playSound(net.minecraft.sounds.SoundEvents.DROWNED_SHOOT, 1.0F, 1.0F);
     }
     @Override protected void registerGoals() {
+        goalSelector.addGoal(0, new EldritchSwimGoal(this));
         goalSelector.addGoal(1, new RangedAttackGoal(this, 1.0, 40, 14.0F) {
             @Override public boolean canUse() {
                 ItemStack hand = getMainHandItem();
@@ -139,7 +142,7 @@ public class MerolotlEntity extends PathfinderMob implements GeoEntity, RangedAt
         goalSelector.addGoal(3, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true,
-                player -> !player.isCreative() && !player.isSpectator()));
+                entity -> entity instanceof Player player && !player.isCreative() && !player.isSpectator()));
     }
     @Override public void tick() {
         super.tick();

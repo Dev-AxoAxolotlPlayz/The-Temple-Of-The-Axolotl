@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "temple_of_the_axolotl:axolite_helmet"
+    "temple_of_the_axolotl:axolite_helmet",
+    "temple_of_the_axolotl:axolotl_absolute"
   ]
 }

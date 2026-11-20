@@ -7,4 +7,9 @@ public class AxokrakenModel extends GeoModel<AxokrakenEntity> {
     @Override public ResourceLocation getModelResource(AxokrakenEntity entity) { return id("geo/axokraken.geo.json"); }
     @Override public ResourceLocation getTextureResource(AxokrakenEntity entity) { return id("textures/entity/axokraken.png"); }
     @Override public ResourceLocation getAnimationResource(AxokrakenEntity entity) { return id("animations/axokraken.animation.json"); }
+    @Override public void setCustomAnimations(AxokrakenEntity entity,long id,software.bernie.geckolib.animation.AnimationState<AxokrakenEntity> state) {
+        super.setCustomAnimations(entity,id,state);
+        var root=getAnimationProcessor().getBone("root");
+        if(root!=null) root.setRotX((float)Math.toRadians(net.minecraft.util.Mth.lerp(state.getPartialTick(),entity.xRotO,entity.getXRot())));
+    }
 }

@@ -207,7 +207,7 @@ public class AxoleviathanEntity extends PathfinderMob implements GeoEntity {
 
         if (attackCooldown > 0) attackCooldown--;
         if (tickCount % 10 == 0) acquireTarget();
-        if (prey != null && (!prey.isAlive() || distanceToSqr(prey) > 128 * 128)) prey = null;
+        if (prey != null && (!prey.isAlive() || (!EldritchSwimGoal.active(this) && distanceToSqr(prey) > 128 * 128))) prey = null;
         if (prey == null || (ambushTarget != null && !ambushTarget.equals(prey.getUUID()))) {
             ambushPhase = 0;
             ambushPoint = null;
@@ -253,6 +253,11 @@ public class AxoleviathanEntity extends PathfinderMob implements GeoEntity {
                 wanderDestination = null;
                 returnDestination = null;
                 wanderTicks = 0;
+            } else if (EldritchSwimGoal.active(this)) {
+                if (wanderDestination == null || wanderTicks-- <= 0 || position().distanceToSqr(wanderDestination)<9) {
+                    wanderDestination=EldritchSwimGoal.waypoint(this); wanderTicks=100;
+                }
+                destination=wanderDestination;
             } else {
                 if (territoryCenter == null) territoryCenter = blockPosition();
                 if (--territoryCheckCooldown <= 0) {
@@ -294,7 +299,7 @@ public class AxoleviathanEntity extends PathfinderMob implements GeoEntity {
             steerThroughWater(destination, maxSpeed);
 
             if (prey != null && ambushPhase != 1 && ambushPhase != 2
-                    && distanceToSqr(prey) < 36 && attackCooldown == 0) {
+                    && (distanceToSqr(prey) < 36 || (EldritchSwimGoal.active(this) && getBoundingBox().inflate(2).intersects(prey.getBoundingBox()))) && attackCooldown == 0) {
                 attackCooldown = 40;
                 triggerAnim("attack", "nom");
                 if (prey instanceof Shorkolotl100Entity sub) {
@@ -468,7 +473,7 @@ public class AxoleviathanEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void updateSwimmingPitch() {
-        Vec3 v = getDeltaMovement();
+        Vec3 v = EldritchSwimGoal.active(this) && prey != null ? prey.getBoundingBox().getCenter().subtract(getBoundingBox().getCenter()) : getDeltaMovement();
         double horizontal = Math.sqrt(v.x * v.x + v.z * v.z);
         float target = v.lengthSqr() < 0.0004 ? 0.0F :
                 (float) Mth.clamp(-Math.toDegrees(Math.atan2(v.y, horizontal)), -MAX_PITCH, MAX_PITCH);
@@ -478,7 +483,9 @@ public class AxoleviathanEntity extends PathfinderMob implements GeoEntity {
     }
 
     private void acquireTarget() {
-        if (!(level() instanceof ServerLevel server) || level().dimension() != AbyssTrialEvents.ABYSS) return;
+        if (!(level() instanceof ServerLevel server)) return;
+        if (EldritchSwimGoal.active(this)) { prey=EldritchSwimGoal.nearest(server,this); return; }
+        if (level().dimension() != AbyssTrialEvents.ABYSS) return;
         List<Shorkolotl100Entity> subs = server.getEntitiesOfClass(
                 Shorkolotl100Entity.class, getBoundingBox().inflate(20),
                 sub -> sub.isAlive() && !sub.getPassengers().isEmpty());

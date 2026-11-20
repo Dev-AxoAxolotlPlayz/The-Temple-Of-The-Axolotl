@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
-public record TempleNavigationPayload(boolean equipped, boolean valid, int x, int z, boolean arrived, boolean unavailable, boolean compass, boolean clock, boolean pressureGauge)
+public record TempleNavigationPayload(boolean equipped, boolean valid, int x, int z, boolean arrived, boolean unavailable, boolean compass, boolean clock, boolean pressureGauge, String heading, String label, int oxygenTier, int oxygenPercent)
         implements CustomPacketPayload {
     public static final Type<TempleNavigationPayload> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(TempleOfTheAxolotl.MODID, "temple_navigation"));
@@ -22,7 +22,10 @@ public record TempleNavigationPayload(boolean equipped, boolean valid, int x, in
                 buf.writeBoolean(payload.compass());
                 buf.writeBoolean(payload.clock());
                 buf.writeBoolean(payload.pressureGauge());
-            }, buf -> new TempleNavigationPayload(buf.readBoolean(), buf.readBoolean(), buf.readInt(), buf.readInt(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean()));
+                buf.writeUtf(payload.heading(), 64);
+                buf.writeUtf(payload.label(), 256);
+                buf.writeVarInt(payload.oxygenTier()); buf.writeVarInt(payload.oxygenPercent());
+            }, buf -> new TempleNavigationPayload(buf.readBoolean(), buf.readBoolean(), buf.readInt(), buf.readInt(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readUtf(64), buf.readUtf(256), buf.readVarInt(), buf.readVarInt()));
     @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     public static final class Registration {
         public static void register(RegisterPayloadHandlersEvent event) {

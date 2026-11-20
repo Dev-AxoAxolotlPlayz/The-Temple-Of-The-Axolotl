@@ -21,7 +21,7 @@ public class AxoCthuluRenderer extends GeoEntityRenderer<AxoCthuluEntity> {
         // Align the eye itself to the 3x3x2.9 entity hitbox, not the tentacle silhouette.
         // Scale the entire GeckoLib model, then offset the eye into the entity AABB.
         // The offset is also scaled, keeping the eye centered on the collision box.
-        poseStack.scale(5.0F, 5.0F, 5.0F);
+        poseStack.scale(3.0F, 3.0F, 3.0F);
         poseStack.translate(0.0, -87.0 / 16.0, -11.59053 / 16.0);
         super.render(entity, yaw, partialTick, poseStack, buffers, light);
         poseStack.popPose();

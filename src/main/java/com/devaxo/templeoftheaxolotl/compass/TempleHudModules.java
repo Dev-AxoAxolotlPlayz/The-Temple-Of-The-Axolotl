@@ -43,6 +43,10 @@ public final class TempleHudModules {
     private static final String COMPASS_KEY = "tota_position_module";
     private static final String CLOCK_KEY = "tota_clock_module";
 
+    private record OxygenTrace(int tick, boolean alive, boolean underwater, boolean plated,
+                               int capacity, int before, int after) {}
+    private static final java.util.Map<ServerPlayer, OxygenTrace> OXYGEN_TRACE = new java.util.WeakHashMap<>();
+
     private TempleHudModules() {}
 
     public static ItemStack get(ServerPlayer player) {
@@ -88,10 +92,10 @@ public final class TempleHudModules {
     /** The first three slots are live; later slots are reserved until their modules exist. */
     public static boolean accepts(int slot, ItemStack stack) {
         return switch (slot) {
-            case 0 -> stack.is(ModItems.TEMPLE_SEEKER.get());
+            case 0 -> stack.is(ModItems.TEMPLE_SEEKER.get()) || !ExternalNavigation.kind(stack).isEmpty();
             case 1 -> stack.is(Items.COMPASS);
             case 2 -> stack.is(Items.CLOCK);
-            case 3 -> stack.is(ModItems.CELESTIAL_REPOSITORY.get()) || stack.is(ModItems.IRON_REPOSITORY.get()) || stack.is(ModItems.GOLD_REPOSITORY.get()) || stack.is(ModItems.DIAMOND_REPOSITORY.get());
+            case 3 -> stack.is(ModItems.CELESTIAL_REPOSITORY.get()) || stack.is(ModItems.IRON_REPOSITORY.get()) || stack.is(ModItems.GOLD_REPOSITORY.get()) || stack.is(ModItems.DIAMOND_REPOSITORY.get()) || stack.is(ModItems.NETHERITE_REPOSITORY.get());
             case 4 -> stack.is(ModItems.CELESTIAL_MAGNET.get());
             case 5 -> stack.is(Items.CRAFTING_TABLE);
             case 6 -> stack.is(ModItems.CELESTIAL_ANVIL.get());
@@ -100,6 +104,7 @@ public final class TempleHudModules {
             case 9 -> stack.is(ModItems.ABYSS_PRESSURE_GAUGE.get());
             case 10 -> stack.is(ModItems.ABYSSAL_GILLS.get());
             case 11 -> stack.is(ModItems.ABYSSAL_LANTERN.get());
+            case 12 -> stack.is(ModItems.AXOLUTHUS_PROMISE.get());
             case 14 -> stack.is(ModItems.ABYSSAL_COMPANION_REGISTRY.get());
             case 15 -> stack.is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.DIARY_ITEM.get());
             case 16 -> stack.is(com.devaxo.templeoftheaxolotl.registry.ModBlocks.FIELD_GUIDE_ITEM.get());
@@ -109,7 +114,11 @@ public final class TempleHudModules {
     }
 
     public static void storeSlot(ServerPlayer player, int slot, ItemStack stack) {
-        if (slot >= 0 && slot < 18) save(player, slot, stack);
+        if (slot >= 0 && slot < 18) {
+            save(player, slot, stack);
+            if (slot == 3 && player.containerMenu instanceof CelestialModulesMenu menu)
+                menu.syncRepositoryTank(stack);
+        }
     }
 
     @SubscribeEvent
@@ -117,6 +126,26 @@ public final class TempleHudModules {
 
         CommandDispatcher<CommandSourceStack> dispatcher =
                 event.getDispatcher();
+
+        dispatcher.register(Commands.literal("tota").then(Commands.literal("oxygen_debug")
+                .requires(source -> source.hasPermission(2))
+                .executes(context -> {
+                    ServerPlayer p = context.getSource().getPlayerOrException();
+                    var tank = getSlot(p, 3);
+                    var trace = OXYGEN_TRACE.get(p);
+                    var raw = tank.getOrDefault(DataComponents.CUSTOM_DATA,
+                            net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+                    p.sendSystemMessage(Component.literal("O2 slot 3: " + tank.getItem()
+                            + " plated=" + com.devaxo.templeoftheaxolotl.item.AxolitePlating.plated(tank)
+                            + " raw=" + raw.getInt("axolite_oxygen")
+                            + " ticks=" + com.devaxo.templeoftheaxolotl.item.AxolitePlating.oxygen(tank)
+                            + "/" + com.devaxo.templeoftheaxolotl.item.AxolitePlating.capacity(tank)
+                            + " pct=" + com.devaxo.templeoftheaxolotl.item.AxolitePlating.percent(tank)));
+                    p.sendSystemMessage(Component.literal("O2 last tick: " + trace
+                            + " currentTick=" + p.tickCount + " air=" + p.getAirSupply()
+                            + " menu=" + p.containerMenu.getClass().getSimpleName()));
+                    return 1;
+                })));
 
         dispatcher.register(
                 Commands.literal("tota")
@@ -156,6 +185,8 @@ public final class TempleHudModules {
                 "temple_of_the_axolotl.ring_mining_mode",
                 "tota_helmet_night_vision_disabled",
                 "tota_helmet_conduit_disabled",
+                "tota_promise_received",
+                "tota_promise_settings",
                 "tota_abyssal_gills_disabled",
                 "tota_abyssal_lantern_disabled",
                 "tota_cluckles_in",
@@ -175,6 +206,18 @@ public final class TempleHudModules {
         }
     }
 
+    private static net.minecraft.world.phys.Vec3 magnetVelocity(net.minecraft.world.phys.Vec3 delta,double pull) {
+        double distance=delta.length();
+        if(distance<.35)return net.minecraft.world.phys.Vec3.ZERO;
+        return delta.normalize().scale(Math.min(distance*.22, .12*pull*Math.sqrt(distance)));
+    }
+    private static void pullOverflow(ServerPlayer player, ItemEntity entity,double pull,int tier){
+        var delta=player.position().add(0,.15,0).subtract(entity.position());
+        var step=magnetVelocity(delta,pull);
+        if(tier>0 && (entity.horizontalCollision || entity.verticalCollision) && delta.length()>1.5)
+            entity.setPos(entity.getX()+step.x,entity.getY()+step.y,entity.getZ()+step.z);
+        entity.setDeltaMovement(step);
+    }
     @SubscribeEvent
     public static void onTick(PlayerTickEvent.Post event) {
 
@@ -182,15 +225,35 @@ public final class TempleHudModules {
             return;
         }
 
+        // Observe the actual persisted state, including the write/read round trip.
+        var oxygenTank = getSlot(player, 3);
+        int before = com.devaxo.templeoftheaxolotl.item.AxolitePlating.oxygen(oxygenTank);
+        int capacity = com.devaxo.templeoftheaxolotl.item.AxolitePlating.capacity(oxygenTank);
+        boolean plated = com.devaxo.templeoftheaxolotl.item.AxolitePlating.plated(oxygenTank);
+        boolean underwater = player.isUnderWater();
+        if (player.isAlive() && !underwater && plated && before < capacity) {
+            com.devaxo.templeoftheaxolotl.item.AxolitePlating.oxygen(oxygenTank, before + 2 + (player.tickCount & 1));
+            storeSlot(player, 3, oxygenTank);
+        }
+        int after = com.devaxo.templeoftheaxolotl.item.AxolitePlating.oxygen(getSlot(player, 3));
+        OXYGEN_TRACE.put(player, new OxygenTrace(player.tickCount, player.isAlive(), underwater,
+                plated, capacity, before, after));
         if (player.tickCount % 5 != 0) {
             return;
         }
 
-        // Celestial Anvil: a 10-block XP-orb magnet (does not mint XP).
+        int magnetTier = com.devaxo.templeoftheaxolotl.promise.PromiseUpgrade.level(getSlot(player,4));
+        double magnetReach = 10 + magnetTier;
+        double pull = 1 + .25 * magnetTier;
+        // Anvil unlocks XP collection; equipped Magnet extends it.
         if (getSlot(player, 6).is(ModItems.CELESTIAL_ANVIL.get())) {
             for (ExperienceOrb orb : player.serverLevel().getEntitiesOfClass(
-                    ExperienceOrb.class, new AABB(player.blockPosition()).inflate(10.0))) {
-                if (orb.isAlive()) orb.setPos(player.getX(), player.getY() + 0.5, player.getZ());
+                    ExperienceOrb.class, new AABB(player.blockPosition()).inflate(magnetReach))) {
+                if (orb.isAlive()) {
+                    var delta = player.position().add(0,.5,0).subtract(orb.position());
+                    if (delta.length() < 1.5 || magnetTier == 0) orb.setPos(player.getX(), player.getY()+.5, player.getZ());
+                    else { var step=magnetVelocity(delta,pull); orb.setDeltaMovement(step); if(orb.horizontalCollision)orb.setPos(orb.getX()+step.x,orb.getY()+step.y,orb.getZ()+step.z); }
+                }
             }
         }
 
@@ -199,7 +262,7 @@ public final class TempleHudModules {
         if (getSlot(player, 4).is(ModItems.CELESTIAL_MAGNET.get()) &&
                 com.devaxo.templeoftheaxolotl.entity.ClucklesLogistics.magnetMode(player) != 2) {
             for (ItemEntity entity : player.serverLevel().getEntitiesOfClass(
-                    ItemEntity.class, new AABB(player.blockPosition()).inflate(10.0))) {
+                    ItemEntity.class, new AABB(player.blockPosition()).inflate(magnetReach))) {
                 if (!entity.isAlive() || entity.hasPickUpDelay() ||
                         !com.devaxo.templeoftheaxolotl.event.TrapLootOwnershipEvents.canCollect(player, entity)) continue;
                 ItemStack stack = entity.getItem();
@@ -217,7 +280,7 @@ public final class TempleHudModules {
                 }
                 if (accepted == 0) {
                     // Preserve the original item entity; no repeated respawning or item duplication.
-                    entity.setDeltaMovement(player.position().subtract(entity.position()).scale(0.08).add(0,0.03,0));
+                    pullOverflow(player,entity,pull,magnetTier);
                 }
                 if (accepted <= 0) continue;
                 stack.shrink(accepted);
@@ -225,7 +288,7 @@ public final class TempleHudModules {
                 else {
                     entity.setItem(stack);
                     // Unstored remainder stays as ONE real item entity following the owner.
-                    entity.setDeltaMovement(player.position().subtract(entity.position()).scale(0.08).add(0,0.03,0));
+                    pullOverflow(player,entity,pull,magnetTier);
                 }
             }
         }
@@ -263,18 +326,24 @@ public final class TempleHudModules {
                         .dimension()
                         .equals(Level.OVERWORLD);
 
+        var tank=getSlot(player,3);
+        var external = ExternalNavigation.target(module);
+        boolean externalActive = !external.heading().isEmpty();
         PacketDistributor.sendToPlayer(
                 player,
                 new TempleNavigationPayload(
-                        active,
-                        valid,
-                        valid ? pos.pos().getX() : 0,
-                        valid ? pos.pos().getZ() : 0,
-                        TempleSeekerEvents.arrived(player),
-                        TempleSeekerEvents.unavailable(player),
+                        active || externalActive,
+                        externalActive ? external.valid() : valid,
+                        externalActive ? external.x() : valid ? pos.pos().getX() : 0,
+                        externalActive ? external.z() : valid ? pos.pos().getZ() : 0,
+                        active && TempleSeekerEvents.arrived(player),
+                        active && TempleSeekerEvents.unavailable(player),
                         getSlot(player, 1).is(Items.COMPASS),
                         getSlot(player, 2).is(Items.CLOCK),
-                        getSlot(player, 9).is(ModItems.ABYSS_PRESSURE_GAUGE.get())
+                        getSlot(player, 9).is(ModItems.ABYSS_PRESSURE_GAUGE.get()),
+                        externalActive ? external.heading() : "TEMPLE NAVIGATION", external.label(),
+                        com.devaxo.templeoftheaxolotl.item.AxolitePlating.plated(tank)?com.devaxo.templeoftheaxolotl.item.AxolitePlating.tier(tank):0,
+                        com.devaxo.templeoftheaxolotl.item.AxolitePlating.percent(tank)
                 )
         );
     }

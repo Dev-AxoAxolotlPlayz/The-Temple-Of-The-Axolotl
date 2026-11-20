@@ -52,7 +52,7 @@ public final class AbyssPressureEvents {
         // Small, frequent true-damage hits overwhelm ordinary regeneration.
         if (pressure <= 50.0 || AbyssalGillsProtection.protects(player, pressure)) return;
         boolean crushZone = pressure > 75.0;
-        int intervalTicks = crushZone ? 2 : 4;
+        int intervalTicks = (crushZone ? 2 : 4) * (com.devaxo.templeoftheaxolotl.item.AxolitePlating.pieces(player)==4?4:1);
         if (player.tickCount % intervalTicks != 0) return;
 
         DamageSource source = new RandomizedPressureDamageSource(level.registryAccess()

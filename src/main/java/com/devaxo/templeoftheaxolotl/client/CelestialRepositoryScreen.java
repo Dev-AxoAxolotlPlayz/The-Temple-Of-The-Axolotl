@@ -20,14 +20,27 @@ public final class CelestialRepositoryScreen extends AbstractContainerScreen<Cel
         inventoryLabelX = 155;
         inventoryLabelY = 93;
     }
+    private boolean oxygenPage;
+    private net.minecraft.client.gui.components.Button oxygenButton;
     @Override protected void init() {
         super.init();
-        addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
-            Component.literal("Page"), button -> {
-                if (minecraft != null && minecraft.gameMode != null)
-                    minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
-            }).bounds(leftPos + 260, topPos + 6, 58, 16).build());
+        oxygenButton=addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.literal("O2"), b -> setOxygenPage(!oxygenPage)).bounds(leftPos+133,topPos+149,21,15).build());
+        addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.empty(), b -> click(7))
+            .bounds(leftPos+135,topPos+108,16,20).tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Deposit Inventory"))).build());
+        String[] filters = {"All", "Ore", "Equipment", "Mob Drop", "Other"};
+        for (int i = 0; i < filters.length; i++) {
+            final int filter = i;
+            addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.empty(), b -> { setOxygenPage(false); click(20 + filter); })
+                .bounds(leftPos + 134, topPos + 23 + i * 16, 20, 15)
+                .tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal(filters[i]))).build());
+        }
+        addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.literal("<"), b -> { setOxygenPage(false); click(8); })
+            .bounds(leftPos + 133, topPos + 132, 10, 15).build());
+        addRenderableWidget(net.minecraft.client.gui.components.Button.builder(Component.literal(">"), b -> { setOxygenPage(false); click(1); })
+            .bounds(leftPos + 144, topPos + 132, 10, 15).build());
     }
+    @Override public boolean mouseClicked(double x,double y,int button){if(oxygenPage && x>=leftPos+5 && x<leftPos+130 && y>=topPos+23 && y<topPos+169)return true;return super.mouseClicked(x,y,button);}
+    private void setOxygenPage(boolean value) { oxygenPage=value; menu.setOxygenView(value); }
     private void click(int id) {
         if (minecraft != null && minecraft.gameMode != null)
             minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
@@ -38,7 +51,7 @@ public final class CelestialRepositoryScreen extends AbstractContainerScreen<Cel
         g.fill(leftPos + 5, topPos + 5, leftPos + 151, topPos + 21, 0xE0071024);
         g.fill(leftPos + 152, topPos + 88, leftPos + 250, topPos + 102, 0xE0071024);
         g.fill(leftPos + 5, topPos + 169, leftPos + 148, topPos + 187, 0xE0071024);
-        for (int i = 0; i < 56; i++) {
+        if (!oxygenPage) for (int i = 0; i < 56; i++) {
             int x = leftPos + 7 + (i % 7) * 18;
             int y = topPos + 25 + (i / 7) * 18;
             g.fill(x, y, x + 18, y + 18, 0xFF7286B0);
@@ -64,19 +77,61 @@ public final class CelestialRepositoryScreen extends AbstractContainerScreen<Cel
         }
         if (menu.hasSecondPage())
             g.drawString(font, "PAGE " + (menu.activePage() + 1) + "/" + menu.pageCount(), leftPos + 215, topPos + 7, 0xFFB5EAFB, false);
-        g.drawString(font, "CLICK: TAKE  HOLD+CLICK: STORE", leftPos + 8, topPos + 173, 0xFFB5EAFB, false);
+        if (!oxygenPage) g.drawString(font, "CLICK: TAKE  HOLD+CLICK: STORE", leftPos + 8, topPos + 173, 0xFFB5EAFB, false);
+    }
+    private static void drawFilterIcon(GuiGraphics g, int x, int y, int filter, int color) {
+        String[] rows = switch (filter) {
+            case 0 -> new String[]{".###.###..",".#.#.#.#..",".###.###..","..........",".###.###..",".#.#.#.#..",".###.###..","..........",".........."};
+            case 1 -> new String[]{"..######..",".#..#...#.","#..#.#...#","##########",".#.#.#..#.","..#.#..#..","...##.#...","....##....",".........."};
+            case 2 -> new String[]{"##......##","#.#....#.#",".#.#..#.#.","..#.##.#..","...#..#...",".##.##.##.","..##..##..",".#..##..#.","#........#"};
+            case 3 -> new String[]{".......##.","......#..#",".....##..#","....#..##.","...#..#...",".##..#....","#..##.....","#..#......",".##......."};
+            default -> new String[]{"....##....","..##..##..","##......##","#.##..##.#","#...##...#","#...##...#","#...##...#",".##.##.##.","...####..."};
+        };
+        for (int r=0; r<rows.length; r++) for (int c=0; c<rows[r].length(); c++)
+            if (rows[r].charAt(c)=='#') g.fill(x+c,y+r,x+c+1,y+r+1,color);
     }
     private void slotFrame(GuiGraphics g, int x, int y) {
         g.fill(leftPos + x - 1, topPos + y - 1, leftPos + x + 17, topPos + y + 17, 0xFF7286B0);
         g.fill(leftPos + x, topPos + y, leftPos + x + 16, topPos + y + 16, 0xDB0B1129);
     }
     @Override protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
-        g.drawString(font, title, titleLabelX, titleLabelY, 0xFFE9E5FF, true);
+        String name = switch (menu.tier()) {
+            case 5 -> "Netherite Repository";
+            case 4 -> "Diamond Repository";
+            case 3 -> "Gold Repository";
+            case 2 -> "Iron Repository";
+            default -> "Celestial Repository";
+        };
+        g.drawString(font, name, 78 - font.width(name) / 2, 9, 0xFFFFFFFF, true);
         g.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFE9E5FF, true);
     }
     @Override public void render(GuiGraphics g, int mx, int my, float partialTick) {
         renderBackground(g, mx, my, partialTick);
+        var nav=com.devaxo.templeoftheaxolotl.compass.TempleNavigationClient.current();
+        oxygenButton.visible=nav.oxygenTier()>0;
+        if(!oxygenButton.visible) setOxygenPage(false);
+        menu.setOxygenView(oxygenPage);
         super.render(g, mx, my, partialTick);
+        ModuleIcons.glyph(g,leftPos+135,topPos+110, "arrow");
+        for (int i = 0; i < 5; i++) {
+            int x = leftPos + 134, y = topPos + 23 + i * 16;
+            boolean selected = !oxygenPage && menu.activeFilter() == i;
+            if (selected) {
+                g.fill(x+1,y+1,x+19,y+14,0xFF275367);
+                g.fill(x+1,y+1,x+19,y+2,0xFF50E9EF);
+                g.fill(x+1,y+13,x+19,y+14,0xFF50E9EF);
+            }
+            drawFilterIcon(g, x+5, y+2, i, selected ? 0xFF50E9EF : 0xFFE0F4FF);
+        }
+        if(oxygenPage){
+            g.fill(leftPos+5,topPos+23,leftPos+133,topPos+169,0xFF101C32);
+            g.drawString(font,"OXYGEN TANK",leftPos+28,topPos+32,0xFFB5EAFB,false);
+            int x=leftPos+52,y=topPos+48,pct=nav.oxygenPercent();
+            g.fill(x,y,x+32,y+80,0xFF8CB6C8);g.fill(x+2,y+2,x+30,y+78,0xFF101C32);
+            int fill=Math.round(76*pct/100f);if(fill>0)g.fill(x+2,y+78-fill,x+30,y+78,0xFF0054EE);
+            String label=pct+"%";g.drawString(font,label,x+16-font.width(label)/2,y+88,0xFF5BF5FF,false);
+            return;
+        }
         for (int i = 0; i < 56; i++) {
             int count = menu.quantity(i);
             if (count <= 0) continue;

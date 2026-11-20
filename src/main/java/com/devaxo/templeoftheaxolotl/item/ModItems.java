@@ -40,7 +40,8 @@ public final class ModItems {
             new com.devaxo.templeoftheaxolotl.entity.AxoluthuArchitectJournalItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> CELESTIAL_BLUEPRINT = ITEMS.register("celestial_blueprint", () ->
             new com.devaxo.templeoftheaxolotl.entity.AxoluthuCelestialBlueprintItem(new Item.Properties().stacksTo(1)));
-    public static final DeferredItem<Item> NOODLE_TRAINING_MEDAL = basic("training_medal", 1);
+    public static final DeferredItem<Item> NOODLE_TRAINING_MEDAL = ITEMS.register("training_medal", () ->
+            new com.devaxo.templeoftheaxolotl.entity.NoodleMedalItem(new Item.Properties().stacksTo(1)));
 
     // Axolite metal: future smithing-template ingredient.
     public static final DeferredItem<Item> STARDUST = basic("stardust", 64);
@@ -156,13 +157,19 @@ public final class ModItems {
     public static final DeferredItem<Item> IRON_REPOSITORY = basic("iron_repository_module", 1);
     public static final DeferredItem<Item> GOLD_REPOSITORY = basic("gold_repository_module", 1);
     public static final DeferredItem<Item> DIAMOND_REPOSITORY = basic("diamond_repository_module", 1);
+    public static final DeferredItem<Item> NETHERITE_REPOSITORY = basic("netherite_repository_module", 1);
+    public static final DeferredItem<Item> ABYSSAL_EGG = ITEMS.register("abyssal_egg", () -> new AbyssalEggItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<Item> HEART_OF_THE_ABYSS = basic("heart_of_the_abyss", 64);
+    public static final DeferredItem<Item> AXOLITE_PLATING = basic("axolite_plating", 64);
     public static final DeferredItem<Item> ABYSSAL_TORCH = ITEMS.register("abyssal_torch", () ->
             new net.minecraft.world.item.BlockItem(
                     com.devaxo.templeoftheaxolotl.registry.ModBlocks.ABYSSAL_TORCH.get(), new Item.Properties()));
     public static final DeferredItem<Item> ABYSS_PRESSURE_GAUGE = basic("abyss_pressure_gauge", 1);
+    public static final DeferredItem<Item> KRAKEN_LIMB = basic("kraken_limb", 64);
+    public static final DeferredItem<Item> AXOLUTHUS_PROMISE = ITEMS.register("axoluthus_promise", () -> new UpgradeModuleItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> ABYSSAL_GILLS = basic("abyssal_gills", 1);
     public static final DeferredItem<Item> ABYSSAL_LANTERN = basic("abyssal_lantern", 1);
-    public static final DeferredItem<Item> CELESTIAL_MAGNET = basic("celestial_magnet", 1);
+    public static final DeferredItem<Item> CELESTIAL_MAGNET = ITEMS.register("celestial_magnet", () -> new UpgradeModuleItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> LOGISTICS_MAESTRO = basic("logistics_maestro", 1);
     public static final DeferredItem<Item> CELESTIAL_ANVIL = ITEMS.register("celestial_anvil", () ->
             new net.minecraft.world.item.BlockItem(
@@ -440,13 +447,13 @@ public final class ModItems {
     // =========================================
     // Axolite armor: Diamond durability and Netherite-level combat protection.
     public static final DeferredItem<AxoliteArmorItem> AXOLITE_HELMET = ITEMS.register("axolite_helmet", () ->
-            new AxoliteArmorItem(ArmorMaterials.DIAMOND, ArmorItem.Type.HELMET, new Item.Properties().stacksTo(1)));
+            new AxoliteArmorItem(ArmorMaterials.DIAMOND, ArmorItem.Type.HELMET, new Item.Properties().durability(363)));
     public static final DeferredItem<AxoliteArmorItem> AXOLITE_CHESTPLATE = ITEMS.register("axolite_chestplate", () ->
-            new AxoliteArmorItem(ArmorMaterials.DIAMOND, ArmorItem.Type.CHESTPLATE, new Item.Properties().stacksTo(1)));
+            new AxoliteArmorItem(ArmorMaterials.DIAMOND, ArmorItem.Type.CHESTPLATE, new Item.Properties().durability(528)));
     public static final DeferredItem<AxoliteArmorItem> AXOLITE_LEGGINGS = ITEMS.register("axolite_leggings", () ->
-            new AxoliteArmorItem(ArmorMaterials.DIAMOND, ArmorItem.Type.LEGGINGS, new Item.Properties().stacksTo(1)));
+            new AxoliteArmorItem(ArmorMaterials.DIAMOND, ArmorItem.Type.LEGGINGS, new Item.Properties().durability(495)));
     public static final DeferredItem<AxoliteArmorItem> AXOLITE_BOOTS = ITEMS.register("axolite_boots", () ->
-            new AxoliteArmorItem(ArmorMaterials.DIAMOND, ArmorItem.Type.BOOTS, new Item.Properties().stacksTo(1)));
+            new AxoliteArmorItem(ArmorMaterials.DIAMOND, ArmorItem.Type.BOOTS, new Item.Properties().durability(429)));
 
 // CELESTIAL AXOLOTL ARMOR
 // =========================================
@@ -579,6 +586,8 @@ public final class ModItems {
         output.accept(AXOLITE_POMMEL.get());
         output.accept(AXOLITE_TRIDENT.get());
         output.accept(COSMIC_TRIDENT.get());
+        output.accept(HEART_OF_THE_ABYSS.get());
+        output.accept(ABYSSAL_EGG.get());
         output.accept(AXOLITE_PICKAXE.get());
         output.accept(AXOLITE_PICKAXE_TIER_2.get());
         output.accept(AXOLITE_PICKAXE_TIER_3.get());
@@ -655,13 +664,18 @@ public final class ModItems {
         output.accept(IRON_REPOSITORY.get());
         output.accept(GOLD_REPOSITORY.get());
         output.accept(DIAMOND_REPOSITORY.get());
+        output.accept(NETHERITE_REPOSITORY.get());
+        output.accept(AXOLITE_PLATING.get());
         output.accept(CELESTIAL_MAGNET.get());
         output.accept(ABYSS_PRESSURE_GAUGE.get());
+        output.accept(AXOLUTHUS_PROMISE.get());
+        output.accept(KRAKEN_LIMB.get());
         output.accept(ABYSSAL_GILLS.get());
         output.accept(ABYSSAL_LANTERN.get());
         output.accept(ABYSSAL_TORCH.get());
         output.accept(NOODLE_BUCKET.get());
         output.accept(NOODLE_STARTER.get());
+        output.accept(NOODLE_TRAINING_MEDAL.get());
         output.accept(ABYSSAL_CHARM.get());
         output.accept(NOODLE_COMMAND_BOOK.get());
         output.accept(ABYSSAL_RING.get());

@@ -22,6 +22,8 @@ public record CelestialRadialActionPayload(int index) implements CustomPacketPay
             if (!(context.player() instanceof ServerPlayer p)) return;
             if (packet.index() == -1) { sendState(p); return; }
             switch (packet.index()) {
+                case 11 -> PromiseDashboardPayload.send(p,true);
+                case 10 -> { if (hasRing(p)) com.devaxo.templeoftheaxolotl.combat.RingMiningMode.toggleSustainable(p); }
                 case 9 -> com.devaxo.templeoftheaxolotl.item.AxoliteTridentMode.toggle(p);
                 case 0 -> { if (hasHelmet(p)) com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.toggleHelmetNightVision(p); }
                 case 1 -> { if (hasHelmet(p)) com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.toggleHelmetConduit(p); }
@@ -56,6 +58,7 @@ public record CelestialRadialActionPayload(int index) implements CustomPacketPay
     }
     private static void sendState(ServerPlayer p) {
         int flags = 0;
+        if (com.devaxo.templeoftheaxolotl.promise.PromiseState.installed(p)) flags |= 1 << 18;
         if (com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.helmetNightVisionEnabled(p)) flags |= 1;
         if (com.devaxo.templeoftheaxolotl.event.CelestialArmorEvents.helmetConduitEnabled(p)) flags |= 2;
         if (com.devaxo.templeoftheaxolotl.combat.RingMiningMode.isMining(p)) flags |= 4;
@@ -74,6 +77,8 @@ public record CelestialRadialActionPayload(int index) implements CustomPacketPay
         if (TempleHudModules.getSlot(p,4).is(ModItems.CELESTIAL_MAGNET.get())) flags |= (1 << 13);
         if (com.devaxo.templeoftheaxolotl.item.AxoliteTridentMode.state(p)!=0) flags |= 1 << 14;
         if (com.devaxo.templeoftheaxolotl.item.AxoliteTridentMode.state(p)==2) flags |= 1 << 15;
+        if (hasRing(p)) flags |= 1 << 16;
+        if (com.devaxo.templeoftheaxolotl.combat.RingMiningMode.sustainable(p)) flags |= 1 << 17;
         PacketDistributor.sendToPlayer(p, new CelestialRadialStatePayload(flags));
     }
 }

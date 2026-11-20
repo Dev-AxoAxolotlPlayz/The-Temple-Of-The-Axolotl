@@ -64,6 +64,7 @@ public class TempleOfTheAxolotl {
                                 // Temple portal (custom emerald-looking block)
                                 output.accept(ModBlocks.TEMPLE_PORTAL_ITEM.get());
                                 output.accept(ModBlocks.SHALLOWS_PORTAL_ITEM.get());
+                                output.accept(ModBlocks.ELDRITCH_WATERS_PORTAL_ITEM.get());
                                 output.accept(ModBlocks.SHALLOWS_EXIT_PORTAL_ITEM.get());
                 output.accept(ModBlocks.LORE_BLOCK_ITEM.get());
                 output.accept(ModBlocks.BROKEN_LORE_BLOCK_ITEM.get());
@@ -173,6 +174,8 @@ public class TempleOfTheAxolotl {
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.AbyssalRosterRequestPayload::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.AbyssalCompanionActionPayload::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.CelestialRadialActionPayload::register);
+        modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.TridentFovPayload::register);
+        modEventBus.addListener(net.neoforged.bus.api.EventPriority.LOWEST, com.devaxo.templeoftheaxolotl.registry.CreativeBookFilter::filter);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.CelestialRadialStatePayload::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.CelestialRadialOpenBookPayload::register);
         modEventBus.addListener(com.devaxo.templeoftheaxolotl.network.AxoluthuJournalPayload::register);
